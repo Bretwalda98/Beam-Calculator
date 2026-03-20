@@ -202,6 +202,26 @@
   @media (max-width:1339px){.inputs-card{position:static;max-height:none}.workspace{grid-template-columns:1fr}.chart-grid{grid-template-columns:1fr}.stage-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.inspector-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.focus-chart canvas.chart{height:300px}}
 
 
+
+  /* ===== v19 multi-span load tables ===== */
+  .loadcase-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .loadcase-tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:rgba(15,23,42,.55);cursor:pointer;font-weight:800;color:var(--muted)}
+  .loadcase-tab.active{color:#fff;border-color:rgba(59,130,246,.45);box-shadow:0 0 0 1px rgba(59,130,246,.2) inset;background:linear-gradient(180deg,rgba(29,78,216,.35),rgba(15,23,42,.85))}
+  .multi-load-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .multi-load-card{border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:linear-gradient(180deg,var(--panel),var(--panel-2))}
+  .multi-load-card .mini-title{font-size:.8rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);margin-bottom:8px}
+  .mini-table{display:grid;gap:6px}
+  .mini-table .head,.mini-table .row{display:grid;gap:6px;align-items:center}
+  .mini-table .head{font-size:.72rem;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .mini-table .row .tag{font-size:.78rem;font-weight:800;color:#cbd5e1}
+  .mini-table input,.mini-table select{min-width:0;width:100%}
+  .uniform-grid .head,.uniform-grid .row{grid-template-columns:66px minmax(110px,1fr)}
+  .point-grid .head,.point-grid .row{grid-template-columns:66px minmax(74px,.7fr) minmax(110px,1fr) minmax(110px,1fr)}
+  .trap-grid .head,.trap-grid .row{grid-template-columns:66px minmax(84px,.7fr) minmax(92px,1fr) minmax(92px,1fr) minmax(92px,1fr) minmax(92px,1fr)}
+  .moment-grid .head,.moment-grid .row{grid-template-columns:66px minmax(84px,.7fr) minmax(110px,1fr) minmax(110px,1fr)}
+  .multi-loads-scroll{max-height:520px;overflow:auto;padding-right:4px}
+  .span-mode-hint{font-size:.75rem;color:var(--muted);margin:-2px 0 10px}
+  @media (max-width:1200px){.multi-load-grid{grid-template-columns:1fr}}
   /* ===== v15 panel splitters + load grid fix ===== */
   :root{--left-panel-w:420px;--right-panel-w:340px;--splitter-w:12px}
   .layout{grid-template-columns:minmax(360px,var(--left-panel-w)) var(--splitter-w) minmax(0,1fr);align-items:start}
@@ -229,6 +249,19 @@
     .udl-row .mini{width:100%}
   }
 
+
+  .multi-mode-only{display:none}
+  body.mode-multi .multi-mode-only{display:block}
+  body.mode-multi .single-mode-only{display:none!important}
+  .spanlen-grid,.spanload-grid{display:grid;gap:8px}
+  .spanlen-row,.spanload-row{display:grid;grid-template-columns:90px repeat(3,minmax(0,1fr));gap:8px;align-items:center}
+  .spanlen-row{grid-template-columns:90px minmax(0,1fr)}
+  .spangrid-head{display:grid;grid-template-columns:90px repeat(3,minmax(0,1fr));gap:8px;font-size:.74rem;text-transform:uppercase;letter-spacing:.2px;color:var(--muted);padding:0 2px}
+  .spangrid-head.len{grid-template-columns:90px minmax(0,1fr)}
+  .spanlen-row .mini,.spanload-row .mini{margin-top:0;padding:10px 12px;border-radius:10px;min-height:44px}
+  .span-label{font-size:.85rem;color:var(--text);font-weight:700}
+  .support-preview{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.03);font-size:.82rem;color:var(--muted)}
+  :root[data-theme="light"] .support-preview{background:rgba(2,6,23,.03)}
 </style>
 </head>
 <body>
@@ -258,7 +291,13 @@
     <summary>Project / beam setup</summary>
     <div class="accordion-body">
       <div class="compact-grid">
-        <label>Support condition
+        <label>Beam system
+          <select id="analysisMode">
+            <option value="single" selected>Two columns / single span</option>
+            <option value="multi">More than two columns / continuous beam</option>
+          </select>
+        </label>
+        <label class="single-mode-only">Support condition
           <select id="supportType">
             <option value="ss" selected>Simply supported (pinned/roller)</option>
             <option value="cantilever">Cantilever (fixed at x=0)</option>
@@ -280,10 +319,28 @@
             <option value="S355" selected>S355</option>
           </select>
         </label>
-        <label>Span L (m)
+        <label class="single-mode-only">Span L (m)
           <input id="span" type="number" min="0.1" step="0.01" value="6">
           <div id="err_span" class="err hide"></div>
         </label>
+        <div id="multiSpanPanel" class="panel full multi-mode-only">
+          <div style="font-weight:900;margin-bottom:8px">More than two columns / continuous beam</div>
+          <div class="compact-grid">
+            <label>Number of spans
+              <select id="spanCount">
+                <option value="3" selected>3 spans</option>
+                <option value="4">4 spans</option>
+                <option value="5">5 spans</option>
+                <option value="6">6 spans</option>
+              </select>
+            </label>
+            <div class="support-preview">Supports are taken as vertical supports at every column line. The beam is analysed as one continuous member across all spans.</div>
+            <div class="full">
+              <div class="spangrid-head len"><div>Span</div><div>Length (m)</div></div>
+              <div id="spanLengthRows" class="spanlen-grid"></div>
+            </div>
+          </div>
+        </div>
         <label>Load combinations (LC)
           <select id="load_combo">
             <option value="basic">Basic loads</option>
@@ -306,7 +363,7 @@
         <label class="full">Combination preview
           <textarea id="lc_preview" class="mono" readonly></textarea>
         </label>
-        <div id="springSettings" class="full hide">
+        <div id="springSettings" class="full hide single-mode-only">
           <div class="panel">
             <div style="font-weight:900;margin-bottom:8px">Spring support settings</div>
             <div class="compact-grid">
@@ -356,6 +413,47 @@
   <details class="accordion">
     <summary>Loads</summary>
     <div class="accordion-body">
+      <div id="multiSpanLoadsPanel" class="multi-mode-only">
+        <div class="section-title">Continuous beam load input</div>
+        <div class="loadcase-tabs">
+          <button type="button" class="loadcase-tab active" data-loadcase="G">Permanent loads (G)</button>
+          <button type="button" class="loadcase-tab" data-loadcase="Q1">Variable loads (Q1)</button>
+          <button type="button" class="loadcase-tab" data-loadcase="Q2">Variable loads (Q2)</button>
+        </div>
+        <div class="span-mode-hint">When multiple supports / spans are selected, loads are entered in span tables similar to the desktop program: uniform by span, plus optional point, trapezoidal and moment loads.</div>
+        <div class="multi-loads-scroll">
+          <div class="multi-load-grid">
+            <div class="multi-load-card">
+              <div class="mini-title">Uniform loads</div>
+              <div class="mini-table uniform-grid">
+                <div class="head"><div>Span</div><div>q</div></div>
+                <div id="multiUniformRows"></div>
+              </div>
+            </div>
+            <div class="multi-load-card">
+              <div class="mini-title">Moment loads</div>
+              <div class="mini-table moment-grid">
+                <div class="head"><div>Row</div><div>Span</div><div>M</div><div>x</div></div>
+                <div id="multiMomentRows"></div>
+              </div>
+            </div>
+            <div class="multi-load-card">
+              <div class="mini-title">Trapezoidal loads</div>
+              <div class="mini-table trap-grid">
+                <div class="head"><div>Row</div><div>Span</div><div>q1</div><div>q2</div><div>x1</div><div>x2</div></div>
+                <div id="multiTrapRows"></div>
+              </div>
+            </div>
+            <div class="multi-load-card">
+              <div class="mini-title">Point loads</div>
+              <div class="mini-table point-grid">
+                <div class="head"><div>Row</div><div>Span</div><div>P</div><div>x</div></div>
+                <div id="multiPointRows"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="pointLoadsTitle" class="section-title">Point Loads (metric tonnes)</div>
       <div class="loads-scroll">
         <div class="rows">
@@ -363,8 +461,8 @@
           <div id="pointRows"></div>
         </div>
       </div>
-      <div id="udlTitle" class="section-title">UDL Segments (t/m)</div>
-      <div class="loads-scroll udl-scroll">
+      <div id="udlTitle" class="section-title single-mode-only">UDL Segments (t/m)</div>
+      <div class="loads-scroll udl-scroll single-mode-only">
         <div class="rows">
           <div class="udl-head"><div>Segment</div><div>x1</div><div>x2</div><div>G</div><div>Q1</div><div>Q2</div></div>
           <div id="udlRows"></div>
@@ -628,7 +726,7 @@
 
 /* ===== Helpers ===== */
 const g = 9.81;
-const $ = id => document.getElementById(id);
+const $ = sel => document.getElementById(sel) || document.querySelector(sel);
 const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
 const fmt1 = v => (Number.isFinite(v)? v.toFixed(1) : String(v));
 const fmt2 = v => (Number.isFinite(v)? v.toFixed(2) : String(v));
@@ -711,7 +809,8 @@ const supportLabels = {
   fixed_fixed:'Fixed at both ends',
   fixed_roller:'Fixed at x=0, roller at x=L',
   spring_spring:'Spring supports at both ends',
-  spring_roller:'Spring at x=0, roller at x=L'
+  spring_roller:'Spring at x=0, roller at x=L',
+  multi_continuous:'Continuous beam on multiple columns'
 };
 function currentUnit(){ return unitDefs[$('loadUnit')?.value || 'tonne']; }
 function forceDisplayFromkN(v){ return currentUnit().fromBaseForce(v); }
@@ -735,14 +834,15 @@ function getSpringPercentFor(type, side){
 function convertDisplayedLoadInputs(prevKey, nextKey){
   const prev = unitDefs[prevKey] || unitDefs.tonne;
   const next = unitDefs[nextKey] || unitDefs.tonne;
-  qsa('[data-kind="point"][data-field="G"],[data-kind="point"][data-field="Q1"],[data-kind="point"][data-field="Q2"],[data-kind="udl"][data-field="G"],[data-kind="udl"][data-field="Q1"],[data-kind="udl"][data-field="Q2"],[data-kind="axial"]').forEach(el=>{
+  qsa('[data-kind="point"][data-field="G"],[data-kind="point"][data-field="Q1"],[data-kind="point"][data-field="Q2"],[data-kind="udl"][data-field="G"],[data-kind="udl"][data-field="Q1"],[data-kind="udl"][data-field="Q2"],[data-kind="axial"],[data-kind="spanudl"],[data-kind="multiuniform"],[data-kind="multipoint"][data-field="P"],[data-kind="multitrap"][data-field="q1"],[data-kind="multitrap"][data-field="q2"],[data-kind="multimoment"][data-field="M"]').forEach(el=>{
     const raw = String(el.value ?? '').trim();
     if(raw==='') return;
     const n = +raw;
     if(!Number.isFinite(n)) return;
-    const isUdl = el.dataset.kind==='udl';
-    const base = isUdl ? prev.toBaseUdl(n) : prev.toBaseForce(n);
-    const nextVal = isUdl ? next.fromBaseUdl(base) : next.fromBaseForce(base);
+    const isUdl = ['udl','spanudl','multiuniform','multitrap'].includes(el.dataset.kind) || ['q1','q2'].includes(el.dataset.field||'');
+    const isMoment = el.dataset.kind==='multimoment';
+    const base = isMoment ? prev.toBaseMoment(n) : (isUdl ? prev.toBaseUdl(n) : prev.toBaseForce(n));
+    const nextVal = isMoment ? next.fromBaseMoment(base) : (isUdl ? next.fromBaseUdl(base) : next.fromBaseForce(base));
     el.value = fmt3(nextVal);
   });
 }
@@ -750,6 +850,7 @@ function refreshUnitUI(){
   const u = currentUnit();
   $('pointLoadsTitle').textContent = `Point Loads (${u.forceLong})`;
   $('udlTitle').textContent = `UDL Segments (${u.udlShort})`;
+  const st = $('spanLoadsTitle'); if(st) st.textContent = `Span UDLs (${u.udlShort})`;
   $('loadNotes').textContent = `Linear elastic beam analysis using an Euler-Bernoulli beam stiffness model. Positive load inputs are downward. Current input units: point loads in ${u.forceLong} and UDL in ${u.udlShort}.`;
   if($('axialNote')) $('axialNote').textContent = `Axial force uses the same input units as the other loads (${u.forceLong}). Positive = compression.`;
 }
@@ -759,6 +860,131 @@ function syncSpringUI(){
   $('springSettings').classList.toggle('hide', !showPanel);
   $('springLeftWrap').classList.toggle('hide', !(type==='spring_spring' || type==='spring_roller'));
   $('springRightWrap').classList.toggle('hide', type!=='spring_spring');
+}
+function addSpanLengthRow(i, val='5.0'){
+  const wrap=document.createElement('div');
+  wrap.className='spanlen-row';
+  wrap.innerHTML = `<div class="span-label">Span ${i+1}</div><input class="mini" type="number" step="0.01" min="0.1" data-kind="spanlen" data-row="${i}" value="${val}">`;
+  $('spanLengthRows').appendChild(wrap);
+}
+const multiLoadState = { active:'G' };
+
+function spanOptionsHTML(selected){
+  const count = Math.max(3, Math.min(6, Math.round(parseNum($('spanCount')?.value)||3)));
+  let html='';
+  for(let i=1;i<=count;i++) html += `<option value="${i}" ${String(selected||'')===String(i)?'selected':''}>${i}</option>`;
+  return html;
+}
+function getActiveLoadCase(){ return multiLoadState.active || 'G'; }
+function setActiveLoadCase(lc){ multiLoadState.active = lc; qsa('.loadcase-tab').forEach(b=>b.classList.toggle('active', b.dataset.loadcase===lc)); syncMultiLoadInputsVisibility(); }
+function addSpanLoadRow(i, defaults={}){
+  const wrap = document.createElement('div');
+  wrap.className='row';
+  wrap.innerHTML = `
+    <div class="tag">${i+1}</div>
+    <input class="mini" type="number" step="0.01" min="0" placeholder="q" data-kind="multiuniform" data-row="${i}" data-case="G" value="${defaults.G||'0'}">
+  `;
+  $('multiUniformRows').appendChild(wrap);
+}
+function addMultiPointRow(i, defaults={}){
+  const wrap=document.createElement('div'); wrap.className='row';
+  wrap.innerHTML=`
+    <div class="tag">P${i+1}</div>
+    <select class="mini" data-kind="multipoint" data-row="${i}" data-field="span" data-case="${getActiveLoadCase()}">${spanOptionsHTML(defaults.span||'1')}</select>
+    <input class="mini" type="number" step="0.01" min="0" placeholder="P" data-kind="multipoint" data-row="${i}" data-field="P" data-case="${getActiveLoadCase()}" value="${defaults.P||'0'}">
+    <input class="mini" type="number" step="0.01" min="0" placeholder="x" data-kind="multipoint" data-row="${i}" data-field="x" data-case="${getActiveLoadCase()}" value="${defaults.x||'0'}">
+  `;
+  $('multiPointRows').appendChild(wrap);
+}
+function addMultiTrapRow(i, defaults={}){
+  const wrap=document.createElement('div'); wrap.className='row';
+  wrap.innerHTML=`
+    <div class="tag">T${i+1}</div>
+    <select class="mini" data-kind="multitrap" data-row="${i}" data-field="span" data-case="${getActiveLoadCase()}">${spanOptionsHTML(defaults.span||'1')}</select>
+    <input class="mini" type="number" step="0.01" min="0" placeholder="q1" data-kind="multitrap" data-row="${i}" data-field="q1" data-case="${getActiveLoadCase()}" value="${defaults.q1||'0'}">
+    <input class="mini" type="number" step="0.01" min="0" placeholder="q2" data-kind="multitrap" data-row="${i}" data-field="q2" data-case="${getActiveLoadCase()}" value="${defaults.q2||'0'}">
+    <input class="mini" type="number" step="0.01" min="0" placeholder="x1" data-kind="multitrap" data-row="${i}" data-field="x1" data-case="${getActiveLoadCase()}" value="${defaults.x1||'0'}">
+    <input class="mini" type="number" step="0.01" min="0" placeholder="x2" data-kind="multitrap" data-row="${i}" data-field="x2" data-case="${getActiveLoadCase()}" value="${defaults.x2||'0'}">
+  `;
+  $('multiTrapRows').appendChild(wrap);
+}
+function addMultiMomentRow(i, defaults={}){
+  const wrap=document.createElement('div'); wrap.className='row';
+  wrap.innerHTML=`
+    <div class="tag">M${i+1}</div>
+    <select class="mini" data-kind="multimoment" data-row="${i}" data-field="span" data-case="${getActiveLoadCase()}">${spanOptionsHTML(defaults.span||'1')}</select>
+    <input class="mini" type="number" step="0.01" placeholder="M" data-kind="multimoment" data-row="${i}" data-field="M" data-case="${getActiveLoadCase()}" value="${defaults.M||'0'}">
+    <input class="mini" type="number" step="0.01" min="0" placeholder="x" data-kind="multimoment" data-row="${i}" data-field="x" data-case="${getActiveLoadCase()}" value="${defaults.x||'0'}">
+  `;
+  $('multiMomentRows').appendChild(wrap);
+}
+function syncMultiLoadInputsVisibility(){
+  const active = getActiveLoadCase();
+  ['multiUniformRows','multiPointRows','multiTrapRows','multiMomentRows'].forEach(id=>{
+    const host=$(id); if(!host) return;
+    Array.from(host.children).forEach(row=>{
+      const first=row.querySelector('[data-case]');
+      row.style.display = (!first || first.dataset.case===active) ? '' : 'none';
+    });
+  });
+}
+function rebuildMultiLoadTables(){
+  const count = Math.max(3, Math.min(6, Math.round(parseNum($('spanCount')?.value)||3)));
+  const prev = {uniform:{}, point:{}, trap:{}, moment:{}};
+  qsa('[data-kind="multiuniform"]').forEach(el=>{ prev.uniform[`${el.dataset.case}:${el.dataset.row}`]=el.value; });
+  qsa('[data-kind="multipoint"],[data-kind="multitrap"],[data-kind="multimoment"]').forEach(el=>{
+    const bucket = el.dataset.kind==='multipoint' ? prev.point : el.dataset.kind==='multitrap' ? prev.trap : prev.moment;
+    const key=`${el.dataset.case}:${el.dataset.row}:${el.dataset.field}`; bucket[key]=el.value;
+  });
+  $('multiUniformRows').innerHTML=''; $('multiPointRows').innerHTML=''; $('multiTrapRows').innerHTML=''; $('multiMomentRows').innerHTML='';
+  ['G','Q1','Q2'].forEach(loadCase=>{
+    for(let i=0;i<count;i++){
+      const wrap=document.createElement('div'); wrap.className='row';
+      wrap.innerHTML=`<div class="tag">${i+1}</div><input class="mini" type="number" step="0.01" min="0" placeholder="q" data-kind="multiuniform" data-row="${i}" data-case="${loadCase}" value="${prev.uniform[`${loadCase}:${i}`]||((loadCase==='Q1' && i<2)?'2.0':'0')}">`;
+      $('multiUniformRows').appendChild(wrap);
+    }
+    for(let i=0;i<8;i++) addMultiPointRow(i,{span:prev.point[`${loadCase}:${i}:span`]||'1',P:prev.point[`${loadCase}:${i}:P`]||'0',x:prev.point[`${loadCase}:${i}:x`]||'0'});
+    for(let i=0;i<8;i++) addMultiTrapRow(i,{span:prev.trap[`${loadCase}:${i}:span`]||'1',q1:prev.trap[`${loadCase}:${i}:q1`]||'0',q2:prev.trap[`${loadCase}:${i}:q2`]||'0',x1:prev.trap[`${loadCase}:${i}:x1`]||'0',x2:prev.trap[`${loadCase}:${i}:x2`]||'0'});
+    for(let i=0;i<6;i++) addMultiMomentRow(i,{span:prev.moment[`${loadCase}:${i}:span`]||'1',M:prev.moment[`${loadCase}:${i}:M`]||'0',x:prev.moment[`${loadCase}:${i}:x`]||'0'});
+  });
+  syncMultiLoadInputsVisibility();
+}
+function initSpanRows(){
+  const count = Math.max(3, Math.min(6, Math.round(parseNum($('spanCount')?.value)||3)));
+  const prevLen = {};
+  qsa('[data-kind="spanlen"]').forEach(el=>{ prevLen[el.dataset.row] = el.value; });
+  const prevLoad = {};
+  qsa('[data-kind="spanudl"]').forEach(el=>{ const r = el.dataset.row; prevLoad[r] = prevLoad[r] || {}; prevLoad[r][el.dataset.field] = el.value; });
+  $('spanLengthRows').innerHTML='';
+  const slr = $('spanLoadRows'); if(slr) slr.innerHTML='';
+  const defaultsLen = ['5.0','5.0','3.0','3.0','3.0','3.0'];
+  const defaultsQ1 = ['2.0','2.0','0','0','0','0'];
+  for(let i=0;i<count;i++){
+    addSpanLengthRow(i, prevLen[i] || defaultsLen[i] || '3.0');
+  }
+  rebuildMultiLoadTables();
+}
+function getAnalysisMode(){ return $('analysisMode')?.value || 'single'; }
+function getSpanConfig(){
+  const mode = getAnalysisMode();
+  if(mode==='multi'){
+    const count = Math.max(3, Math.min(6, Math.round(parseNum($('spanCount')?.value)||3)));
+    const lengths=[]; let x=0; const supportXs=[0];
+    for(let i=0;i<count;i++){
+      const v = parseNum($(`[data-kind="spanlen"][data-row="${i}"]`)?.value);
+      if(!(v>0)) throw new Error(`Span ${i+1}: enter a valid span length (> 0).`);
+      lengths.push(v); x += v; supportXs.push(+x.toFixed(8));
+    }
+    return {mode:'multi', count, lengths, supportXs, L:x, supportType:'multi_continuous'};
+  }
+  const L = parseNum($('span')?.value) || 0;
+  return {mode:'single', count:1, lengths:[L], supportXs:[0, L], L, supportType:$('supportType').value};
+}
+function syncModeUI(){
+  const mode = getAnalysisMode();
+  document.body.classList.toggle('mode-multi', mode==='multi');
+  document.body.classList.toggle('mode-single', mode!=='multi');
+  if(mode==='multi') initSpanRows();
 }
 
 /* ===== Theme ===== */
@@ -820,6 +1046,7 @@ function initLoadRows(){
   addUdlRow(2,'U3');
 }
 initLoadRows();
+initSpanRows();
 
 /* ===== Load combo logic (mirrors the loadspreader approach) ===== */
 function getLC(){
@@ -918,7 +1145,7 @@ function evaluateEndSupportCheck(check, uls){
   let factor = rigid ? 1.00 : 0.90;
   if(stiff) factor = Math.min(1.00, factor + 0.10);
   const VbRd = check.VzRd * factor;
-  const Ved = Math.max(Math.abs(uls.reactions.leftVertical||0), Math.abs(uls.reactions.rightVertical||0));
+  const Ved = Math.max(...((uls.reactions.supportActions||[]).map(r=>Math.abs(r.V||0)).concat([Math.abs(uls.reactions.leftVertical||0), Math.abs(uls.reactions.rightVertical||0)])));
   return { factor, VbRd, Ved, pass: Ved <= VbRd };
 }
 
@@ -1188,6 +1415,7 @@ function showErr(id,msg){ const e=$(id); e.textContent=msg; e.classList.remove('
 function gatherLoads(L, sec){
   const points=[];
   const udls=[];
+  const spanCfg = getSpanConfig();
 
   const pInputs = qsa('[data-kind="point"]');
   const pointMap = new Map();
@@ -1204,20 +1432,78 @@ function gatherLoads(L, sec){
     points.push({label:`P${r+1}`, x, G:v.G||0, Q1:v.Q1||0, Q2:v.Q2||0});
   });
 
-  const uInputs = qsa('[data-kind="udl"]');
-  const udlMap = new Map();
-  uInputs.forEach(el=>{
-    const r=+el.dataset.row;
-    if(!udlMap.has(r)) udlMap.set(r, {});
-    udlMap.get(r)[el.dataset.field] = parseNum(el.value);
-  });
-  [...udlMap.entries()].sort((a,b)=>a[0]-b[0]).forEach(([r,v])=>{
-    const hasAny = ['G','Q1','Q2'].some(k => (v[k]||0)>0);
-    if(!hasAny) return;
-    const x1=v.x1, x2=v.x2;
-    if(x1===null || x2===null || !(x1>=0 && x2>=0 && x1<x2 && x2<=L)) throw new Error(`UDL U${r+1}: enter valid x1<x2 within 0 to L.`);
-    udls.push({label:`U${r+1}`, x1, x2, G:v.G||0, Q1:v.Q1||0, Q2:v.Q2||0});
-  });
+  if(spanCfg.mode==='multi'){
+    ['G','Q1','Q2'].forEach(loadCase=>{
+      spanCfg.lengths.forEach((len, i)=>{
+        const el = $(`[data-kind="multiuniform"][data-case="${loadCase}"][data-row="${i}"]`);
+        const q = parseNum(el?.value) || 0;
+        if(q>0){
+          const seg={label:`S${i+1}`, x1:spanCfg.supportXs[i], x2:spanCfg.supportXs[i+1], G:0, Q1:0, Q2:0, span:i+1};
+          seg[loadCase]=q; udls.push(seg);
+        }
+      });
+      for(let i=0;i<8;i++){
+        const spanSel = parseInt($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
+        const P = parseNum($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="P"]`)?.value) || 0;
+        const x = parseNum($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="x"]`)?.value) || 0;
+        if(P>0){
+          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
+          const len = spanCfg.lengths[spanIdx];
+          if(!(x>=0 && x<=len)) throw new Error(`Point load P${i+1} (${loadCase}): x must be within span ${spanSel} length.`);
+          const absx = spanCfg.supportXs[spanIdx] + x;
+          const p={label:`P${i+1}`, x:absx, G:0, Q1:0, Q2:0}; p[loadCase]=P; points.push(p);
+        }
+      }
+      for(let i=0;i<8;i++){
+        const spanSel = parseInt($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
+        const q1 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="q1"]`)?.value) || 0;
+        const q2 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="q2"]`)?.value) || 0;
+        const x1 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="x1"]`)?.value) || 0;
+        const x2 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="x2"]`)?.value) || 0;
+        if(q1>0 || q2>0){
+          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
+          const len = spanCfg.lengths[spanIdx];
+          if(!(x1>=0 && x2>x1 && x2<=len)) throw new Error(`Trapezoidal load T${i+1} (${loadCase}): enter valid x1<x2 within span ${spanSel}.`);
+          const nseg = 8;
+          for(let j=0;j<nseg;j++){
+            const a = x1 + (x2-x1)*j/nseg;
+            const b = x1 + (x2-x1)*(j+1)/nseg;
+            const qa = q1 + (q2-q1)*(j/nseg);
+            const qb = q1 + (q2-q1)*((j+1)/nseg);
+            const qavg = 0.5*(qa+qb);
+            const seg={label:`T${i+1}.${j+1}`, x1:spanCfg.supportXs[spanIdx]+a, x2:spanCfg.supportXs[spanIdx]+b, G:0,Q1:0,Q2:0, span:spanSel};
+            seg[loadCase]=qavg; udls.push(seg);
+          }
+        }
+      }
+      for(let i=0;i<6;i++){
+        const spanSel = parseInt($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
+        const M = parseNum($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="M"]`)?.value) || 0;
+        const x = parseNum($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="x"]`)?.value) || 0;
+        if(Math.abs(M)>1e-12){
+          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
+          const len = spanCfg.lengths[spanIdx];
+          if(!(x>=0 && x<=len)) throw new Error(`Moment load M${i+1} (${loadCase}): x must be within span ${spanSel} length.`);
+          points.push({label:`M${i+1}`, x:spanCfg.supportXs[spanIdx]+x, G:0,Q1:0,Q2:0, momentCase:loadCase, M});
+        }
+      }
+    });
+  } else {
+    const uInputs = qsa('[data-kind="udl"]');
+    const udlMap = new Map();
+    uInputs.forEach(el=>{
+      const r=+el.dataset.row;
+      if(!udlMap.has(r)) udlMap.set(r, {});
+      udlMap.get(r)[el.dataset.field] = parseNum(el.value);
+    });
+    [...udlMap.entries()].sort((a,b)=>a[0]-b[0]).forEach(([r,v])=>{
+      const hasAny = ['G','Q1','Q2'].some(k => (v[k]||0)>0);
+      if(!hasAny) return;
+      const x1=v.x1, x2=v.x2;
+      if(x1===null || x2===null || !(x1>=0 && x2>=0 && x1<x2 && x2<=L)) throw new Error(`UDL U${r+1}: enter valid x1<x2 within 0 to L.`);
+      udls.push({label:`U${r+1}`, x1, x2, G:v.G||0, Q1:v.Q1||0, Q2:v.Q2||0});
+    });
+  }
 
   if($('includeSW').checked && sec){
     const u = currentUnit();
@@ -1225,22 +1511,26 @@ function gatherLoads(L, sec){
     udls.push({label:'Self‑weight', x1:0, x2:L, G:sw, Q1:0, Q2:0, isSelf:true});
   }
 
-  return {points, udls};
+  return {points, udls, supportXs:(spanCfg.supportXs||[]).slice(), mode:spanCfg.mode, spanConfig:spanCfg};
 }
 
 function applyCombo(raw, coeff){
   const u = currentUnit();
-  const points_kN = raw.points.map(p=>({
+  const points_kN = raw.points.filter(p=>!('M' in p)).map(p=>({
     label:p.label, x:p.x,
     P: u.toBaseForce(coeff.cG*p.G + coeff.cQ1*p.Q1 + coeff.cQ2*p.Q2)
   })).filter(p=>Math.abs(p.P)>1e-12);
+  const moments_kN_m = raw.points.filter(p=>'M' in p).map(p=>({
+    label:p.label, x:p.x,
+    M: u.toBaseMoment((coeff.cG*(p.G||0)) + (coeff.cQ1*(p.Q1||0)) + (coeff.cQ2*(p.Q2||0)) + (p.momentCase==='G'?coeff.cG: p.momentCase==='Q1'?coeff.cQ1:coeff.cQ2)*p.M)
+  })).filter(m=>Math.abs(m.M)>1e-12);
 
   const udls_kN_m = raw.udls.map(seg=>({
     label:seg.label, x1:seg.x1, x2:seg.x2, isSelf:!!seg.isSelf,
     w: u.toBaseUdl(coeff.cG*seg.G + coeff.cQ1*seg.Q1 + coeff.cQ2*seg.Q2)
   })).filter(seg=>Math.abs(seg.w)>1e-12 && seg.x2>seg.x1);
 
-  return {points_kN, udls_kN_m};
+  return {points_kN, moments_kN_m, udls_kN_m, supportXs:(raw.supportXs||[]).slice(), mode:raw.mode||'single', spanConfig:raw.spanConfig||null};
 }
 
 function zeroMatrix(n){ return Array.from({length:n}, ()=>Array(n).fill(0)); }
@@ -1285,7 +1575,7 @@ function uniqueSortedNodes(values){
   return arr.filter((v,i)=> i===0 || Math.abs(v-arr[i-1])>1e-8);
 }
 function buildBeamNodes(L, loads){
-  const keyPts = [0, L, ...loads.points_kN.map(p=>p.x)];
+  const keyPts = [0, L, ...(loads.supportXs||[]), ...loads.points_kN.map(p=>p.x), ...((loads.moments_kN_m||[]).map(m=>m.x))];
   loads.udls_kN_m.forEach(u=>{ keyPts.push(u.x1, u.x2); });
   const base = uniqueSortedNodes(keyPts);
   const maxEl = Math.max(0.05, L/90);
@@ -1355,6 +1645,11 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
     if(idx===undefined) throw new Error(`Point load ${p.label} could not be mapped to a solver node.`);
     F[2*idx] += -p.P * 1000;
   });
+  (loads.moments_kN_m||[]).forEach(m=>{
+    const idx = nodeIndex.get(m.x.toFixed(8));
+    if(idx===undefined) throw new Error(`Moment load ${m.label} could not be mapped to a solver node.`);
+    F[2*idx+1] += m.M * 1e6;
+  });
 
   const bc = supportBoundaryConfig(supportType);
   const kSpringLeft = springPctToStiffness(bc.springLeftPct, E_MPa, I_mm4, L);
@@ -1363,10 +1658,18 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
   if(kSpringRight) K[2*(n-1)][2*(n-1)] += kSpringRight;
 
   const constrained = [];
-  if(bc.fixVLeft) constrained.push(0);
-  if(bc.fixThetaLeft) constrained.push(1);
-  if(bc.fixVRight) constrained.push(2*(n-1));
-  if(bc.fixThetaRight) constrained.push(2*(n-1)+1);
+  const supportXs = uniqueSortedNodes((loads.supportXs && loads.supportXs.length) ? loads.supportXs : [0, L]);
+  if(supportType==='multi_continuous'){
+    supportXs.forEach(x=>{
+      const idx = nodeIndex.get((+x).toFixed(8));
+      if(idx!==undefined) constrained.push(2*idx);
+    });
+  } else {
+    if(bc.fixVLeft) constrained.push(0);
+    if(bc.fixThetaLeft) constrained.push(1);
+    if(bc.fixVRight) constrained.push(2*(n-1));
+    if(bc.fixThetaRight) constrained.push(2*(n-1)+1);
+  }
   const cset = new Set(constrained);
   const free = Array.from({length:ndof}, (_,i)=>i).filter(i=>!cset.has(i));
 
@@ -1390,6 +1693,13 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
   const rightReaction = bc.fixVRight ? (R[rightVdof]/1000) : (kSpringRight ? (-kSpringRight*d[rightVdof]/1000) : 0);
   const rightMoment = bc.fixThetaRight ? (R[rightVdof+1]/1e6) : 0;
 
+  const supportActions = supportType==='multi_continuous'
+    ? supportXs.map(x=>{
+        const idx = nodeIndex.get((+x).toFixed(8));
+        return {x:+x, V: idx===undefined ? 0 : (R[2*idx]/1000), M: idx===undefined ? 0 : (cset.has(2*idx+1) ? (R[2*idx+1]/1e6) : 0)};
+      })
+    : [{x:0, V:leftReaction, M:leftMoment}, {x:L, V:rightReaction, M:rightMoment}];
+
   return {
     nodes, d, reactions:{
       leftVertical:leftReaction,
@@ -1397,7 +1707,8 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
       leftMoment,
       rightMoment,
       kSpringLeft,
-      kSpringRight
+      kSpringRight,
+      supportActions
     }
   };
 }
@@ -1441,19 +1752,26 @@ function partialUdlResultant(u, x){
   const xc = u.x1 + a/2;
   return {W, xc};
 }
-function buildInternalForceCurves({L, loads, leftReaction, leftMoment, N=480}){
+function buildInternalForceCurves({L, loads, supportActions=[], N=480}){
   const xs = Array.from({length:N+1}, (_,i)=>L*i/N);
   const V = [];
   const M = [];
   xs.forEach(x=>{
-    let shear = leftReaction;
-    let moment = -leftMoment + leftReaction*x;
+    let shear = 0;
+    let moment = 0;
+    supportActions.forEach(s=>{
+      if((s.x||0) <= x + 1e-12){
+        shear += (s.V||0);
+        moment += (s.V||0) * (x - s.x) - (s.M||0);
+      }
+    });
     loads.points_kN.forEach(p=>{
       if(p.x <= x + 1e-12){
         shear -= p.P;
         moment -= p.P * (x - p.x);
       }
     });
+    (loads.moments_kN_m||[]).forEach(m=>{ if(m.x <= x + 1e-12) moment += m.M; });
     loads.udls_kN_m.forEach(u=>{
       const part = partialUdlResultant(u, x);
       if(!part) return;
@@ -1481,8 +1799,7 @@ function solveBeam({L, supportType, E_MPa, I_mm4, loads}){
   const forceCurves = buildInternalForceCurves({
     L,
     loads,
-    leftReaction:model.reactions.leftVertical,
-    leftMoment:model.reactions.leftMoment
+    supportActions:model.reactions.supportActions || []
   });
   const Ptot = loads.points_kN.reduce((s,p)=>s+p.P,0);
   const Qtot = loads.udls_kN_m.reduce((s,u)=>s + (u.x2-u.x1)*u.w, 0);
@@ -1642,6 +1959,7 @@ function buildPropertiesPanel(sec, mat, check, L, supportType, lc, rawLoads, ltb
   const h1=document.createElement('div'); h1.className='result-title'; h1.innerHTML='<div>Selected Member</div><div class="pill">'+sec.name+'</div>'; general.appendChild(h1);
   lineIn(general,'Material / fy', `${mat.grade} → ${mat.fy} MPa`);
   lineIn(general,'Support condition', supportLabelValue(supportType));
+  if(rawLoads?.spanConfig?.mode==='multi') lineIn(general,'Beam system', `${rawLoads.spanConfig.count} continuous spans (${rawLoads.spanConfig.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')})`);
   lineIn(general,'Span L [m]', fmt2(L));
   lineIn(general,'Load input units', currentUnit().name);
   lineIn(general,'ULS / SLS combo', `${lc.uls.note} / ${lc.sls.note}`);
@@ -1992,6 +2310,7 @@ function renderSketch(data){
   ctx.clearRect(0,0,W,H);
 
   const {L,supportType,rawLoads}=data;
+  const supportXs = (rawLoads?.supportXs && rawLoads.supportXs.length) ? rawLoads.supportXs : [0, L];
   const x0=40, x1=W-30, y=H*0.58;
   const mapX = x => x0 + (x/L)*(x1-x0);
 
@@ -2002,7 +2321,13 @@ function renderSketch(data){
   ctx.strokeStyle=line; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
 
-  if(supportType==='ss'){
+  if(supportType==='multi_continuous'){
+    supportXs.forEach((sx, idx)=>{
+      const xx = mapX(sx);
+      if(idx===supportXs.length-1) drawRollerSupport(ctx, xx, y, line);
+      else drawPinnedSupport(ctx, xx, y, line);
+    });
+  }else if(supportType==='ss'){
     drawPinnedSupport(ctx, x0, y, line);
     drawRollerSupport(ctx, x1, y, line);
   }else if(supportType==='cantilever'){
@@ -2050,6 +2375,9 @@ function renderSketch(data){
   ctx.fillText('0', x0-4, y+40);
   ctx.fillText(`L = ${fmt2(L)} m`, (x0+x1)/2 - 22, y+40);
   ctx.fillText(`${fmt2(L)}`, x1-12, y+40);
+  if(supportXs.length>2){
+    supportXs.slice(1,-1).forEach((sx, idx)=>{ ctx.fillText(String(idx+2), mapX(sx)-4, y+24); });
+  }
 }
 
 
@@ -2082,8 +2410,11 @@ function runCalc(){
   syncSecSummary();
   refreshUnitUI();
   syncSpringUI();
+  syncModeUI();
 
-  const L = +$('span').value;
+  let spanCfg;
+  try { spanCfg = getSpanConfig(); } catch(err){ clearPanelsWithMessage(err.message); return; }
+  const L = spanCfg.L;
   if(!(L>0)) return showErr('err_span','Enter a valid span (>0).');
 
   const sec = getSelectedProfile();
@@ -2103,7 +2434,7 @@ function runCalc(){
   }
 
   const mat = getMaterialForSection($('material').value, sec);
-  const supportType = $('supportType').value;
+  const supportType = spanCfg.supportType;
   const lc = getLC();
   const I = calcI_mm4(sec);
   const ucfg = currentUnit();
@@ -2152,11 +2483,11 @@ function runCalc(){
   const memberBucklingIR = memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0;
   const governingIR = Math.max(check.IR_M, check.IR_V, Math.abs(check.IR_N||0), deflIR, supportIR, ltbIR, Math.abs(check.axialEd) > 1e-9 ? IR_NM : 0, memberBucklingIR);
   window._lastMemberBuckling = memberBuckling;
-  const maxReaction = Math.max(Math.abs(uls.reactions.leftVertical||0), Math.abs(uls.reactions.rightVertical||0));
+  const maxReaction = Math.max(...((uls.reactions.supportActions||[]).map(r=>Math.abs(r.V||0)).concat([Math.abs(uls.reactions.leftVertical||0), Math.abs(uls.reactions.rightVertical||0)])));
   const sp = currentSpringPercents();
 
   window._lastCalcData = {
-    sec, mat, L, supportType, lc, rawLoads, axialRaw, axialEd, check, ltb, endSupport, memberBuckling,
+    sec, mat, L, supportType, spanCfg, lc, rawLoads, axialRaw, axialEd, check, ltb, endSupport, memberBuckling,
     uls, sls, ulsNote, deflAllow_mm, deflPeak, passDefl, passLTB, passSupport, IR_NM, passNM,
     passMemberBuckling, passAll, governingIR, maxReaction, sp, ucfg, forceUnit, momentUnit, deflIR, supportIR
   };
@@ -2164,7 +2495,7 @@ function runCalc(){
   updateWorkspaceSummary([
     `<span class="summary-chip"><strong>${sec.name}</strong></span>`,
     `<span class="summary-chip">${mat.grade}</span>`,
-    `<span class="summary-chip">L = ${fmt2(L)} m</span>`,
+    `<span class="summary-chip">${spanCfg.mode==='multi' ? ('ΣL = ' + fmt2(L) + ' m • ' + spanCfg.count + ' spans') : ('L = ' + fmt2(L) + ' m')}</span>`,
     `<span class="summary-chip">Max M = ${fmtMomentFromkNm(uls.peakM.val)} ${momentUnit}</span>`,
     `<span class="summary-chip">Max V = ${fmtForceFromkN(uls.peakV.val)} ${forceUnit}</span>`,
     `<span class="summary-chip">Defl = ${fmt2(deflPeak)} mm</span>`,
@@ -2206,10 +2537,10 @@ function runCalc(){
   const detailHost = $('detailResults');
   detailHost.innerHTML = '';
   const g1 = makeResultFold('ULS actions', true);
-  lineIn(g1.body,`Reaction A [${forceUnit}]`, fmtForceFromkN(uls.reactions.leftVertical));
-  lineIn(g1.body,`Reaction B [${forceUnit}]`, fmtForceFromkN(uls.reactions.rightVertical));
-  if(supportType==='cantilever' || supportType==='fixed_fixed' || supportType==='fixed_roller') lineIn(g1.body,`End moment A [${momentUnit}]`, fmtMomentFromkNm(uls.reactions.leftMoment));
-  if(supportType==='fixed_fixed') lineIn(g1.body,`End moment B [${momentUnit}]`, fmtMomentFromkNm(uls.reactions.rightMoment));
+  (uls.reactions.supportActions||[]).forEach((r, idx)=>{
+    lineIn(g1.body,`Support ${idx+1} reaction [${forceUnit}]`, fmtForceFromkN(r.V||0));
+    if(Math.abs(r.M||0)>1e-9) lineIn(g1.body,`Support ${idx+1} moment [${momentUnit}]`, fmtMomentFromkNm(r.M||0));
+  });
   lineIn(g1.body,`Peak |V|,Ed [${forceUnit}]`, fmtForceFromkN(uls.peakV.val));
   lineIn(g1.body,`Peak |M|,Ed [${momentUnit}]`, fmtMomentFromkNm(uls.peakM.val));
   detailHost.appendChild(g1.wrap);
@@ -2326,8 +2657,7 @@ function runCalc(){
       <table class="data-table">
         <thead><tr><th>Location</th><th>Vertical reaction [${forceUnit}]</th><th>Moment [${momentUnit}]</th></tr></thead>
         <tbody>
-          <tr><td>Support A</td><td>${fmtForceFromkN(uls.reactions.leftVertical)}</td><td>${fmtMomentFromkNm(uls.reactions.leftMoment||0)}</td></tr>
-          <tr><td>Support B</td><td>${fmtForceFromkN(uls.reactions.rightVertical)}</td><td>${fmtMomentFromkNm(uls.reactions.rightMoment||0)}</td></tr>
+          ${(uls.reactions.supportActions||[]).map((r,idx)=>`<tr><td>Support ${idx+1}</td><td>${fmtForceFromkN(r.V||0)}</td><td>${fmtMomentFromkNm(r.M||0)}</td></tr>`).join('')}
         </tbody>
       </table>
     </div>
@@ -2362,12 +2692,13 @@ function runCalc(){
   const springBits = [];
   if(supportType==='spring_spring') springBits.push(`Springs: A=${fmt1(sp.left)}%, B=${fmt1(sp.right)}%`);
   if(supportType==='spring_roller') springBits.push(`Spring A=${fmt1(sp.left)}%`);
-  $('sketchNote').textContent = `Section ${sec.name} • ${supportLabelValue(supportType)}${springBits.length ? ' • ' + springBits.join(' • ') : ''} • ${mat.grade||$('material').value} → fy=${mat.fy} MPa • E=${mat.E.toLocaleString('en-GB')} MPa • Iy=${Math.round(I).toLocaleString('en-GB')} mm⁴`;
+  const beamSystemNote = spanCfg.mode==='multi' ? ` • ${spanCfg.count} spans (${spanCfg.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')})` : '';
+  $('sketchNote').textContent = `Section ${sec.name} • ${supportLabelValue(supportType)}${beamSystemNote}${springBits.length ? ' • ' + springBits.join(' • ') : ''} • ${mat.grade||$('material').value} → fy=${mat.fy} MPa • E=${mat.E.toLocaleString('en-GB')} MPa • Iy=${Math.round(I).toLocaleString('en-GB')} mm⁴`;
 }
 
 
 function buildReportHTML(data){
-  const {sec, mat, L, supportType, lc, check, ltb, endSupport, memberBuckling, uls, sls, ulsNote, deflAllow_mm, deflPeak, passAll, governingIR, maxReaction, forceUnit, momentUnit, deflIR, supportIR, IR_NM, passNM, passDefl} = data;
+  const {sec, mat, L, supportType, spanCfg, lc, check, ltb, endSupport, memberBuckling, uls, sls, ulsNote, deflAllow_mm, deflPeak, passAll, governingIR, maxReaction, forceUnit, momentUnit, deflIR, supportIR, IR_NM, passNM, passDefl} = data;
   const supportText = supportLabelValue(supportType);
   const now = new Date();
   const bodyRows = (rows)=>rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('');
@@ -2441,6 +2772,8 @@ function buildReportHTML(data){
       ['Section', sec.name],
       ['Steel grade / fy', `${mat.grade} / ${mat.fy} MPa`],
       ['Support condition', supportText],
+      ['Beam system', spanCfg && spanCfg.mode==='multi' ? `${spanCfg.count} continuous spans` : 'Two columns / single span'],
+      ['Span breakdown', spanCfg && spanCfg.mode==='multi' ? spanCfg.lengths.map((v,i)=>`S${i+1}=${fmt2(v)} m`).join(' • ') : fmt2(L)+' m'],
       ['Load input units', currentUnit().name],
       ['ULS combination', ulsNote],
       ['SLS combination', lc.sls.note],
@@ -2467,8 +2800,7 @@ function buildReportHTML(data){
   <div class="section">
     <h2>Actions and reactions</h2>
     <table>${bodyRows([
-      [`Reaction A [${forceUnit}]`, fmtForceFromkN(uls.reactions.leftVertical)],
-      [`Reaction B [${forceUnit}]`, fmtForceFromkN(uls.reactions.rightVertical)],
+      [`Support reactions [${forceUnit}]`, (uls.reactions.supportActions||[]).map((r,idx)=>`S${idx+1}: ${fmtForceFromkN(r.V||0)}`).join(' • ')],
       [`Peak |V|,Ed [${forceUnit}]`, fmtForceFromkN(uls.peakV.val)],
       [`Peak |M|,Ed [${momentUnit}]`, fmtMomentFromkNm(uls.peakM.val)],
       ['Axial N,Ed [kN]', fmt1(check.axialEd)],
@@ -2618,6 +2950,7 @@ function initSplitters(){
 function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 const liveRun = debounce(runCalc, 120);
 
+qsa('.loadcase-tab').forEach(btn=>{ if(btn._wiredLc) return; btn._wiredLc=true; btn.addEventListener('click', ()=>{ setActiveLoadCase(btn.dataset.loadcase); }); });
 initInspectorTabs();
 initSplitters();
 $('recalcBtn').addEventListener('click', runCalc);
@@ -2628,6 +2961,8 @@ $('psi_q2').addEventListener('input', ()=>{ updateLCPreview(); liveRun(); });
 $('sec_series').addEventListener('change', ()=>{ populateProfileSizes(); syncSecSummary(); runCalc(); });
 $('sec_size').addEventListener('change', ()=>{ syncSecSummary(); runCalc(); });
 $('supportType').addEventListener('change', ()=>{ syncSpringUI(); runCalc(); });
+$('analysisMode').addEventListener('change', ()=>{ syncModeUI(); runCalc(); });
+$('spanCount').addEventListener('change', ()=>{ initSpanRows(); runCalc(); });
 $('loadUnit').addEventListener('change', e=>{
   const prev = e.target.dataset.prevUnit || 'tonne';
   const next = e.target.value;
@@ -2641,7 +2976,7 @@ $('springRightPct').addEventListener('input', liveRun);
 
 window.addEventListener('resize', debounce(runCalc, 180));
 document.addEventListener('input', e=>{ if(e.target.matches('input,select,textarea') && !e.target.matches('#springLeftPct,#springRightPct')) liveRun(); });
-document.addEventListener('change', e=>{ if(e.target.matches('input,select,textarea') && !e.target.matches('#loadUnit,#supportType')) liveRun(); });
+document.addEventListener('change', e=>{ if(e.target.matches('input,select,textarea') && !e.target.matches('#loadUnit,#supportType,#analysisMode,#spanCount')) liveRun(); });
 
 function init(){
   ensureChartModal();
@@ -2649,6 +2984,7 @@ function init(){
   initProfileDropdowns();
   refreshUnitUI();
   syncSpringUI();
+  syncModeUI();
   $('loadUnit').dataset.prevUnit = $('loadUnit').value;
   syncSecSummary();
   runCalc();
