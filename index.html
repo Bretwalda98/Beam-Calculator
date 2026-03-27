@@ -53,9 +53,9 @@
   .err{font-size:.78rem;margin-top:6px;color:var(--danger)}
 
   .rows{display:grid;gap:8px}
-  .row-head,.row-item{display:grid;grid-template-columns:1.18fr .95fr 1.05fr 1.05fr 1.05fr;gap:10px;align-items:center}
-  .row-head{font-size:.78rem;color:var(--muted);padding:0 2px}
-  .row-item .mini{margin-top:0;padding:13px 14px;border-radius:10px;min-height:52px;min-width:104px}
+  .row-head,.row-item{display:grid;grid-template-columns:86px 74px 78px 78px 78px;gap:6px;align-items:center}
+  .row-head{font-size:.72rem;color:var(--muted);padding:0 2px}
+  .row-item .mini{margin-top:0;padding:8px 10px;border-radius:10px;min-height:40px;min-width:72px;font-size:.92rem}
   .row-item .row-label{font-size:.85rem;color:var(--text);font-weight:700}
   .row-item .row-label small{display:block;color:var(--muted);font-weight:500}
   @media (max-width:720px){
@@ -203,42 +203,61 @@
 
 
 
+
+  .ad-slot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(245,158,11,.24);border-radius:16px;background:linear-gradient(180deg,rgba(245,158,11,.08),rgba(15,23,42,.72));box-shadow:var(--shadow)}
+  :root[data-theme="light"] .ad-slot{background:linear-gradient(180deg,rgba(245,158,11,.10),rgba(2,6,23,.02))}
+  .ad-slot.hide{display:none}
+  .ad-copy{min-width:0}
+  .ad-label{display:inline-block;margin-bottom:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(245,158,11,.28);font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#fbbf24}
+  .ad-headline{font-size:1rem;font-weight:900;margin:0 0 4px}
+  .ad-text{font-size:.85rem;color:var(--muted);margin:0}
+  .ad-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ad-actions .btn{min-height:40px}
+  .btn.ghost{background:transparent}
+  @media (max-width:900px){.ad-slot{flex-direction:column;align-items:flex-start}}
+
   /* ===== v19 multi-span load tables ===== */
   .loadcase-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
   .loadcase-tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:rgba(15,23,42,.55);cursor:pointer;font-weight:800;color:var(--muted)}
   .loadcase-tab.active{color:#fff;border-color:rgba(59,130,246,.45);box-shadow:0 0 0 1px rgba(59,130,246,.2) inset;background:linear-gradient(180deg,rgba(29,78,216,.35),rgba(15,23,42,.85))}
-  .multi-load-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .multi-load-grid{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
   .multi-load-card{border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:linear-gradient(180deg,var(--panel),var(--panel-2))}
   .multi-load-card .mini-title{font-size:.8rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);margin-bottom:8px}
   .mini-table{display:grid;gap:6px}
   .mini-table .head,.mini-table .row{display:grid;gap:6px;align-items:center}
-  .mini-table .head{font-size:.72rem;text-transform:uppercase;color:var(--muted);font-weight:800}
-  .mini-table .row .tag{font-size:.78rem;font-weight:800;color:#cbd5e1}
-  .mini-table input,.mini-table select{min-width:0;width:100%}
-  .uniform-grid .head,.uniform-grid .row{grid-template-columns:66px minmax(110px,1fr)}
-  .point-grid .head,.point-grid .row{grid-template-columns:66px minmax(74px,.7fr) minmax(110px,1fr) minmax(110px,1fr)}
-  .trap-grid .head,.trap-grid .row{grid-template-columns:66px minmax(84px,.7fr) minmax(92px,1fr) minmax(92px,1fr) minmax(92px,1fr) minmax(92px,1fr)}
-  .moment-grid .head,.moment-grid .row{grid-template-columns:66px minmax(84px,.7fr) minmax(110px,1fr) minmax(110px,1fr)}
-  .multi-loads-scroll{max-height:520px;overflow:auto;padding-right:4px}
+  .mini-table .head{font-size:.68rem;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .mini-table .row .tag{font-size:.76rem;font-weight:800;color:#cbd5e1}
+  .mini-table input,.mini-table select{min-width:0;width:100%;margin-top:0;padding:7px 8px;min-height:36px;font-size:.9rem;border-radius:9px}
+  .uniform-grid .head,.uniform-grid .row{grid-template-columns:64px minmax(88px,118px)}
+  .point-grid .head,.point-grid .row{grid-template-columns:56px 86px 92px 92px}
+  .trap-grid .head,.trap-grid .row{grid-template-columns:56px 82px 82px 82px 82px 82px}
+  .moment-grid .head,.moment-grid .row{grid-template-columns:56px 86px 92px 92px}
+  .multi-loads-scroll{max-height:none;overflow:visible;padding-right:0}
   .span-mode-hint{font-size:.75rem;color:var(--muted);margin:-2px 0 10px}
   @media (max-width:1200px){.multi-load-grid{grid-template-columns:1fr}}
+  @media (max-width:900px){
+    .point-grid .head,.point-grid .row,
+    .moment-grid .head,.moment-grid .row,
+    .trap-grid .head,.trap-grid .row{grid-template-columns:1fr 1fr}
+    .uniform-grid .head,.uniform-grid .row{grid-template-columns:1fr 1fr}
+  }
   /* ===== v15 panel splitters + load grid fix ===== */
   :root{--left-panel-w:420px;--right-panel-w:340px;--splitter-w:12px}
   .layout{grid-template-columns:minmax(360px,var(--left-panel-w)) var(--splitter-w) minmax(0,1fr);align-items:start}
   .workspace{grid-template-columns:minmax(0,1fr) var(--splitter-w) minmax(280px,var(--right-panel-w));align-items:start}
   .main-stage,.inspector-shell{min-width:0}
-  .splitter{position:relative;align-self:stretch;min-height:100%;cursor:col-resize;border-radius:999px;background:linear-gradient(180deg,rgba(59,130,246,.06),rgba(59,130,246,.14));border:1px solid rgba(59,130,246,.16);transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
-  .splitter::before{content:'';position:absolute;inset:10px 3px;border-radius:999px;background:linear-gradient(180deg,rgba(148,163,184,.18),rgba(59,130,246,.22))}
-  .splitter:hover,.splitter.dragging{background:linear-gradient(180deg,rgba(59,130,246,.12),rgba(59,130,246,.24));border-color:rgba(59,130,246,.38);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .splitter{position:relative;align-self:stretch;min-height:100%;min-width:var(--splitter-w);width:100%;cursor:col-resize;touch-action:none;user-select:none;z-index:8;border-radius:999px;background:linear-gradient(180deg,rgba(59,130,246,.08),rgba(59,130,246,.18));border:1px solid rgba(59,130,246,.22);transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
+  .splitter::before{content:'';position:absolute;inset:10px 3px;border-radius:999px;background:linear-gradient(180deg,rgba(148,163,184,.18),rgba(59,130,246,.28))}
+  .splitter:hover,.splitter.dragging{background:linear-gradient(180deg,rgba(59,130,246,.16),rgba(59,130,246,.30));border-color:rgba(59,130,246,.48);box-shadow:0 0 0 3px rgba(59,130,246,.14)}
   body.is-resizing, body.is-resizing *{cursor:col-resize!important;user-select:none!important}
   .loads-scroll .rows{min-width:0}
   #pointRows{display:grid;gap:6px}
   #udlRows{display:grid;gap:6px}
-  .udl-head,.udl-row{display:grid;grid-template-columns:92px 84px 84px 96px 96px 96px;gap:8px;align-items:center}
+  .udl-head,.udl-row{display:grid;grid-template-columns:74px 64px 64px 74px 74px 74px;gap:6px;align-items:center}
   .udl-head{font-size:.74rem;text-transform:uppercase;letter-spacing:.2px;color:var(--muted);padding:0 2px}
   .udl-row .row-label{font-size:.85rem;color:var(--text);font-weight:700}
   .udl-row .row-label small{display:block;color:var(--muted);font-weight:500}
-  .udl-row .mini{margin-top:0;padding:10px 12px;border-radius:10px;min-height:44px;min-width:84px}
+  .udl-row .mini{margin-top:0;padding:8px 10px;border-radius:10px;min-height:40px;min-width:68px;font-size:.92rem}
   .udl-scroll .rows,.loads-scroll.udl-scroll .rows{min-width:640px}
   @media (max-width:1500px){.layout{grid-template-columns:minmax(360px,calc(var(--left-panel-w) - 20px)) var(--splitter-w) minmax(0,1fr)}}
   @media (max-width:1339px){.layout{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.splitter{display:none}}
@@ -258,10 +277,67 @@
   .spanlen-row{grid-template-columns:90px minmax(0,1fr)}
   .spangrid-head{display:grid;grid-template-columns:90px repeat(3,minmax(0,1fr));gap:8px;font-size:.74rem;text-transform:uppercase;letter-spacing:.2px;color:var(--muted);padding:0 2px}
   .spangrid-head.len{grid-template-columns:90px minmax(0,1fr)}
-  .spanlen-row .mini,.spanload-row .mini{margin-top:0;padding:10px 12px;border-radius:10px;min-height:44px}
+  .spanlen-row .mini,.spanload-row .mini{margin-top:0;padding:8px 10px;border-radius:10px;min-height:40px;font-size:.92rem}
   .span-label{font-size:.85rem;color:var(--text);font-weight:700}
   .support-preview{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.03);font-size:.82rem;color:var(--muted)}
   :root[data-theme="light"] .support-preview{background:rgba(2,6,23,.03)}
+
+/* ===== v23 responsive scaling + help modal ===== */
+body.device-mobile{--page-pad:10px;--card-pad:12px;--control-font:1rem;--left-panel-w:100%;--right-panel-w:100%;--grid-min:210px}
+body.device-desktop.scale-720{--page-pad:10px;--card-pad:12px;--control-font:.96rem;--left-panel-w:390px;--right-panel-w:310px;--grid-min:225px}
+body.device-desktop.scale-1080{--page-pad:14px;--card-pad:14px;--control-font:1.02rem;--left-panel-w:430px;--right-panel-w:340px;--grid-min:245px}
+body.device-desktop.scale-4k{--page-pad:18px;--card-pad:18px;--control-font:1.10rem;--left-panel-w:560px;--right-panel-w:420px;--grid-min:295px}
+body.device-desktop.scale-4k .container{max-width:min(2480px,98vw)}
+body.device-desktop.scale-720 .container{max-width:min(1680px,98vw)}
+.header-select{min-width:136px;min-height:40px;padding:8px 10px;margin-top:0;font-size:.92rem}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.modal.hide{display:none}
+.modal-panel{width:min(1180px,96vw);max-height:92vh;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px;overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.modal-title{font-size:1rem;font-weight:900}
+.modal-body{overflow:auto;padding-right:4px}
+.modal-grid{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal-card{padding:12px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03)}
+:root[data-theme="light"] .modal-card{background:rgba(2,6,23,.03)}
+.modal-card h3{margin:0 0 8px;font-size:.9rem}
+.modal-card p,.modal-card li{font-size:.88rem;color:var(--text)}
+.modal-card ul{margin:8px 0 0 18px;padding:0}
+.source-list{display:grid;gap:8px}
+.source-item{padding:10px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.02)}
+.source-item .src-title{font-weight:800;font-size:.85rem}
+.source-item .src-url{font-size:.78rem;color:var(--muted);word-break:break-word}
+.help-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--btn-bg);font-size:.78rem;font-weight:700}
+.adsense-note{font-size:.78rem;color:var(--muted);margin-top:6px}
+.adsense-shell{width:100%}
+.adsense-shell ins{display:block;min-height:120px}
+@media (max-width:980px){.modal-grid{grid-template-columns:1fr}.header-select{min-width:110px}}
+
+
+/* ===== v24 splitter fix + compact load inputs ===== */
+#leftDockSplitter,#rightInspectorSplitter{pointer-events:auto} 
+body .layout .splitter, body .workspace .splitter{z-index:12} 
+/* single-span load tables */
+.loads-scroll .row-head,.loads-scroll .row-item{grid-template-columns:74px 66px 72px 72px 72px;gap:6px} 
+.loads-scroll .row-head{font-size:.70rem;letter-spacing:.16px} 
+.loads-scroll .row-item .mini{min-height:38px;min-width:64px;padding:7px 8px;font-size:.88rem} 
+.udl-head,.udl-row{grid-template-columns:70px 60px 60px 70px 70px 70px;gap:6px} 
+.udl-head{font-size:.70rem} 
+.udl-row .mini{min-height:38px;min-width:60px;padding:7px 8px;font-size:.88rem} 
+/* continuous-beam load tables */
+.multi-load-card{padding:9px 10px} 
+.multi-load-card .mini-title{margin-bottom:6px} 
+.mini-table{gap:5px} 
+.mini-table .head{font-size:.66rem;letter-spacing:.12px} 
+.uniform-grid .head,.uniform-grid .row{grid-template-columns:52px 92px} 
+.point-grid .head,.point-grid .row{grid-template-columns:52px 74px 82px 82px} 
+.moment-grid .head,.moment-grid .row{grid-template-columns:52px 74px 82px 82px} 
+.trap-grid .head,.trap-grid .row{grid-template-columns:52px 68px 68px 68px 68px 68px} 
+.mini-table input,.mini-table select{min-height:34px;padding:6px 8px;font-size:.86rem;border-radius:8px} 
+.spanlen-row .mini,.spanload-row .mini{min-height:38px;padding:7px 8px;font-size:.88rem} 
+@media (max-width:900px){
+  .point-grid .head,.point-grid .row,.moment-grid .head,.moment-grid .row,.trap-grid .head,.trap-grid .row,.uniform-grid .head,.uniform-grid .row{grid-template-columns:1fr 1fr}
+}
+
 </style>
 </head>
 <body>
@@ -269,10 +345,23 @@
   <div class="toolbar">
     <button id="themeBtn" class="btn" type="button">Theme</button>
     <span class="badge" id="themeBadge">Dark</span>
+    <span id="deviceBadge" class="badge">Detecting device</span>
   </div>
   <h1>Beam Calculator Studio</h1>
-  <button id="reportBtn" class="btn" type="button">Report</button>
-  <button id="recalcBtn" class="btn" type="button">Recalculate</button>
+  <div class="toolbar">
+    <label class="muted" style="font-size:.82rem">Scale
+      <select id="displayScale" class="header-select">
+        <option value="auto" selected>Auto</option>
+        <option value="720">720p</option>
+        <option value="1080">1080p</option>
+        <option value="4k">4K</option>
+      </select>
+    </label>
+    <button id="helpBtn" class="btn" type="button">Help</button>
+    <button id="latexBtn" class="btn" type="button">LaTeX</button>
+    <button id="reportBtn" class="btn" type="button">Report</button>
+    <button id="recalcBtn" class="btn" type="button">Recalculate</button>
+  </div>
 </header>
 
 <div class="container">
@@ -293,8 +382,8 @@
       <div class="compact-grid">
         <label>Beam system
           <select id="analysisMode">
-            <option value="single" selected>Two columns / single span</option>
-            <option value="multi">More than two columns / continuous beam</option>
+            <option value="single" selected>Single span</option>
+            <option value="multi">Continuous beam</option>
           </select>
         </label>
         <label class="single-mode-only">Support condition
@@ -324,7 +413,7 @@
           <div id="err_span" class="err hide"></div>
         </label>
         <div id="multiSpanPanel" class="panel full multi-mode-only">
-          <div style="font-weight:900;margin-bottom:8px">More than two columns / continuous beam</div>
+          <div style="font-weight:900;margin-bottom:8px">Continuous beam</div>
           <div class="compact-grid">
             <label>Number of spans
               <select id="spanCount">
@@ -334,7 +423,21 @@
                 <option value="6">6 spans</option>
               </select>
             </label>
-            <div class="support-preview">Supports are taken as vertical supports at every column line. The beam is analysed as one continuous member across all spans.</div>
+            <label>Left end support
+              <select id="multiLeftEnd">
+                <option value="simple" selected>Simple</option>
+                <option value="fixed">Fixed</option>
+                <option value="free">Free (no support)</option>
+              </select>
+            </label>
+            <label>Right end support
+              <select id="multiRightEnd">
+                <option value="simple" selected>Simple</option>
+                <option value="fixed">Fixed</option>
+                <option value="free">Free (no support)</option>
+              </select>
+            </label>
+            <div class="support-preview">Internal column lines are modelled as simple vertical supports. The left and right beam ends can be set to free, simple or fixed.</div>
             <div class="full">
               <div class="spangrid-head len"><div>Span</div><div>Length (m)</div></div>
               <div id="spanLengthRows" class="spanlen-grid"></div>
@@ -538,7 +641,7 @@
     </div>
   </details>
 
-  <details class="accordion">
+  <details class="accordion single-mode-only">
     <summary>Axial force</summary>
     <div class="accordion-body">
       <div class="compact-grid">
@@ -595,6 +698,26 @@
   <div class="workspace-header">
     <div id="workspaceSummary" class="summary-strip"></div>
   </div>
+
+  <div id="sponsorSlot" class="ad-slot" style="margin-top:14px">
+    <div class="ad-copy adsense-shell">
+      <div id="sponsorLabel" class="ad-label">Ads</div>
+      <div id="sponsorHeadline" class="ad-headline">Google AdSense-ready advert slot</div>
+      <p id="sponsorText" class="ad-text">Add your AdSense publisher ID and ad slot ID in <span class="mono">adConfig</span>. Until then, this area shows a direct-sponsor fallback so the layout stays clean.</p>
+      <ins id="adsenseSlot" class="adsbygoogle"
+        style="display:block"
+        data-ad-client=""
+        data-ad-slot=""
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+      <div id="adsenseNote" class="adsense-note">AdSense is not configured yet, so the fallback sponsor card is shown.</div>
+    </div>
+    <div class="ad-actions">
+      <a id="sponsorCta" class="btn" href="#" target="_blank" rel="noopener">Learn more</a>
+      <button id="sponsorDismiss" class="btn ghost" type="button">Hide</button>
+    </div>
+  </div>
+
   <div class="workspace" style="margin-top:14px">
     <div class="main-stage">
       <div class="stage-block">
@@ -720,7 +843,20 @@
   </div>
 </div>
 
-<script src="sections_data_combined_v16.js"></script>
+<div id="helpModal" class="modal hide" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+    <div class="modal-head">
+      <div>
+        <div id="helpModalTitle" class="modal-title">Beam Calculator help & references</div>
+        <div class="tiny">How to use the app, what the symbols mean, and where the data/checks come from.</div>
+      </div>
+      <button id="helpModalClose" class="btn" type="button">Close ✕</button>
+    </div>
+    <div id="helpModalBody" class="modal-body"></div>
+  </div>
+</div>
+
+<script src="sections_data_combined_v23.js"></script>
 <script>
 "use strict";
 
@@ -810,14 +946,167 @@ const supportLabels = {
   fixed_roller:'Fixed at x=0, roller at x=L',
   spring_spring:'Spring supports at both ends',
   spring_roller:'Spring at x=0, roller at x=L',
-  multi_continuous:'Continuous beam on multiple columns'
+  multi_continuous:'Continuous beam'
 };
+const adConfig = {
+  enabled:true,
+  adsense:{ enabled:false, client:'', slot:'' },
+  fallback:{
+    label:'Sponsored',
+    headline:'Advertise to beam-design users',
+    text:'Use this slot for a direct sponsor, affiliate software, training, or your own engineering tools. Add AdSense IDs in adConfig.adsense to switch this to Google ads.',
+    cta:'Learn more',
+    href:'#'
+  }
+};
+const sponsorConfig = adConfig.fallback;
+
+function detectDeviceMode(){
+  return window.matchMedia('(max-width: 980px)').matches ? 'mobile' : 'desktop';
+}
+function applyDisplayScale(){
+  const body = document.body;
+  const mode = detectDeviceMode();
+  body.classList.toggle('device-mobile', mode==='mobile');
+  body.classList.toggle('device-desktop', mode==='desktop');
+  const badge = $('deviceBadge');
+  if(badge) badge.textContent = mode==='mobile' ? 'Mobile layout' : 'Desktop layout';
+  ['scale-720','scale-1080','scale-4k'].forEach(c=>body.classList.remove(c));
+  let scale = $('displayScale')?.value || 'auto';
+  if(mode==='mobile') scale = 'mobile';
+  if(mode==='desktop' && scale==='auto'){
+    const w = window.innerWidth || 1600;
+    scale = w >= 2500 ? '4k' : (w >= 1700 ? '1080' : '720');
+  }
+  if(scale==='720') body.classList.add('scale-720');
+  else if(scale==='4k') body.classList.add('scale-4k');
+  else if(mode==='desktop') body.classList.add('scale-1080');
+  if($('displayScale')) $('displayScale').disabled = mode==='mobile';
+}
+function buildHelpHTML(){
+  const data = window._lastCalcData;
+  if(!data) return '<div class="modal-grid"><div class="modal-card"><h3>No solved model yet</h3><p>Press Recalculate first, then open Help to see the current section sources, symbols and check references.</p></div></div>';
+  const {sec, check, memberBuckling, ltb, mat} = data;
+  const src = getSectionSourceInfo(sec);
+  const refs = getCalculationReferences();
+  const symbolRows = [
+    ['V(x)','Shear force diagram along the beam.'],
+    ['M(x)','Bending moment diagram along the beam.'],
+    ['y(x)','Deflection diagram along the beam.'],
+    ['My,Rd','Major-axis bending resistance before any high-shear reduction.'],
+    ['Mv,y,Rd','Reduced major-axis bending resistance used when VEd > 0.5·Vz,Rd.'],
+    ['Vz,Rd','Design shear resistance.'],
+    ['Nt,Rd / Nc,Rd','Axial tension / compression cross-section resistance.'],
+    ['Nb,y,Rd / Nb,z,Rd','Member buckling resistance about y and z axes.'],
+    ['Mb,Rd','LTB design buckling resistance moment.'],
+    ['IR','Interaction ratio. A check passes when IR < 1.0.']
+  ].map(([a,b])=>`<tr><th>${a}</th><td>${b}</td></tr>`).join('');
+  const refHtml = refs.map(r=>`<div class="source-item"><div class="src-title">${r.title}</div><div>${r.detail}</div><div class="src-url">${r.url}</div></div>`).join('');
+  return `
+    <div class="modal-grid">
+      <div class="modal-card">
+        <h3>How to use the program</h3>
+        <ul>
+          <li>Pick <strong>Beam system</strong>, support condition and steel grade first.</li>
+          <li>Select the section family and size, then enter loads in the chosen units.</li>
+          <li>Use <strong>Recalculate</strong> after changing input blocks or load tables.</li>
+          <li>The centre area shows the sketch and diagrams. The right-hand inspector shows the governing checks.</li>
+          <li>Use <strong>Report</strong> for a neat project report and <strong>LaTeX</strong> for a maths-style engineer breakdown.</li>
+        </ul>
+      </div>
+      <div class="modal-card">
+        <h3>Current model</h3>
+        <p><span class="help-pill">${sec.name}</span> <span class="help-pill">${mat.grade}</span> <span class="help-pill">${ltb.enabled ? 'LTB on' : 'LTB off'}</span></p>
+        <p><strong>Section source:</strong> ${src.title}</p>
+        <p>${src.detail}</p>
+        <p class="soft-note">Reference: ${src.url}</p>
+        <p class="soft-note">LTB properties are ${ltb.estimated ? 'being derived from section geometry because the stored database row is missing It / Iz / Iw.' : 'coming directly from the loaded section database.'}</p>
+      </div>
+      <div class="modal-card">
+        <h3>What the symbols mean</h3>
+        <table class="data-table"><tbody>${symbolRows}</tbody></table>
+      </div>
+      <div class="modal-card">
+        <h3>Section control vs buckling control</h3>
+        <p><strong>Section control</strong> checks the cross-section itself: moment, high-shear moment reduction, shear, axial force and serviceability/deflection.</p>
+        <p><strong>Buckling control</strong> checks stability of the member: compression buckling about y and z plus lateral torsional buckling when enabled.</p>
+        <p class="soft-note">Current IRs: M = ${fmt3(check.IR_M)}, V = ${fmt3(check.IR_V)}, N = ${fmt3(check.IR_N || 0)}, member buckling = ${memberBuckling.active && memberBuckling.available ? fmt3(memberBuckling.governing) : '—'}, LTB = ${ltb.enabled && ltb.available ? fmt3(ltb.IR_LT) : '—'}.</p>
+      </div>
+      <div class="modal-card full">
+        <h3>Calculation references</h3>
+        <div class="source-list">${refHtml}</div>
+      </div>
+    </div>`;
+}
+function openHelpModal(){
+  const modal = $('helpModal');
+  if(!modal) return;
+  $('helpModalBody').innerHTML = buildHelpHTML();
+  modal.classList.remove('hide');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeHelpModal(){
+  const modal = $('helpModal');
+  if(!modal) return;
+  modal.classList.add('hide');
+  modal.setAttribute('aria-hidden','true');
+}
+
 function currentUnit(){ return unitDefs[$('loadUnit')?.value || 'tonne']; }
 function forceDisplayFromkN(v){ return currentUnit().fromBaseForce(v); }
 function udlDisplayFromkNpm(v){ return currentUnit().fromBaseUdl(v); }
 function momentDisplayFromkNm(v){ return currentUnit().fromBaseMoment(v); }
 function fmtForceFromkN(v){ return fmt2(forceDisplayFromkN(v)); }
 function fmtMomentFromkNm(v){ return fmt2(momentDisplayFromkNm(v)); }
+
+
+function ensureAdSenseScript(){
+  if(document.querySelector('script[data-adsbygoogle-script="1"]')) return;
+  const cfg = adConfig?.adsense;
+  if(!(cfg && cfg.enabled && cfg.client && cfg.slot)) return;
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(cfg.client)}`;
+  s.crossOrigin = 'anonymous';
+  s.dataset.adsbygoogleScript = '1';
+  document.head.appendChild(s);
+}
+function renderSponsorSlot(){
+  const slot = $('sponsorSlot');
+  if(!slot) return;
+  const cfg = adConfig || {};
+  slot.classList.toggle('hide', !cfg.enabled);
+  if(!cfg.enabled) return;
+  const ads = cfg.adsense || {};
+  const usingAdsense = !!(ads.enabled && ads.client && ads.slot);
+  const fallback = cfg.fallback || sponsorConfig || {};
+  if($('sponsorLabel')) $('sponsorLabel').textContent = usingAdsense ? 'Google ads' : (fallback.label || 'Sponsored');
+  if($('sponsorHeadline')) $('sponsorHeadline').textContent = usingAdsense ? 'AdSense placement' : (fallback.headline || 'Advertise here');
+  if($('sponsorText')) $('sponsorText').textContent = usingAdsense ? 'This slot is configured for Google AdSense responsive display ads.' : (fallback.text || '');
+  const note = $('adsenseNote');
+  const ins = $('adsenseSlot');
+  const cta = $('sponsorCta');
+  if(cta){
+    cta.textContent = usingAdsense ? 'Ad settings' : (fallback.cta || 'Learn more');
+    cta.href = usingAdsense ? 'https://support.google.com/adsense/answer/9261307?hl=en-GB' : (fallback.href || '#');
+    if((usingAdsense && cta.href) || (!usingAdsense && fallback.href && fallback.href !== '#')) cta.removeAttribute('aria-disabled');
+    else cta.setAttribute('aria-disabled','true');
+  }
+  if(ins){
+    ins.dataset.adClient = usingAdsense ? ads.client : '';
+    ins.dataset.adSlot = usingAdsense ? ads.slot : '';
+    ins.style.display = usingAdsense ? 'block' : 'none';
+  }
+  if(note){
+    note.textContent = usingAdsense
+      ? 'AdSense is configured. Publish with your approved domain and AdSense IDs to show live ads.'
+      : 'AdSense is not configured yet, so the fallback sponsor card is shown.';
+  }
+  if(usingAdsense){
+    ensureAdSenseScript();
+    try{ (window.adsbygoogle = window.adsbygoogle || []).push({}); }catch(err){ console.warn('AdSense init skipped', err); }
+  }
+}
 function currentSpringPercents(){
   return {
     left: clamp(parseNum($('springLeftPct')?.value) ?? 100, 0, 100),
@@ -825,6 +1114,16 @@ function currentSpringPercents(){
   };
 }
 function supportLabelValue(v){ return supportLabels[v] || v; }
+function getContinuousEndConfig(){
+  return {
+    left: ($('multiLeftEnd')?.value || 'simple'),
+    right: ($('multiRightEnd')?.value || 'simple')
+  };
+}
+function continuousEndSupportLabel(side){
+  const map = {free:'Free', simple:'Simple', fixed:'Fixed'};
+  return map[side] || side;
+}
 function getSpringPercentFor(type, side){
   const sp = currentSpringPercents();
   if(type==='spring_spring') return side==='left' ? sp.left : sp.right;
@@ -975,16 +1274,22 @@ function getSpanConfig(){
       if(!(v>0)) throw new Error(`Span ${i+1}: enter a valid span length (> 0).`);
       lengths.push(v); x += v; supportXs.push(+x.toFixed(8));
     }
-    return {mode:'multi', count, lengths, supportXs, L:x, supportType:'multi_continuous'};
+    return {mode:'multi', count, lengths, supportXs, L:x, supportType:'multi_continuous', endSupports:getContinuousEndConfig()};
   }
   const L = parseNum($('span')?.value) || 0;
   return {mode:'single', count:1, lengths:[L], supportXs:[0, L], L, supportType:$('supportType').value};
 }
-function syncModeUI(){
+let lastAnalysisMode = null;
+function syncModeUI(forceInit=false){
   const mode = getAnalysisMode();
   document.body.classList.toggle('mode-multi', mode==='multi');
   document.body.classList.toggle('mode-single', mode!=='multi');
-  if(mode==='multi') initSpanRows();
+  if(mode==='multi'){
+    const rowsMissing = !$('spanLengthRows') || !$('spanLengthRows').children.length;
+    if(forceInit || lastAnalysisMode!==mode || rowsMissing) initSpanRows();
+    ['axialG','axialQ1','axialQ2'].forEach(id=>{ if($(id)) $(id).value='0'; });
+  }
+  lastAnalysisMode = mode;
 }
 
 /* ===== Theme ===== */
@@ -1116,6 +1421,7 @@ function getSectionModuli(sec){
   return { Wel: wel?.value ?? null, Wpl: wpl?.value ?? null, Weff: weff?.value ?? null,
     source:{Wel: wel?.key || null, Wpl: wpl?.key || null, Weff: weff?.key || null} };
 }
+
 function getSectionAreas(sec){
   const A = getSectionPropCandidates(sec, ['A_mm2','Amm2','A']);
   const Aeff = getSectionPropCandidates(sec, ['Aeff_mm2','Aeffmm2','Aeff']);
@@ -1126,14 +1432,98 @@ function getSectionAreas(sec){
     source:{A:A?.key || (AfromMass ? 'mass_kg_m/7850' : null), Aeff:Aeff?.key || A?.key || (AfromMass ? 'mass_kg_m/7850' : null)}
   };
 }
+function getFamilyKey(sec){
+  return (($('sec_series')?.value || sec?.family || '') + '').toUpperCase();
+}
+function isChannelFamilyKey(fam){ return ['UPE','UPN','PFC','CH'].includes((fam||'').toUpperCase()); }
+function estimateOpenSectionGeometry(sec){
+  const fam = getFamilyKey(sec);
+  const h = numOrNull(sec?.h_mm), b = numOrNull(sec?.b_mm);
+  const areas = getSectionAreas(sec);
+  const A = areas.A;
+  if(!(h && b && A)) return null;
+  let Av = numOrNull(sec?.Avz_mm2) || Math.max(A*0.18, Math.min(A*0.55, 0.08*h*b));
+  let tw = Math.max(2, Math.min(b*0.6, Av / Math.max(1, h)));
+  let tf = Math.max(3, (A - tw*h) / Math.max(2, 2*(b - tw)));
+  for(let i=0;i<10;i++){
+    const hw = Math.max(6, h - 2*tf);
+    tw = Math.max(2, Math.min(b*0.65, Av / Math.max(1, hw)));
+    tf = Math.max(3, Math.min(h*0.28, (A - tw*hw) / Math.max(2, 2*b)));
+  }
+  const hw = Math.max(6, h - 2*tf);
+  if(!(tw>0 && tf>0 && hw>0)) return null;
+  return {fam,h,b,A,Av,tw,tf,hw};
+}
+function deriveMinorIzOpenSection(geom){
+  const {fam,b,tw,tf,hw} = geom;
+  if(isChannelFamilyKey(fam)){
+    const Aweb = tw*hw, Afl = b*tf;
+    const xWeb = tw/2, xFl = b/2;
+    const Atot = Aweb + 2*Afl;
+    const xbar = (Aweb*xWeb + 2*Afl*xFl) / Atot;
+    const IzWeb = hw*Math.pow(tw,3)/12 + Aweb*Math.pow(xWeb - xbar,2);
+    const IzFl = tf*Math.pow(b,3)/12 + Afl*Math.pow(xFl - xbar,2);
+    return IzWeb + 2*IzFl;
+  }
+  return 2*(tf*Math.pow(b,3)/12) + hw*Math.pow(tw,3)/12;
+}
+function deriveLtbPropsFromGeometry(sec){
+  const fam = getFamilyKey(sec);
+  const geom = estimateOpenSectionGeometry(sec);
+  if(!geom) return null;
+  const {h,b,tw,tf,hw} = geom;
+  const It = (2*b*Math.pow(tf,3) + hw*Math.pow(tw,3))/3;
+  const Iz = deriveMinorIzOpenSection(geom);
+  let Iw;
+  if(isChannelFamilyKey(fam)) Iw = 0.16 * tf * Math.pow(b,3) * Math.pow(Math.max(1, h - tf), 2);
+  else Iw = tf * Math.pow(b,3) * Math.pow(Math.max(1, h - tf), 2) / 24;
+  return {It, Iz, Iw, source:{It:'derived_geometry', Iz:'derived_geometry', Iw:'derived_geometry'}, estimated:true, geom};
+}
+function getSectionSourceInfo(sec){
+  const fam = getFamilyKey(sec);
+  const map = {
+    UB:{title:'British rolled UB data', detail:'British UB dimensions/properties aligned to BS 4 tables, with screenshot-matched rows kept where provided.', url:'https://roymech.org/Useful_Tables/Sections/UBA_dim_prop.html'},
+    UC:{title:'British rolled UC data', detail:'British UC dimensions/properties aligned to BS 4 / Blue Book-style tables, with screenshot-matched rows kept where provided.', url:'https://roymech.org/Useful_Tables/Sections/Sections.html'},
+    UBP:{title:'British bearing pile data', detail:'British UBP dimensions/properties aligned to BS 4-style tables.', url:'https://roymech.org/Useful_Tables/Sections/Sections.html'},
+    J:{title:'British joist data', detail:'British joist rows built from BS 4 legacy section tables and user screenshot matches.', url:'https://roymech.org/Useful_Tables/Sections/Sections.html'},
+    PFC:{title:'British PFC data', detail:'Parallel flange channel dimensions/properties from British section tables with screenshot-matched rows retained.', url:'https://www.steelforlifebluebook.co.uk/pfc/ec3-ukna/section-properties-dimensions-properties'},
+    CH:{title:'British channel data', detail:'Legacy channel rows based on British section tables and screenshot-matched values.', url:'https://roymech.org/Useful_Tables/Sections/chanA_dimprop.html'},
+    RHS:{title:'RHS data', detail:'Rectangular hollow section rows loaded from the combined app database, with screenshot-matched values where supplied.', url:'https://www.steelforlifebluebook.co.uk/cfshs/ec3-ukna/section-properties-dimensions-properties'}
+  };
+  if(map[fam]) return map[fam];
+  return {title:'European rolled-section data', detail:'Loaded from the bundled European section database. Where torsion/warping terms are not present, the app derives LTB properties from geometry estimates so the LTB check can still run.', url:'User-supplied dataset bundled with the calculator'};
+}
+function getCalculationReferences(){
+  return [
+    {title:'Load combinations', detail:'BS EN 1990 Eq. 6.10, 6.10a and 6.10b for ULS; representative combinations for SLS as implemented in the app.', url:'BS EN 1990 / app LC selector'},
+    {title:'Bending resistance', detail:'BS EN 1993-1-1 clause 6.2.5 major-axis section resistance using Wel/Wpl/Weff according to section class.', url:'https://www.steelforlifebluebook.co.uk/explanatory-notes/ec3-ukna/bending-tables'},
+    {title:'Shear resistance and support/web checks', detail:'BS EN 1993-1-1 clause 6.2.6 for shear; support/web bearing/buckling screening follows EN 1993-1-5 style expressions.', url:'https://www.steelforlifebluebook.co.uk/explanatory-notes/ec3-ukna/resistance-transverse-forces-tables'},
+    {title:'Axial force and bending interaction', detail:'BS EN 1993-1-1 clause 6.2.9 for combined axial force and bending cross-section checks.', url:'https://www.steelforlifebluebook.co.uk/explanatory-notes/ec3-ukna/axial-force-bending-tables'},
+    {title:'Member buckling / interaction', detail:'BS EN 1993-1-1 clause 6.3.3(4) using simplified interaction factors shown in the app output.', url:'https://www.steelforlifebluebook.co.uk/explanatory-notes/ec3-ukna/axial-force-bending-tables'},
+    {title:'Lateral torsional buckling', detail:'EN 1993-1-1 clause 6.3.2.2 style elastic critical moment / reduction factor workflow, using stored or derived It, Iz and Iw plus app load-case factors.', url:'EN 1993-1-1, 6.3.2.2'}
+  ];
+}
 function getSectionLTBProps(sec){
   const It = getSectionPropCandidates(sec, ['It_mm4','Ix_mm4','I_t_mm4','Ix']);
   const Iz = getSectionPropCandidates(sec, ['Iz_mm4','I_z_mm4','Iminor_mm4','Iz']);
   const Iw = getSectionPropCandidates(sec, ['Iw_mm6','I_w_mm6','Iw']);
-  return { It: It?.value ?? null, Iz: Iz?.value ?? null, Iw: Iw?.value ?? null, source:{It:It?.key||null, Iz:Iz?.key||null, Iw:Iw?.key||null} };
+  if(It?.value && Iz?.value && Iw?.value) return { It: It.value, Iz: Iz.value, Iw: Iw.value, source:{It:It.key||null, Iz:Iz.key||null, Iw:Iw.key||null}, estimated:false };
+  const fam = getFamilyKey(sec);
+  if(fam==='RHS' || fam==='SHS'){
+    const t = numOrNull(sec?.t_mm), h = numOrNull(sec?.h_mm), b = numOrNull(sec?.b_mm);
+    const Itv = It?.value || (t && h && b ? (2*t*t*Math.pow((b-t)*(h-t),2) / Math.max(1,(b+h-2*t))) : null);
+    const Izv = Iz?.value || getSectionPropCandidates(sec, ['Iz_mm4'])?.value || null;
+    const Iwv = Iw?.value ?? 1;
+    if(Itv && Izv) return {It:Itv, Iz:Izv, Iw:Iwv, source:{It:It?.key||'derived_rhs', Iz:Iz?.key||'Iz_mm4', Iw:Iw?.key||'closed_section_assumed'}, estimated:true};
+  }
+  const derived = deriveLtbPropsFromGeometry(sec);
+  if(derived) return derived;
+  return { It: It?.value ?? null, Iz: Iz?.value ?? null, Iw: Iw?.value ?? null, source:{It:It?.key||null, Iz:Iz?.key||null, Iw:Iw?.key||null}, estimated:false };
 }
+
 function getGammaM1(){ const v=+$('gammaM1').value; return (isFinite(v)&&v>0)?v:1; }
 function buildAxialRaw(){
+  if(getAnalysisMode()==='multi') return { G:0, Q1:0, Q2:0 };
   return { G: parseNum($('axialG').value)||0, Q1: parseNum($('axialQ1').value)||0, Q2: parseNum($('axialQ2').value)||0 };
 }
 function applyAxialCombo(raw, coeff){
@@ -1384,6 +1774,7 @@ function syncSecSummary(){
   const mods = getSectionModuli(sec);
   const ars = getSectionAreas(sec);
   const ltb = getSectionLTBProps(sec);
+  const srcInfo = getSectionSourceInfo(sec);
   const welTxt = mods.Wel ? Math.round(mods.Wel).toLocaleString('en-GB') : '—';
   const wplTxt = mods.Wpl ? Math.round(mods.Wpl).toLocaleString('en-GB') : '—';
   const weffTxt = mods.Weff ? Math.round(mods.Weff).toLocaleString('en-GB') : '—';
@@ -1398,7 +1789,8 @@ function syncSecSummary(){
     `Wel,y=${welTxt} mm³ • Wpl,y=${wplTxt} mm³ • Weff,y=${weffTxt} mm³ • `+
     `W used for My,Rd (${cls<=2?'Class 1–2':('Class '+cls)}) = ${Math.round(Wsel.W).toLocaleString('en-GB')} mm³ (${Wsel.label}) • `+
     `Av,z=${Math.round(sec.Avz_mm2).toLocaleString('en-GB')} mm² • Iy=${Math.round(I).toLocaleString('en-GB')} mm⁴ • `+
-    `LTB props: It=${ltb.It ? Math.round(ltb.It).toLocaleString('en-GB') : '—'} mm⁴, Iz=${ltb.Iz ? Math.round(ltb.Iz).toLocaleString('en-GB') : '—'} mm⁴, Iw=${ltb.Iw ? Math.round(ltb.Iw).toLocaleString('en-GB') : '—'} mm⁶`+
+    `LTB props: It=${ltb.It ? Math.round(ltb.It).toLocaleString('en-GB') : '—'} mm⁴, Iz=${ltb.Iz ? Math.round(ltb.Iz).toLocaleString('en-GB') : '—'} mm⁴, Iw=${ltb.Iw ? Math.round(ltb.Iw).toLocaleString('en-GB') : '—'} mm⁶${ltb.estimated ? ' (derived)' : ''}`+
+    ` • Source: ${srcInfo.title}`+
     (notes.length ? ` • <span class="red">${notes.join(' ')}</span>` : '');
 }
 
@@ -1659,10 +2051,22 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
 
   const constrained = [];
   const supportXs = uniqueSortedNodes((loads.supportXs && loads.supportXs.length) ? loads.supportXs : [0, L]);
+  const multiEnds = loads.spanConfig?.endSupports || {left:'simple', right:'simple'};
   if(supportType==='multi_continuous'){
-    supportXs.forEach(x=>{
+    supportXs.forEach((x,sidx)=>{
       const idx = nodeIndex.get((+x).toFixed(8));
-      if(idx!==undefined) constrained.push(2*idx);
+      if(idx===undefined) return;
+      const isFirst = sidx===0;
+      const isLast = sidx===supportXs.length-1;
+      if(isFirst){
+        if(multiEnds.left==='simple' || multiEnds.left==='fixed') constrained.push(2*idx);
+        if(multiEnds.left==='fixed') constrained.push(2*idx+1);
+      } else if(isLast){
+        if(multiEnds.right==='simple' || multiEnds.right==='fixed') constrained.push(2*idx);
+        if(multiEnds.right==='fixed') constrained.push(2*idx+1);
+      } else {
+        constrained.push(2*idx);
+      }
     });
   } else {
     if(bc.fixVLeft) constrained.push(0);
@@ -1694,9 +2098,15 @@ function solveBeamFE({L, supportType, E_MPa, I_mm4, loads}){
   const rightMoment = bc.fixThetaRight ? (R[rightVdof+1]/1e6) : 0;
 
   const supportActions = supportType==='multi_continuous'
-    ? supportXs.map(x=>{
+    ? supportXs.flatMap((x,sidx)=>{
         const idx = nodeIndex.get((+x).toFixed(8));
-        return {x:+x, V: idx===undefined ? 0 : (R[2*idx]/1000), M: idx===undefined ? 0 : (cset.has(2*idx+1) ? (R[2*idx+1]/1e6) : 0)};
+        const isFirst = sidx===0;
+        const isLast = sidx===supportXs.length-1;
+        let active = true;
+        if(isFirst) active = multiEnds.left!=='free';
+        else if(isLast) active = multiEnds.right!=='free';
+        if(!active || idx===undefined) return [];
+        return [{x:+x, V:(R[2*idx]/1000), M:(cset.has(2*idx+1) ? (R[2*idx+1]/1e6) : 0)}];
       })
     : [{x:0, V:leftReaction, M:leftMoment}, {x:L, V:rightReaction, M:rightMoment}];
 
@@ -1959,7 +2369,7 @@ function buildPropertiesPanel(sec, mat, check, L, supportType, lc, rawLoads, ltb
   const h1=document.createElement('div'); h1.className='result-title'; h1.innerHTML='<div>Selected Member</div><div class="pill">'+sec.name+'</div>'; general.appendChild(h1);
   lineIn(general,'Material / fy', `${mat.grade} → ${mat.fy} MPa`);
   lineIn(general,'Support condition', supportLabelValue(supportType));
-  if(rawLoads?.spanConfig?.mode==='multi') lineIn(general,'Beam system', `${rawLoads.spanConfig.count} continuous spans (${rawLoads.spanConfig.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')})`);
+  if(rawLoads?.spanConfig?.mode==='multi'){ lineIn(general,'Beam system', `Continuous beam (${rawLoads.spanConfig.count} spans: ${rawLoads.spanConfig.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')})`); lineIn(general,'End supports', `${continuousEndSupportLabel(rawLoads.spanConfig.endSupports?.left)} / ${continuousEndSupportLabel(rawLoads.spanConfig.endSupports?.right)}`); }
   lineIn(general,'Span L [m]', fmt2(L));
   lineIn(general,'Load input units', currentUnit().name);
   lineIn(general,'ULS / SLS combo', `${lc.uls.note} / ${lc.sls.note}`);
@@ -2087,6 +2497,59 @@ function bucklingControlPanel(sec, mat, check){
 }
 
 
+function computeContinuousSpanChecks(data){
+  const {spanCfg, uls, check, ltb} = data;
+  if(!spanCfg || spanCfg.mode!=='multi' || !uls?.xs?.length) return [];
+  const breaks = spanCfg.supportXs || [];
+  const momentDen = check.mv.trigger ? (check.mv.available ? check.MvRd : check.MyRd) : check.MyRd;
+  const out = [];
+  for(let i=0;i<spanCfg.count;i++){
+    const a = breaks[i], b = breaks[i+1];
+    let maxPos = {val:0, x:a};
+    let maxNeg = {val:0, x:a};
+    let maxV = {val:0, x:a};
+    for(let j=0;j<uls.xs.length;j++){
+      const x = uls.xs[j];
+      if(x < a-1e-9 || x > b+1e-9) continue;
+      const M = uls.M[j], V = uls.V[j];
+      if(M > maxPos.val){ maxPos = {val:M, x}; }
+      if(M < maxNeg.val){ maxNeg = {val:M, x}; }
+      if(Math.abs(V) > Math.abs(maxV.val)){ maxV = {val:V, x}; }
+    }
+    const IRpos = momentDen>0 ? Math.max(0,maxPos.val)/momentDen : Infinity;
+    const IRneg = momentDen>0 ? Math.abs(Math.min(0,maxNeg.val))/momentDen : Infinity;
+    const IRv = check.VzRd>0 ? Math.abs(maxV.val)/check.VzRd : Infinity;
+    out.push({
+      span:i+1, x1:a, x2:b, length:b-a,
+      posM:Math.max(0,maxPos.val), posX:maxPos.x, posXLocal:maxPos.x-a, IRpos,
+      negM:Math.abs(Math.min(0,maxNeg.val)), negX:maxNeg.x, negXLocal:maxNeg.x-a, IRneg,
+      absV:Math.abs(maxV.val), Vx:maxV.x, VxLocal:maxV.x-a, IRv,
+      ltbText: !ltb.enabled ? 'Off' : (ltb.available ? `Global IR ${fmt3(ltb.IR_LT)}` : 'Unavailable')
+    });
+  }
+  return out;
+}
+function continuousSpanSectionPanel(data){
+  const rows = computeContinuousSpanChecks(data);
+  if(!rows.length) return document.createElement('div');
+  const wrap=document.createElement('div');
+  wrap.className='panel';
+  const title=document.createElement('div');
+  title.style.fontWeight='900';
+  title.style.marginBottom='8px';
+  title.textContent='Span-by-span section control';
+  wrap.appendChild(title);
+  const tbl=document.createElement('table');
+  tbl.className='data-table';
+  tbl.innerHTML = `<thead><tr><th>Span</th><th>Max +M IR</th><th>x+ [m]</th><th>Max −M IR</th><th>x− [m]</th><th>Max |V| IR</th><th>xV [m]</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.span}</td><td>${fmt3(r.IRpos)}</td><td>${fmt2(r.posXLocal)}</td><td>${fmt3(r.IRneg)}</td><td>${fmt2(r.negXLocal)}</td><td>${fmt3(r.IRv)}</td><td>${fmt2(r.VxLocal)}</td></tr>`).join('')}</tbody>`;
+  wrap.appendChild(tbl);
+  const note=document.createElement('div');
+  note.className='tiny';
+  note.style.marginTop='6px';
+  note.textContent='Each span is checked separately for maximum positive moment, maximum negative moment and maximum absolute shear using the current section resistances.';
+  wrap.appendChild(note);
+  return wrap;
+}
 function chartInterpY(xs, ys, x){
   if(!xs || !ys || xs.length<2) return NaN;
   if(x<=xs[0]) return ys[0];
@@ -2142,6 +2605,15 @@ function installChartInteractions(canvas){
     openChartModal(d);
   });
 }
+
+function wireHelpModal(){
+  if(window._helpModalWired) return;
+  window._helpModalWired = true;
+  $('helpBtn')?.addEventListener('click', openHelpModal);
+  $('helpModalClose')?.addEventListener('click', closeHelpModal);
+  $('helpModal')?.addEventListener('click', e=>{ if(e.target.id==='helpModal') closeHelpModal(); });
+}
+
 function ensureChartModal(){
   if(window._chartModalWired) return;
   window._chartModalWired = true;
@@ -2322,10 +2794,20 @@ function renderSketch(data){
   ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
 
   if(supportType==='multi_continuous'){
+    const multiEnds = rawLoads?.spanConfig?.endSupports || {left:'simple', right:'simple'};
     supportXs.forEach((sx, idx)=>{
       const xx = mapX(sx);
-      if(idx===supportXs.length-1) drawRollerSupport(ctx, xx, y, line);
-      else drawPinnedSupport(ctx, xx, y, line);
+      const isFirst = idx===0;
+      const isLast = idx===supportXs.length-1;
+      if(isFirst){
+        if(multiEnds.left==='fixed') drawFixedSupport(ctx, xx, y, true, line);
+        else if(multiEnds.left==='simple') drawPinnedSupport(ctx, xx, y, line);
+      } else if(isLast){
+        if(multiEnds.right==='fixed') drawFixedSupport(ctx, xx, y, false, line);
+        else if(multiEnds.right==='simple') drawRollerSupport(ctx, xx, y, line);
+      } else {
+        drawPinnedSupport(ctx, xx, y, line);
+      }
     });
   }else if(supportType==='ss'){
     drawPinnedSupport(ctx, x0, y, line);
@@ -2494,6 +2976,7 @@ function runCalc(){
 
   updateWorkspaceSummary([
     `<span class="summary-chip"><strong>${sec.name}</strong></span>`,
+    `<span class="summary-chip">${getSectionSourceInfo(sec).title}</span>`,
     `<span class="summary-chip">${mat.grade}</span>`,
     `<span class="summary-chip">${spanCfg.mode==='multi' ? ('ΣL = ' + fmt2(L) + ' m • ' + spanCfg.count + ' spans') : ('L = ' + fmt2(L) + ' m')}</span>`,
     `<span class="summary-chip">Max M = ${fmtMomentFromkNm(uls.peakM.val)} ${momentUnit}</span>`,
@@ -2622,6 +3105,7 @@ function runCalc(){
   const codeHost = $('codeChecks');
   codeHost.innerHTML = '';
   codeHost.appendChild(sectionControlPanel(sec, mat, check));
+  if(spanCfg.mode==='multi') codeHost.appendChild(continuousSpanSectionPanel({spanCfg,uls,check,ltb}));
   codeHost.appendChild(bucklingControlPanel(sec, mat, check));
   const propWrap = document.createElement('div');
   propWrap.appendChild(buildPropertiesPanel(sec, mat, check, L, supportType, lc, rawLoads, ltb, endSupport));
@@ -2661,6 +3145,7 @@ function runCalc(){
         </tbody>
       </table>
     </div>
+    ${spanCfg.mode==='multi' ? `<div class="result-block"><div class="result-title"><div>Span-by-span section control</div><div class="pill">ULS</div></div><table class="data-table"><thead><tr><th>Span</th><th>Max +M IR</th><th>x+ [m]</th><th>Max −M IR</th><th>x− [m]</th><th>Max |V| IR</th><th>xV [m]</th></tr></thead><tbody>${computeContinuousSpanChecks({spanCfg,uls,check,ltb}).map(r=>`<tr><td>${r.span}</td><td>${fmt3(r.IRpos)}</td><td>${fmt2(r.posXLocal)}</td><td>${fmt3(r.IRneg)}</td><td>${fmt2(r.negXLocal)}</td><td>${fmt3(r.IRv)}</td><td>${fmt2(r.VxLocal)}</td></tr>`).join('')}</tbody></table></div>` : ''}
     <div class="result-block">
       <div class="result-title"><div>Governing values</div><div class="pill ${passAll?'green':'red'}">${passAll?'PASS':'FAIL'}</div></div>
       <table class="data-table">
@@ -2692,7 +3177,7 @@ function runCalc(){
   const springBits = [];
   if(supportType==='spring_spring') springBits.push(`Springs: A=${fmt1(sp.left)}%, B=${fmt1(sp.right)}%`);
   if(supportType==='spring_roller') springBits.push(`Spring A=${fmt1(sp.left)}%`);
-  const beamSystemNote = spanCfg.mode==='multi' ? ` • ${spanCfg.count} spans (${spanCfg.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')})` : '';
+  const beamSystemNote = spanCfg.mode==='multi' ? ` • ${spanCfg.count} spans (${spanCfg.lengths.map((v,i)=>'S'+(i+1)+'='+fmt2(v)+' m').join(' • ')}) • ends ${continuousEndSupportLabel(spanCfg.endSupports?.left)} / ${continuousEndSupportLabel(spanCfg.endSupports?.right)}` : '';
   $('sketchNote').textContent = `Section ${sec.name} • ${supportLabelValue(supportType)}${beamSystemNote}${springBits.length ? ' • ' + springBits.join(' • ') : ''} • ${mat.grade||$('material').value} → fy=${mat.fy} MPa • E=${mat.E.toLocaleString('en-GB')} MPa • Iy=${Math.round(I).toLocaleString('en-GB')} mm⁴`;
 }
 
@@ -2712,6 +3197,7 @@ function buildReportHTML(data){
     ['Combined N+M', Math.abs(check.axialEd) > 1e-9 ? `${fmt3(IR_NM)} ${passNM ? 'PASS' : 'FAIL'}` : 'Not required'],
     ['Member buckling', memberBuckling.active ? (memberBuckling.available ? `${fmt3(memberBuckling.governing)} ${memberBuckling.pass ? 'PASS' : 'FAIL'}` : 'Unavailable') : 'Off']
   ];
+  const spanRows = computeContinuousSpanChecks(data);
   const sectionLines = [];
   sectionLines.push(`<tr><td>IR = My,Ed/My,Rd</td><td>${fmt1(check.MyEd)}/${fmt1(check.MyRd)}</td><td>${fmt3(check.IR_My)}</td><td>${check.passMy ? 'PASS' : 'FAIL'}</td></tr>`);
   if(check.mv.trigger){
@@ -2747,6 +3233,32 @@ function buildReportHTML(data){
   .card .v{font-size:18px;font-weight:800;margin-top:4px}
   .small{font-size:12px}
   .full{margin-top:18px}
+
+/* ===== v24 splitter fix + compact load inputs ===== */
+#leftDockSplitter,#rightInspectorSplitter{pointer-events:auto} 
+body .layout .splitter, body .workspace .splitter{z-index:12} 
+/* single-span load tables */
+.loads-scroll .row-head,.loads-scroll .row-item{grid-template-columns:74px 66px 72px 72px 72px;gap:6px} 
+.loads-scroll .row-head{font-size:.70rem;letter-spacing:.16px} 
+.loads-scroll .row-item .mini{min-height:38px;min-width:64px;padding:7px 8px;font-size:.88rem} 
+.udl-head,.udl-row{grid-template-columns:70px 60px 60px 70px 70px 70px;gap:6px} 
+.udl-head{font-size:.70rem} 
+.udl-row .mini{min-height:38px;min-width:60px;padding:7px 8px;font-size:.88rem} 
+/* continuous-beam load tables */
+.multi-load-card{padding:9px 10px} 
+.multi-load-card .mini-title{margin-bottom:6px} 
+.mini-table{gap:5px} 
+.mini-table .head{font-size:.66rem;letter-spacing:.12px} 
+.uniform-grid .head,.uniform-grid .row{grid-template-columns:52px 92px} 
+.point-grid .head,.point-grid .row{grid-template-columns:52px 74px 82px 82px} 
+.moment-grid .head,.moment-grid .row{grid-template-columns:52px 74px 82px 82px} 
+.trap-grid .head,.trap-grid .row{grid-template-columns:52px 68px 68px 68px 68px 68px} 
+.mini-table input,.mini-table select{min-height:34px;padding:6px 8px;font-size:.86rem;border-radius:8px} 
+.spanlen-row .mini,.spanload-row .mini{min-height:38px;padding:7px 8px;font-size:.88rem} 
+@media (max-width:900px){
+  .point-grid .head,.point-grid .row,.moment-grid .head,.moment-grid .row,.trap-grid .head,.trap-grid .row,.uniform-grid .head,.uniform-grid .row{grid-template-columns:1fr 1fr}
+}
+
 </style></head>
 <body>
 <div class="head">
@@ -2772,7 +3284,7 @@ function buildReportHTML(data){
       ['Section', sec.name],
       ['Steel grade / fy', `${mat.grade} / ${mat.fy} MPa`],
       ['Support condition', supportText],
-      ['Beam system', spanCfg && spanCfg.mode==='multi' ? `${spanCfg.count} continuous spans` : 'Two columns / single span'],
+      ['Beam system', spanCfg && spanCfg.mode==='multi' ? `Continuous beam (${spanCfg.count} spans)` : 'Single span'],
       ['Span breakdown', spanCfg && spanCfg.mode==='multi' ? spanCfg.lengths.map((v,i)=>`S${i+1}=${fmt2(v)} m`).join(' • ') : fmt2(L)+' m'],
       ['Load input units', currentUnit().name],
       ['ULS combination', ulsNote],
@@ -2791,7 +3303,8 @@ function buildReportHTML(data){
       ['Wpl,y [mm³]', Math.round(getSectionModuli(sec).Wpl||0).toLocaleString('en-GB')],
       ['Weff,y [mm³]', Math.round(getSectionModuli(sec).Weff||getSectionModuli(sec).Wel||0).toLocaleString('en-GB')],
       ['Iy [mm⁴]', Math.round(calcI_mm4(sec)||0).toLocaleString('en-GB')],
-      ['Av,z [mm²]', Math.round(sec.Avz_mm2||0).toLocaleString('en-GB')]
+      ['Av,z [mm²]', Math.round(sec.Avz_mm2||0).toLocaleString('en-GB')],
+      ['LTB source', ltb.estimated ? 'Derived from section geometry' : 'Stored in database']
     ])}</table>
   </div>
 </div>
@@ -2845,8 +3358,18 @@ function buildReportHTML(data){
   <table>${bodyRows(checkRows)}</table>
 </div>
 
+<div class="section full">
+  <h2>Data sources & references</h2>
+  <table>${bodyRows([
+    ['Section data source', srcInfo.title],
+    ['Section data note', srcInfo.detail],
+    ['Section data reference', srcInfo.url],
+    ['Calculation references', calcRefs.map(r=>`${r.title}: ${r.url}`).join('<br>')]
+  ])}</table>
+</div>
+
 <div class="section full small muted">
-  This report is generated from the current app state and mirrors the implemented checks in Beam Calculator Studio, including bending, shear, axial, member buckling, LTB, support shear and deflection where enabled.
+  This report is generated from the current app state and mirrors the implemented checks in Beam Calculator Studio, including bending, shear, axial, member buckling, LTB, support shear and deflection where enabled. Where It / Iz / Iw are not present in the stored row, the app derives LTB properties from section geometry to avoid an unavailable result.
 </div>
 </body></html>`;
 }
@@ -2878,6 +3401,80 @@ function exportReport(){
   }
 }
 
+
+function escLatex(s){
+  return String(s ?? '')
+    .replace(/\\/g,'\\textbackslash{}')
+    .replace(/([#$%&_{}])/g,'\\$1')
+    .replace(/\^/g,'\\textasciicircum{}')
+    .replace(/~/g,'\\textasciitilde{}');
+}
+function buildLatexReport(data){
+  const {sec, mat, spanCfg, check, ltb, memberBuckling, deflPeak, deflAllow_mm, passAll, governingIR} = data;
+  const refs = getCalculationReferences();
+  const src = getSectionSourceInfo(sec);
+  const Wsel = check.Wsel || getW_for_MRd(sec, check.cls);
+  const lines = [];
+  lines.push(String.raw`\documentclass[11pt]{article}`);
+  lines.push(String.raw`\usepackage[a4paper,margin=18mm]{geometry}`);
+  lines.push(String.raw`\usepackage{amsmath,amssymb,longtable,booktabs}`);
+  lines.push(String.raw`\begin{document}`);
+  lines.push(String.raw`\section*{Beam calculation breakdown}`);
+  lines.push(`Section: \\textbf{${escLatex(sec.name)}} \\quad Grade: \\textbf{${escLatex(mat.grade)}} \\quad Beam system: \\textbf{${escLatex(spanCfg.mode==='multi' ? `Continuous beam (${spanCfg.count} spans)` : 'Single span')}}`);
+  lines.push(String.raw`\subsection*{Model and sources}`);
+  lines.push(`Section data source: ${escLatex(src.title)}\\`);
+  lines.push(`Reference: ${escLatex(src.url)}\\`);
+  lines.push('The beam solver first obtains internal actions $V_{Ed}(x)$, $M_{Ed}(x)$ and $y(x)$ from the selected span system and applied loads. The Eurocode checks below are then applied to the governing actions.');
+  lines.push(String.raw`\subsection*{Cross-section checks}`);
+  lines.push(String.raw`\[M_{y,Rd}=\frac{W f_y}{\gamma_{M0}}=\frac{${Math.round(Wsel.W).toLocaleString('en-GB')}\times ${mat.fy}}{${fmt2(check.gammaM0)}}\times 10^{-6}=${fmt3(check.MyRd)}\,\mathrm{kN\cdot m}\]`);
+  lines.push(String.raw`\[V_{z,Rd}=\frac{A_{v,z}f_y}{\sqrt{3}\gamma_{M0}}=\frac{${Math.round(sec.Avz_mm2||0).toLocaleString('en-GB')}\times ${mat.fy}}{\sqrt{3}\times ${fmt2(check.gammaM0)}}\times 10^{-3}=${fmt3(check.VzRd)}\,\mathrm{kN}\]`);
+  lines.push(String.raw`\[N_{t,Rd}=\frac{Af_y}{\gamma_{M0}}=${fmt3(check.NtRd)}\,\mathrm{kN},\qquad N_{c,Rd}=\frac{A_{eff}f_y}{\gamma_{M0}}=${fmt3(check.NcRd)}\,\mathrm{kN}\]`);
+  lines.push(String.raw`\[IR_M=\frac{M_{y,Ed}}{${escLatex(check.momentLabelForCheck)}}=\frac{${fmt3(check.MyEd)}}{${fmt3(check.momentRdForCheck)}}=${fmt3(check.IR_M)}\]`);
+  lines.push(String.raw`\[IR_V=\frac{V_{z,Ed}}{V_{z,Rd}}=\frac{${fmt3(check.VzEd)}}{${fmt3(check.VzRd)}}=${fmt3(check.IR_V)}\]`);
+  if(Math.abs(check.axialEd) > 1e-9){
+    lines.push(String.raw`\[IR_N=\frac{N_{Ed}}{${check.axialEd >= 0 ? 'N_{c,Rd}' : 'N_{t,Rd}'}}=\frac{${fmt3(check.axialEd)}}{${fmt3(check.axialEd >= 0 ? check.NcRd : check.NtRd)}}=${fmt3(check.IR_N)}\]`);
+  }
+  if(memberBuckling.active && memberBuckling.available){
+    lines.push(String.raw`\subsection*{Member buckling checks}`);
+    lines.push(String.raw`\[IR_{b,y}=\frac{N_{Ed}}{N_{b,y,Rd}}+k_{yy}\frac{M_{y,Ed}}{${ltb.enabled && ltb.available ? '\chi_{LT} M_{y,Rd}' : 'M_{y,Rd}'}}=\frac{${fmt3(check.axialEd)}}{${fmt3(memberBuckling.NbYRd)}}+${fmt3(memberBuckling.kyy)}\frac{${fmt3(check.MyEd)}}{${fmt3(memberBuckling.momentDen)}}=${fmt3(memberBuckling.IRy)}\]`);
+    lines.push(String.raw`\[IR_{b,z}=\frac{N_{Ed}}{N_{b,z,Rd}}+k_{zy}\frac{M_{y,Ed}}{${ltb.enabled && ltb.available ? '\chi_{LT} M_{y,Rd}' : 'M_{y,Rd}'}}=\frac{${fmt3(check.axialEd)}}{${fmt3(memberBuckling.NbZRd)}}+${fmt3(memberBuckling.kzy)}\frac{${fmt3(check.MyEd)}}{${fmt3(memberBuckling.momentDen)}}=${fmt3(memberBuckling.IRz)}\]`);
+  }
+  if(ltb.enabled && ltb.available){
+    lines.push(String.raw`\subsection*{Lateral torsional buckling}`);
+    lines.push(String.raw`\[M_{cr}=${fmt3(ltb.Mcr)}\,\mathrm{kN\cdot m},\quad \lambda_{LT}=${fmt3(ltb.lambdaLT)},\quad \chi_{LT}=${fmt3(ltb.chiLT)},\quad M_{b,Rd}=\chi_{LT}M_{y,Rd}=${fmt3(ltb.MbRd)}\,\mathrm{kN\cdot m}\]`);
+    lines.push(String.raw`\[IR_{LT}=\frac{M_{y,Ed}}{M_{b,Rd}}=\frac{${fmt3(check.MyEd)}}{${fmt3(ltb.MbRd)}}=${fmt3(ltb.IR_LT)}\]`);
+  }
+  lines.push(String.raw`\subsection*{Serviceability}`);
+  lines.push(String.raw`\[IR_{defl}=\frac{y_{max}}{y_{allow}}=\frac{${fmt3(deflPeak)}}{${fmt3(deflAllow_mm)}}=${fmt3(deflAllow_mm>0 ? deflPeak/deflAllow_mm : 0)}\]`);
+  lines.push(`\\subsection*{Verdict} Governing utilisation ratio: $${fmt3(governingIR)}$. Final status: \\textbf{${passAll ? 'PASS' : 'FAIL'}}.`);
+  lines.push(String.raw`\subsection*{Reference list}`);
+  lines.push(String.raw`\begin{itemize}`);
+  refs.forEach(r=> lines.push(`\\item ${escLatex(r.title + ': ' + r.detail + ' [' + r.url + ']')}`));
+  lines.push(String.raw`\end{itemize}`);
+  lines.push(String.raw`\end{document}`);
+  return lines.join('\n');
+}
+function exportLatex(){
+  try{
+    if(!window._lastCalcData) runCalc();
+    const data = window._lastCalcData;
+    if(!data){ alert('No solved calculation is available yet.'); return; }
+    const tex = buildLatexReport(data);
+    const blob = new Blob([tex], {type:'text/x-tex'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `beam_math_breakdown_${(data.sec?.name||'section').replace(/[^a-z0-9]+/gi,'_')}.tex`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+  }catch(err){
+    console.error(err);
+    alert('LaTeX export failed.');
+  }
+}
+
 function initInspectorTabs(){
   qsa('.tab-btn').forEach(btn=>{
     if(btn._wiredTab) return;
@@ -2897,7 +3494,7 @@ function initInspectorTabs(){
 }
 
 function initSplitters(){
-  const root = document.documentElement;
+  const root = document.body;
   const bindSplitter = (id, cssVar, minPx, maxPx)=>{
     const splitter = $(id);
     if(!splitter || splitter._wired) return;
@@ -2955,13 +3552,16 @@ initInspectorTabs();
 initSplitters();
 $('recalcBtn').addEventListener('click', runCalc);
 $('reportBtn').addEventListener('click', exportReport);
+$('sponsorDismiss')?.addEventListener('click', ()=> $('sponsorSlot')?.classList.add('hide'));
 $('load_combo').addEventListener('change', ()=>{ updateLCPreview(); runCalc(); });
 $('psi_q1').addEventListener('input', ()=>{ updateLCPreview(); liveRun(); });
 $('psi_q2').addEventListener('input', ()=>{ updateLCPreview(); liveRun(); });
 $('sec_series').addEventListener('change', ()=>{ populateProfileSizes(); syncSecSummary(); runCalc(); });
 $('sec_size').addEventListener('change', ()=>{ syncSecSummary(); runCalc(); });
 $('supportType').addEventListener('change', ()=>{ syncSpringUI(); runCalc(); });
-$('analysisMode').addEventListener('change', ()=>{ syncModeUI(); runCalc(); });
+$('analysisMode').addEventListener('change', ()=>{ syncModeUI(true); runCalc(); });
+$('multiLeftEnd')?.addEventListener('change', ()=>runCalc());
+$('multiRightEnd')?.addEventListener('change', ()=>runCalc());
 $('spanCount').addEventListener('change', ()=>{ initSpanRows(); runCalc(); });
 $('loadUnit').addEventListener('change', e=>{
   const prev = e.target.dataset.prevUnit || 'tonne';
@@ -2973,20 +3573,25 @@ $('loadUnit').addEventListener('change', e=>{
 });
 $('springLeftPct').addEventListener('input', liveRun);
 $('springRightPct').addEventListener('input', liveRun);
+$('displayScale')?.addEventListener('change', ()=>{ applyDisplayScale(); runCalc(); });
+$('latexBtn')?.addEventListener('click', exportLatex);
 
-window.addEventListener('resize', debounce(runCalc, 180));
+window.addEventListener('resize', debounce(()=>{ applyDisplayScale(); runCalc(); }, 180));
 document.addEventListener('input', e=>{ if(e.target.matches('input,select,textarea') && !e.target.matches('#springLeftPct,#springRightPct')) liveRun(); });
 document.addEventListener('change', e=>{ if(e.target.matches('input,select,textarea') && !e.target.matches('#loadUnit,#supportType,#analysisMode,#spanCount')) liveRun(); });
 
 function init(){
+  applyDisplayScale();
   ensureChartModal();
+  wireHelpModal();
   updateLCPreview();
   initProfileDropdowns();
   refreshUnitUI();
   syncSpringUI();
-  syncModeUI();
+  syncModeUI(true);
   $('loadUnit').dataset.prevUnit = $('loadUnit').value;
   syncSecSummary();
+  renderSponsorSlot();
   runCalc();
 }
 init();
