@@ -37,10 +37,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 23210,
       "Avz_mm2": 357.7,
       "Iy_mm4": 801300,
-      "Iz_mm4": 72455.82121168158,
-      "Iw_mm6": 102397654.32592303,
-      "It_mm4": 5660.660106,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 84890.0,
+      "Iw_mm6": 1294000.0,
+      "It_mm4": 6727.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE AA 100",
@@ -87,13 +87,13 @@ const PROFILE_DB = {
       "Aeff_mm2": 1032,
       "Ix_mm4": 12100,
       "Weff_y_mm3": 34200,
-      "Iz_mm4": 159000,
-      "Iw_mm6": 351000000,
+      "Iz_mm4": 159200.0,
+      "Iw_mm6": 2023000.0,
       "Wel_z_mm3": 5782,
       "Wpl_z_mm3": 9146,
       "Weff_z_mm3": 5782,
-      "It_mm4": 8825.876867,
-      "ltb_data_source": "formula_from_section_geometry"
+      "It_mm4": 11530.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE AA 120",
@@ -132,10 +132,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 60720,
       "Avz_mm2": 630.5,
       "Iy_mm4": 3177000,
-      "Iz_mm4": 238754.79798314555,
-      "Iw_mm6": 777811954.849255,
-      "It_mm4": 13823.067172,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 276700.0,
+      "Iw_mm6": 2681000.0,
+      "It_mm4": 16890.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE AA 140",
@@ -174,10 +174,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 88340,
       "Avz_mm2": 764.2,
       "Iy_mm4": 5412000,
-      "Iz_mm4": 392670.51435213356,
-      "Iw_mm6": 1751943750.783268,
-      "It_mm4": 19710.361209,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 449200.0,
+      "Iw_mm6": 3480000.0,
+      "It_mm4": 24010.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE AA 160",
@@ -216,10 +216,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 123800,
       "Avz_mm2": 965.7,
       "Iy_mm4": 8692000,
-      "Iz_mm4": 590152.9182577593,
-      "Iw_mm6": 3461146665.460127,
-      "It_mm4": 28074.479257,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 683100.0,
+      "Iw_mm6": 4770000.0,
+      "It_mm4": 35300.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE AA 180",
@@ -258,10 +258,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 166400,
       "Avz_mm2": 1125,
       "Iy_mm4": 13160000,
-      "Iz_mm4": 880643.4303217483,
-      "Iw_mm6": 6558700143.24781,
-      "It_mm4": 37822.743648,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 1009000.0,
+      "Iw_mm6": 5904000.0,
+      "It_mm4": 47230.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 180",
@@ -314,10 +314,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 220600,
       "Avz_mm2": 1400,
       "Iy_mm4": 19430000,
-      "Iz_mm4": 1217900.4713357997,
-      "Iw_mm6": 11248240362.858006,
-      "It_mm4": 52181.059341,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 1424000.0,
+      "Iw_mm6": 8054000.0,
+      "It_mm4": 68460.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 200",
@@ -370,10 +370,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 285400,
       "Avz_mm2": 1588,
       "Iy_mm4": 27710000,
-      "Iz_mm4": 1772170.8156521777,
-      "Iw_mm6": 19830953914.54065,
-      "It_mm4": 68929.173614,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 2049000.0,
+      "Iw_mm6": 9763000.0,
+      "It_mm4": 89820.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 220",
@@ -426,10 +426,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 366600,
       "Avz_mm2": 1914,
       "Iy_mm4": 38910000,
-      "Iz_mm4": 2407905.7275736816,
-      "Iw_mm6": 32154263714.7671,
-      "It_mm4": 92924.75746,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 2836000.0,
+      "Iw_mm6": 13000000.0,
+      "It_mm4": 127400.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 240",
@@ -468,10 +468,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 483900,
       "Avz_mm2": 2213,
       "Iy_mm4": 57890000,
-      "Iz_mm4": 3637506.6320209713,
-      "Iw_mm6": 61783631574.69177,
-      "It_mm4": 118829.139284,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 4199000.0,
+      "Iw_mm6": 15400000.0,
+      "It_mm4": 157100.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 270",
@@ -510,10 +510,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 628300,
       "Avz_mm2": 2568,
       "Iy_mm4": 83560000,
-      "Iz_mm4": 5282454.8383812485,
-      "Iw_mm6": 111178205382.74852,
-      "It_mm4": 153332.746108,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 6038000.0,
+      "Iw_mm6": 18460000.0,
+      "It_mm4": 197500.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 300",
@@ -552,10 +552,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 804300,
       "Avz_mm2": 3080,
       "Iy_mm4": 117600000,
-      "Iz_mm4": 6798168.552682225,
-      "Iw_mm6": 173470584564.34677,
-      "It_mm4": 205407.415421,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 7881000.0,
+      "Iw_mm6": 23990000.0,
+      "It_mm4": 275900.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 330",
@@ -608,10 +608,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 1019000,
       "Avz_mm2": 3513.0000000000005,
       "Iy_mm4": 162600000,
-      "Iz_mm4": 9089112.772423737,
-      "Iw_mm6": 275705011100.3673,
-      "It_mm4": 279976.814235,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 10430000.0,
+      "Iw_mm6": 29200000.0,
+      "It_mm4": 370800.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 360",
@@ -664,10 +664,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 1307000,
       "Avz_mm2": 4269,
       "Iy_mm4": 231200000,
-      "Iz_mm4": 11323186.96941049,
-      "Iw_mm6": 425311160726.6668,
-      "It_mm4": 370084.501723,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 13180000.0,
+      "Iw_mm6": 37340000.0,
+      "It_mm4": 504100.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 400",
@@ -734,10 +734,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 1701000,
       "Avz_mm2": 5084,
       "Iy_mm4": 337400000,
-      "Iz_mm4": 14504765.19284039,
-      "Iw_mm6": 690744041841.1342,
-      "It_mm4": 498318.310908,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 16760000.0,
+      "Iw_mm6": 45240000.0,
+      "It_mm4": 660500.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 450",
@@ -804,10 +804,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 2194000,
       "Avz_mm2": 5987,
       "Iy_mm4": 481900000,
-      "Iz_mm4": 18637349.616301354,
-      "Iw_mm6": 1096150667001.0927,
-      "It_mm4": 680327.283067,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 21420000.0,
+      "Iw_mm6": 55390000.0,
+      "It_mm4": 886200.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 500",
@@ -874,10 +874,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 2787000,
       "Avz_mm2": 7234,
       "Iy_mm4": 671100000,
-      "Iz_mm4": 23155854.88374425,
-      "Iw_mm6": 1649054814957.1218,
-      "It_mm4": 932004.667207,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 26680000.0,
+      "Iw_mm6": 70760000.0,
+      "It_mm4": 1217000.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 550",
@@ -916,10 +916,10 @@ const PROFILE_DB = {
       "Wpl_y_mm3": 3512000,
       "Avz_mm2": 8378,
       "Iy_mm4": 920800000,
-      "Iz_mm4": 29044580.46875191,
-      "Iw_mm6": 2461114793907.481,
-      "It_mm4": 1241675.692091,
-      "ltb_data_source": "estimated from available geometry and standard open-section formula"
+      "Iz_mm4": 33870000.0,
+      "Iw_mm6": 86630000.0,
+      "It_mm4": 1646000.0,
+      "ltb_data_source": "published table value (EurocodeApplied IPE table; see ltb_raw_data.json for extraction metadata)"
     },
     {
       "name": "IPE O 600",
