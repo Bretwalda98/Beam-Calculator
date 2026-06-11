@@ -1483,6 +1483,48 @@ body.plan-plus .ad-slot{display:none!important}
   :root{--project-bar-h:44px}.project-command-actions .btn span{display:none}.project-command-actions .btn{width:34px;padding:0!important}
   .plan-badge span{display:none}.start-screen{padding:0}.start-card{width:100vw;height:100dvh;max-height:none;border:0;border-radius:0}.start-head{padding-top:38px}
 }
+
+/* ===== File menu, settings account and responsive load fixes ===== */
+:root{--project-bar-h:0px}
+.app-rail{top:72px!important}
+.inputs-card,.inspector-shell{top:86px!important;max-height:calc(100vh - 134px)!important}
+.file-menu-wrap{position:relative}
+.file-menu{position:absolute;top:calc(100% + 9px);right:0;z-index:2147483500;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--panel);box-shadow:0 24px 70px rgba(15,23,42,.24)}
+.file-menu.hide{display:none}
+.file-menu-head{padding:4px 4px 10px;border-bottom:1px solid var(--border)}
+.file-menu-head label{display:block}
+.file-menu-head input{margin-top:5px!important}
+.file-menu-status{min-height:16px;margin-top:6px;color:var(--muted);font-size:10px;line-height:1.4}
+.file-menu-list{display:grid;gap:3px;padding-top:8px}
+.file-menu-item{width:100%;min-height:38px;display:flex;align-items:center;gap:10px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--text);cursor:pointer;text-align:left;font:inherit;font-size:11.5px;font-weight:650}
+.file-menu-item:hover,.file-menu-item:focus-visible{outline:none;background:var(--btn-hover)}
+.file-menu-item i{width:18px;color:var(--accent);font-size:15px;text-align:center}
+.file-menu-separator{height:1px;margin:5px 3px;background:var(--border)}
+.file-menu-plan{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 6px 3px;color:var(--muted);font-size:10px}
+.settings-layout{grid-template-columns:150px minmax(0,1fr)}
+.settings-content{min-width:0}
+.settings-account-note{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(var(--accent-rgb),.22);border-radius:9px;background:rgba(var(--accent-rgb),.055);color:var(--muted);font-size:10.5px;line-height:1.55}
+.start-branding{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:14px 32px 26px;color:var(--muted);font-size:10.5px}
+.start-disclaimer{max-width:680px;padding:10px 12px;border:1px solid rgba(220,38,38,.25);border-radius:9px;background:rgba(220,38,38,.05);color:var(--text);line-height:1.55}
+.about-card.disclaimer{border-color:rgba(220,38,38,.28)!important;background:rgba(220,38,38,.055)!important}
+#sponsorSlot{display:flex!important}
+#sponsorSlot.hide{display:none!important}
+.multi-load-card,#axialLoadCard,.axial-load-cases,.axial-load-cases label{min-width:0;max-width:100%}
+#axialLoadCard{overflow:hidden}
+#axialLoadCard input{width:100%;max-width:100%;min-width:0}
+.mini-table .head>*,.mini-table .row>*{min-width:0}
+.trap-grid .head,.trap-grid .row{grid-template-columns:34px 48px repeat(2,minmax(0,1fr))!important;gap:4px!important}
+.trap-grid .head,.trap-grid .row{grid-auto-flow:row}
+.moment-grid .head,.moment-grid .row{grid-template-columns:34px 48px minmax(0,1fr) minmax(0,1fr)!important;gap:4px!important}
+.point-grid .head,.point-grid .row{grid-template-columns:34px 48px minmax(0,1fr) minmax(0,1fr)!important;gap:4px!important}
+@media(max-width:860px){
+  .settings-tabs{grid-template-columns:repeat(4,1fr)}
+  .file-menu{position:fixed;top:70px;right:10px}
+}
+@media(max-width:620px){
+  .start-branding{padding:12px 20px 24px}
+  .settings-tabs{display:flex!important;overflow-x:auto}.settings-tab{flex:1 0 92px}
+}
 </style>
 </head>
 <body>
@@ -1496,6 +1538,28 @@ body.plan-plus .ad-slot{display:none!important}
   </div>
   <span class="badge" id="themeBadge">Light</span>
   <div class="toolbar toolbar-right">
+    <div class="file-menu-wrap">
+      <button id="fileMenuBtn" class="btn" type="button" aria-haspopup="menu" aria-expanded="false"><i class="bi bi-folder2"></i><span>File</span><i class="bi bi-chevron-down"></i></button>
+      <div id="fileMenu" class="file-menu hide" role="menu" aria-label="Project file actions">
+        <div class="file-menu-head">
+          <label>Project name
+            <input id="projectName" type="text" maxlength="100" value="Untitled beam project" aria-label="Project name">
+          </label>
+          <div id="projectStatus" class="file-menu-status" aria-live="polite">Not saved yet</div>
+        </div>
+        <div class="file-menu-list">
+          <button id="newProjectBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-file-earmark-plus"></i>New project</button>
+          <button id="saveProjectBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-floppy"></i>Save project</button>
+          <button id="openProjectBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-folder2-open"></i>Open saved project</button>
+          <button id="downloadProjectBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-download"></i>Download project file</button>
+          <button id="installProjectBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-box-arrow-in-down"></i>Install project file</button>
+          <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
+          <div class="file-menu-separator"></div>
+          <button id="fileAccountBtn" class="file-menu-item" type="button" role="menuitem"><i class="bi bi-person-circle"></i>Account settings</button>
+        </div>
+        <div class="file-menu-plan"><span>Current plan</span><span id="planBadge" class="plan-badge"><i class="bi bi-person"></i><span>Free</span></span></div>
+      </div>
+    </div>
     <button id="helpBtn" class="btn" type="button"><i class="bi bi-question-circle"></i><span>Help</span></button>
     <button id="latexBtn" class="btn" type="button"><i class="bi bi-sigma"></i><span>LaTeX</span></button>
     <button id="reportBtn" class="btn" type="button"><i class="bi bi-file-earmark-text"></i><span>Report</span></button>
@@ -1503,20 +1567,6 @@ body.plan-plus .ad-slot{display:none!important}
     <button id="themeBtn" class="btn primary-action icon-only" type="button" aria-label="Open settings"><i class="bi bi-gear"></i><span class="visually-hidden">Settings</span></button>
   </div>
 </header>
-
-<div class="project-command-bar" aria-label="Project controls">
-  <input id="projectName" class="project-command-name" type="text" maxlength="100" value="Untitled beam project" aria-label="Project name">
-  <div id="projectStatus" class="project-command-status" aria-live="polite">Not saved yet</div>
-  <span id="planBadge" class="plan-badge"><i class="bi bi-person"></i><span>Free</span></span>
-  <div class="project-command-actions">
-    <button id="newProjectBtn" class="btn" type="button" title="New project"><i class="bi bi-file-earmark-plus"></i><span>New</span></button>
-    <button id="saveProjectBtn" class="btn" type="button" title="Save project"><i class="bi bi-floppy"></i><span>Save</span></button>
-    <button id="openProjectBtn" class="btn" type="button" title="Open project"><i class="bi bi-folder2-open"></i><span>Open</span></button>
-    <button id="downloadProjectBtn" class="btn" type="button" title="Download project"><i class="bi bi-download"></i><span>Download</span></button>
-    <button id="accountBtn" class="btn" type="button" title="Account and subscription"><i class="bi bi-person-circle"></i><span>Account</span></button>
-    <input id="projectFileInput" type="file" accept=".json,application/json" hidden>
-  </div>
-</div>
 
 <nav class="app-rail" aria-label="Workspace navigation">
   <button class="rail-button active" type="button" data-rail-target="projectAccordion" aria-label="Project setup" title="Project setup"><i class="bi bi-house-door"></i></button>
@@ -1731,27 +1781,6 @@ body.plan-plus .ad-slot{display:none!important}
     <div class="accordion-body">
       <div id="beamLoadsPanel">
         <div id="beamLoadsTitle" class="section-title">Beam load input</div>
-        <div class="load-case-library">
-          <div class="load-case-library-grid">
-            <label>Load template name
-              <input id="loadCasePackageName" type="text" maxlength="80" placeholder="e.g. Office floor loading">
-            </label>
-            <label>Saved load templates
-              <select id="savedLoadCasePackage">
-                <option value="">(none saved)</option>
-              </select>
-            </label>
-          </div>
-          <div class="load-case-library-actions">
-            <button type="button" class="btn" id="saveLoadCaseBtn"><i class="bi bi-floppy"></i> Save</button>
-            <button type="button" class="btn" id="openLoadCaseBtn"><i class="bi bi-folder2-open"></i> Open</button>
-            <button type="button" class="btn" id="downloadLoadCaseBtn"><i class="bi bi-download"></i> Download</button>
-            <button type="button" class="btn" id="installLoadCaseBtn"><i class="bi bi-box-arrow-in-down"></i> Install</button>
-            <button type="button" class="btn" id="deleteLoadCaseBtn"><i class="bi bi-trash3"></i> Delete</button>
-            <input id="loadCaseFileInput" type="file" accept=".json,application/json" hidden>
-          </div>
-          <div id="loadCaseLibraryStatus" class="load-case-library-status">Optional: save only the current load pattern as a reusable template. Use the project bar above to save the entire calculation setup.</div>
-        </div>
         <div class="loadcase-tabs">
           <button type="button" class="loadcase-tab active" data-loadcase="G">Permanent loads (G)</button>
           <button type="button" class="loadcase-tab" data-loadcase="Q1">Variable loads (Q1)</button>
@@ -1921,8 +1950,8 @@ body.plan-plus .ad-slot{display:none!important}
   <div id="sponsorSlot" class="ad-slot" style="margin-top:14px">
     <div class="ad-copy adsense-shell">
       <div id="sponsorLabel" class="ad-label">Ads</div>
-      <div id="sponsorHeadline" class="ad-headline">Google AdSense-ready advert slot</div>
-      <p id="sponsorText" class="ad-text">Add your AdSense publisher ID and ad slot ID in <span class="mono">adConfig</span>. Until then, this area shows a direct-sponsor fallback so the layout stays clean.</p>
+      <div id="sponsorHeadline" class="ad-headline">Advertisement</div>
+      <p id="sponsorText" class="ad-text">This Free-plan advertising space is ready for Google AdSense or a direct Ingeniarch Labs sponsor.</p>
       <ins id="adsenseSlot" class="adsbygoogle"
         style="display:block"
         data-ad-client=""
@@ -1933,7 +1962,6 @@ body.plan-plus .ad-slot{display:none!important}
     </div>
     <div class="ad-actions">
       <a id="sponsorCta" class="btn" href="#" target="_blank" rel="noopener">Learn more</a>
-      <button id="sponsorDismiss" class="btn ghost" type="button">Hide</button>
     </div>
   </div>
 
@@ -2084,6 +2112,10 @@ body.plan-plus .ad-slot{display:none!important}
         <button id="startContinue" class="btn" type="button">Continue current workspace</button>
       </div>
     </div>
+    <div class="start-branding">
+      <strong>Made by Ingeniarch Labs</strong>
+      <div class="start-disclaimer"><strong>Verification disclaimer:</strong> this calculator and its engineering outputs have not yet been independently or third-party verified. A competent engineer must check all inputs, assumptions, calculations and results before design, fabrication or construction use.</div>
+    </div>
   </div>
 </div>
 
@@ -2103,16 +2135,17 @@ body.plan-plus .ad-slot{display:none!important}
       </div>
       <div class="auth-grid" style="margin-top:12px">
         <div class="auth-card">
-          <h3>Sign in or create an account</h3>
-          <p>Email sign-in stores a local profile in this standalone build. Connect the configured backend endpoint to enable verified accounts and cloud sync.</p>
+          <h3>Sign in or sign up</h3>
+          <p>Create or reopen a local account on this device. This static build does not store a password.</p>
+          <label>Display name<input id="accountName" type="text" autocomplete="name" placeholder="Your name"></label>
           <label>Email address<input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
-          <button id="emailSignInBtn" class="btn primary-action" type="button" style="margin-top:9px">Continue with email</button>
+          <button id="emailSignInBtn" class="btn primary-action" type="button" style="margin-top:9px">Sign in / create account</button>
           <div class="social-auth">
             <button id="googleSignInBtn" class="btn" type="button"><i class="bi bi-google"></i> Google</button>
             <button id="appleSignInBtn" class="btn" type="button"><i class="bi bi-apple"></i> Apple</button>
           </div>
           <button id="signOutBtn" class="btn" type="button" style="margin-top:9px">Sign out</button>
-          <div id="accountStatus" class="integration-note" aria-live="polite">OAuth and verified email authentication require your production auth provider credentials.</div>
+          <div id="accountStatus" class="integration-note" aria-live="polite">Enter an email to create or sign into a local account.</div>
         </div>
         <div class="auth-card">
           <h3>Why Plus?</h3>
@@ -2150,6 +2183,7 @@ body.plan-plus .ad-slot{display:none!important}
       <div class="settings-tabs" role="tablist" aria-label="Settings sections">
         <button class="settings-tab active" type="button" role="tab" data-settings-tab="settingsGeneral"><i class="bi bi-sliders"></i><span>General</span></button>
         <button class="settings-tab" type="button" role="tab" data-settings-tab="settingsAppearance"><i class="bi bi-brush"></i><span>Appearance</span></button>
+        <button class="settings-tab" type="button" role="tab" data-settings-tab="settingsAccount"><i class="bi bi-person-circle"></i><span>Account</span></button>
         <button class="settings-tab" type="button" role="tab" data-settings-tab="settingsAbout"><i class="bi bi-info-circle"></i><span>About</span></button>
       </div>
       <div class="settings-content">
@@ -2229,8 +2263,16 @@ body.plan-plus .ad-slot{display:none!important}
           </div>
         </section>
 
+        <section id="settingsAccount" class="settings-pane" role="tabpanel">
+          <h2>Account</h2>
+          <div class="settings-account-note">Email sign-in and sign-up work locally in this standalone build. Verified email, Google, Apple and cloud sync require production authentication credentials.</div>
+          <div id="accountSettingsHost"></div>
+        </section>
+
         <section id="settingsAbout" class="settings-pane" role="tabpanel">
           <h2>About</h2>
+          <div class="about-card"><h3>Ingeniarch Labs</h3><p><strong>Beam Calculator Studio is made by Ingeniarch Labs.</strong></p></div>
+          <div class="about-card disclaimer"><h3>Verification disclaimer</h3><p>This calculator, its section data implementation and its engineering outputs have not yet been independently or third-party verified. A competent engineer must check all inputs, assumptions, calculations and results before design, fabrication or construction use.</p></div>
           <div class="about-card"><h3>Beam Calculator Studio</h3><p>Version 34.2.1 • Local single-file engineering workspace.</p></div>
           <div class="about-card"><h3>Calculation basis</h3><p>Load combinations follow EN 1990. Steel resistance and stability checks follow the implemented EN 1993 methods shown in Help and the generated report.</p></div>
           <div class="about-card"><h3>Section data</h3><p>Published section properties are sourced from ArcelorMittal, British Steel and Steel for Life Blue Book data where available.</p></div>
@@ -2584,6 +2626,7 @@ const unitDefs = {
     fromBaseForce:v => v/g,
     toBaseUdl:v => v*g,
     fromBaseUdl:v => v/g,
+    toBaseMoment:v => v*g,
     fromBaseMoment:v => v/g
   },
   kn:{
@@ -2597,6 +2640,7 @@ const unitDefs = {
     fromBaseForce:v => v,
     toBaseUdl:v => v,
     fromBaseUdl:v => v,
+    toBaseMoment:v => v,
     fromBaseMoment:v => v
   }
 };
@@ -2613,10 +2657,10 @@ const adConfig = {
   enabled:true,
   adsense:{ enabled:false, client:'', slot:'' },
   fallback:{
-    label:'Sponsored',
-    headline:'Advertise to beam-design users',
-    text:'Use this slot for a direct sponsor, affiliate software, training, or your own engineering tools. Add AdSense IDs in adConfig.adsense to switch this to Google ads.',
-    cta:'Learn more',
+    label:'Advertisement',
+    headline:'Ingeniarch Labs sponsor space',
+    text:'This visible Free-plan slot is ready for an approved Google AdSense unit or a direct engineering sponsor.',
+    cta:'Ad information',
     href:'#'
   }
 };
@@ -3232,8 +3276,9 @@ function applyAccountState(){
     badge.classList.toggle('plus',isPlusPlan());
     badge.innerHTML=`<i class="bi ${isPlusPlan()?'bi-stars':'bi-person'}"></i><span>${isPlusPlan()?'Plus':'Free'}</span>`;
   }
-  if($('accountDisplayName')) $('accountDisplayName').textContent=accountState.email||accountState.name||'Guest user';
+  if($('accountDisplayName')) $('accountDisplayName').textContent=accountState.name||accountState.email||'Guest user';
   if($('accountDisplayMeta')) $('accountDisplayMeta').textContent=`${isPlusPlan()?'Plus':'Free'} plan • ${accountState.email?'signed in':'local guest'}`;
+  if($('accountName')) $('accountName').value=accountState.email?(accountState.name||''):'';
   if($('accountEmail')) $('accountEmail').value=accountState.email||'';
   if($('signOutBtn')) $('signOutBtn').disabled=!accountState.email;
   if($('upgradeMonthlyBtn')){
@@ -3252,15 +3297,14 @@ function setAccountStatus(message,isError=false){
 }
 function openAccountModal(){
   applyAccountState();
-  $('accountModal')?.classList.remove('hide');
-  $('accountModal')?.setAttribute('aria-hidden','false');
+  openSettingsModal('settingsAccount');
 }
 function closeAccountModal(){
-  $('accountModal')?.classList.add('hide');
-  $('accountModal')?.setAttribute('aria-hidden','true');
+  closeSettingsModal(false);
 }
 async function signInWithEmail(){
   const email=String($('accountEmail')?.value||'').trim();
+  const requestedName=String($('accountName')?.value||'').trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAccountStatus('Enter a valid email address.',true);return;}
   const endpoint=subscriptionConfig.auth.emailEndpoint;
   if(endpoint){
@@ -3268,7 +3312,7 @@ async function signInWithEmail(){
       const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
       if(!response.ok) throw new Error('Authentication service rejected the request.');
       const profile=await response.json();
-      saveAccountState({email,name:profile.name||email,plan:profile.plan==='plus'?'plus':'free'});
+      saveAccountState({email,name:profile.name||requestedName||email,plan:profile.plan==='plus'?'plus':'free'});
       setAccountStatus('Signed in successfully.');
       return;
     }catch(err){
@@ -3276,8 +3320,8 @@ async function signInWithEmail(){
       return;
     }
   }
-  saveAccountState({email,name:email,plan:'free'});
-  setAccountStatus('Local profile created. Add an authentication endpoint for verified accounts and cloud sync.');
+  saveAccountState({email,name:requestedName||email,plan:accountState.plan==='plus'?'plus':'free'});
+  setAccountStatus('Signed in locally. This profile will be available again on this device.');
 }
 function beginExternalAuth(provider){
   const url=provider==='google'?subscriptionConfig.auth.googleUrl:subscriptionConfig.auth.appleUrl;
@@ -3642,6 +3686,7 @@ function setSettingsTab(panelId){
 function openSettingsModal(tab='settingsGeneral'){
   settingsSnapshot={...uiSettings};
   populateSettingsForm(uiSettings);
+  applyAccountState();
   setSettingsTab(tab);
   $('settingsModal').classList.remove('hide');
   $('settingsModal').setAttribute('aria-hidden','false');
@@ -3692,6 +3737,14 @@ function initSettingsUI(){
   const systemTheme=window.matchMedia?.('(prefers-color-scheme: dark)');
   systemTheme?.addEventListener?.('change',()=>{if(uiSettings.theme==='system'){applyUiSettings(uiSettings);runCalc(true);}});
 }
+function mountAccountSettings(){
+  const host=$('accountSettingsHost');
+  const modal=$('accountModal');
+  const body=modal?.querySelector('.modal-body');
+  if(!host||!body) return;
+  while(body.firstChild) host.appendChild(body.firstChild);
+  modal.remove();
+}
 function markCalculationPending(){
   const status=$('saveStatus');
   if(!status) return;
@@ -3733,6 +3786,7 @@ function initWorkspaceNavigation(){
   }));
 }
 initTheme();
+mountAccountSettings();
 initSettingsUI();
 initWorkspaceNavigation();
 
@@ -5673,7 +5727,7 @@ function renderSketch(data){
   const W=rect.width,H=rect.height;
   ctx.clearRect(0,0,W,H);
 
-  const {L,supportType,rawLoads}=data;
+  const {L,supportType,rawLoads,axialRaw}=data;
   const supportXs = (rawLoads?.supportXs && rawLoads.supportXs.length) ? rawLoads.supportXs : [0, L];
   const x0=40, x1=W-30, y=H*0.58;
   const mapX = x => x0 + (x/L)*(x1-x0);
@@ -5744,6 +5798,64 @@ function renderSketch(data){
     ctx.font='700 11px system-ui';
     ctx.fillText(p.label, xx-8, y-62);
   });
+
+  const momentColour=getVar('--accent')||'#7c3aed';
+  ctx.strokeStyle=momentColour;
+  ctx.fillStyle=momentColour;
+  rawLoads.points.filter(p=>Math.abs(p.M||0)>1e-12).forEach(p=>{
+    const xx=mapX(p.x);
+    const clockwise=p.M>0;
+    const cy=y-25;
+    const radius=17;
+    const start=clockwise?-Math.PI*.25:Math.PI*1.25;
+    const end=clockwise?Math.PI*1.25:-Math.PI*.25;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.arc(xx,cy,radius,start,end,!clockwise);
+    ctx.stroke();
+    const angle=end;
+    const ex=xx+Math.cos(angle)*radius;
+    const ey=cy+Math.sin(angle)*radius;
+    const tangent=angle+(clockwise?Math.PI/2:-Math.PI/2);
+    ctx.beginPath();
+    ctx.moveTo(ex,ey);
+    ctx.lineTo(ex-8*Math.cos(tangent-.42),ey-8*Math.sin(tangent-.42));
+    ctx.moveTo(ex,ey);
+    ctx.lineTo(ex-8*Math.cos(tangent+.42),ey-8*Math.sin(tangent+.42));
+    ctx.stroke();
+    ctx.font='700 10px system-ui';
+    const label=`${p.label} ${fmt2(p.M)} ${currentUnit().momentShort}`;
+    ctx.fillText(label,Math.max(4,Math.min(xx-28,W-116)),cy-radius-7);
+  });
+
+  const axialCharacteristic=(axialRaw?.G||0)+(axialRaw?.Q1||0)+(axialRaw?.Q2||0);
+  if(Math.abs(axialCharacteristic)>1e-12){
+    const compression=axialCharacteristic>0;
+    const ay=Math.max(22,y-91);
+    const drawHorizontalArrow=(fromX,toX)=>{
+      ctx.beginPath();ctx.moveTo(fromX,ay);ctx.lineTo(toX,ay);ctx.stroke();
+      const direction=Math.sign(toX-fromX)||1;
+      ctx.beginPath();
+      ctx.moveTo(toX,ay);
+      ctx.lineTo(toX-direction*8,ay-5);
+      ctx.moveTo(toX,ay);
+      ctx.lineTo(toX-direction*8,ay+5);
+      ctx.stroke();
+    };
+    ctx.strokeStyle=momentColour;
+    ctx.fillStyle=momentColour;
+    ctx.lineWidth=2;
+    if(compression){
+      drawHorizontalArrow(x0+2,x0+42);
+      drawHorizontalArrow(x1-2,x1-42);
+    }else{
+      drawHorizontalArrow(x0+42,x0+2);
+      drawHorizontalArrow(x1-42,x1-2);
+    }
+    ctx.font='700 10px system-ui';
+    const axialLabel=`N = ${fmt2(Math.abs(axialCharacteristic))} ${currentUnit().forceShort} (${compression?'compression':'tension'})`;
+    ctx.fillText(axialLabel,Math.max(4,(W-ctx.measureText(axialLabel).width)/2),ay-8);
+  }
 
   ctx.fillStyle=muted; ctx.font='700 11px system-ui';
   ctx.fillText('0', x0-4, y+40);
@@ -6097,7 +6209,7 @@ function runCalc(force=false){
   renderChart($('chartYFocus'), sls.defl.xs, sls.defl.Y, 'Deflection y(x) — SLS', 'y [mm]');
   updateChartPeakReadouts(uls, sls, L, forceUnit, momentUnit);
 
-  renderSketch({L, supportType, rawLoads});
+  renderSketch({L, supportType, rawLoads, axialRaw});
   const springBits = [];
   if(supportType==='spring_spring') springBits.push(`Springs: A=${fmt1(sp.left)}%, B=${fmt1(sp.right)}%`);
   if(supportType==='spring_roller') springBits.push(`Spring A=${fmt1(sp.left)}%`);
@@ -7188,14 +7300,23 @@ function initSplitters(){
 function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 const liveRun = debounce(runCalc, 120);
 
-document.addEventListener('input',event=>{if(event.target.closest('.project-command-bar,#settingsModal,#accountModal,#startScreen,.load-case-library'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
-document.addEventListener('change',event=>{if(event.target.closest('.project-command-bar,#settingsModal,#accountModal,#startScreen,.load-case-library'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
+function setFileMenuOpen(open){
+  const menu=$('fileMenu');
+  const button=$('fileMenuBtn');
+  if(!menu||!button) return;
+  menu.classList.toggle('hide',!open);
+  button.setAttribute('aria-expanded',open?'true':'false');
+}
+function closeFileMenu(){setFileMenuOpen(false);}
+
+document.addEventListener('input',event=>{if(event.target.closest('.file-menu,#settingsModal,#startScreen'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
+document.addEventListener('change',event=>{if(event.target.closest('.file-menu,#settingsModal,#startScreen'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
 document.addEventListener('input',event=>{
-  if(event.target.closest('#settingsModal,#accountModal,#startScreen,.load-case-library')) return;
+  if(event.target.closest('#settingsModal,#startScreen')) return;
   if(event.target.matches('input,select,textarea')) markProjectDirty();
 },true);
 document.addEventListener('change',event=>{
-  if(event.target.closest('#settingsModal,#accountModal,#startScreen,.load-case-library')) return;
+  if(event.target.closest('#settingsModal,#startScreen')) return;
   if(event.target.matches('input,select,textarea')) markProjectDirty();
 },true);
 qsa('.loadcase-tab').forEach(btn=>{ if(btn._wiredLc) return; btn._wiredLc=true; btn.addEventListener('click', ()=>{ setActiveLoadCase(btn.dataset.loadcase); }); });
@@ -7203,7 +7324,6 @@ initInspectorTabs();
 initSplitters();
 $('recalcBtn').addEventListener('click', ()=>runCalc(true));
 $('reportBtn').addEventListener('click', exportReport);
-$('sponsorDismiss')?.addEventListener('click', ()=> $('sponsorSlot')?.classList.add('hide'));
 $('load_combo').addEventListener('change', ()=>{ updateLCPreview(); runCalc(); });
 $('psi_q1').addEventListener('input', ()=>{ updateLCPreview(); liveRun(); });
 $('psi_q2').addEventListener('input', ()=>{ updateLCPreview(); liveRun(); });
@@ -7249,11 +7369,16 @@ $('springLeftPct').addEventListener('input', liveRun);
 $('springRightPct').addEventListener('input', liveRun);
 $('displayScale')?.addEventListener('change', ()=>{ applyDisplayScale(); runCalc(); });
 $('latexBtn')?.addEventListener('click', exportLatex);
-$('newProjectBtn')?.addEventListener('click',requestNewProject);
-$('saveProjectBtn')?.addEventListener('click',saveCurrentProject);
-$('openProjectBtn')?.addEventListener('click',showStartScreen);
-$('downloadProjectBtn')?.addEventListener('click',downloadCurrentProject);
-$('accountBtn')?.addEventListener('click',openAccountModal);
+$('fileMenuBtn')?.addEventListener('click',event=>{event.stopPropagation();setFileMenuOpen($('fileMenu')?.classList.contains('hide'));});
+$('fileMenu')?.addEventListener('click',event=>event.stopPropagation());
+document.addEventListener('click',closeFileMenu);
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeFileMenu();});
+$('newProjectBtn')?.addEventListener('click',()=>{closeFileMenu();requestNewProject();});
+$('saveProjectBtn')?.addEventListener('click',()=>{saveCurrentProject();closeFileMenu();});
+$('openProjectBtn')?.addEventListener('click',()=>{closeFileMenu();showStartScreen();});
+$('downloadProjectBtn')?.addEventListener('click',()=>{downloadCurrentProject();closeFileMenu();});
+$('installProjectBtn')?.addEventListener('click',()=>{closeFileMenu();$('projectFileInput')?.click();});
+$('fileAccountBtn')?.addEventListener('click',()=>{closeFileMenu();openSettingsModal('settingsAccount');});
 $('projectName')?.addEventListener('input',markProjectDirty);
 $('projectFileInput')?.addEventListener('change',event=>installProjectFile(event.target.files?.[0]));
 $('startNewProject')?.addEventListener('click',startNewProject);
@@ -7267,8 +7392,6 @@ $('startOpenSelected')?.addEventListener('click',()=>openSavedProject($('startPr
 $('startInstallProject')?.addEventListener('click',()=>$('projectFileInput')?.click());
 $('startDeleteProject')?.addEventListener('click',()=>deleteSavedProject($('startProjectSelect')?.value||''));
 $('startContinue')?.addEventListener('click',hideStartScreen);
-$('accountModalClose')?.addEventListener('click',closeAccountModal);
-$('accountModal')?.addEventListener('click',event=>{if(event.target.id==='accountModal')closeAccountModal();});
 $('emailSignInBtn')?.addEventListener('click',signInWithEmail);
 $('googleSignInBtn')?.addEventListener('click',()=>beginExternalAuth('google'));
 $('appleSignInBtn')?.addEventListener('click',()=>beginExternalAuth('apple'));
@@ -7278,8 +7401,8 @@ $('upgradeYearlyBtn')?.addEventListener('click',()=>beginCheckout('yearly'));
 window.addEventListener('beforeunload',event=>{if(window._projectDirty){event.preventDefault();event.returnValue='';}});
 
 window.addEventListener('resize', debounce(()=>{ applyDisplayScale(); runCalc(); }, 180));
-document.addEventListener('input', e=>{ if(e.target.closest('.project-command-bar,#settingsModal,#accountModal,#startScreen,.load-case-library')) return; if(e.target.matches('input,select,textarea') && !e.target.matches('#springLeftPct,#springRightPct')) liveRun(); });
-document.addEventListener('change', e=>{ if(e.target.closest('.project-command-bar,#settingsModal,#accountModal,#startScreen,.load-case-library')) return; if(e.target.matches('input,select,textarea') && !e.target.matches('#loadUnit,#supportType,#analysisMode,#spanCount')) liveRun(); });
+document.addEventListener('input', e=>{ if(e.target.closest('.file-menu,#settingsModal,#startScreen')) return; if(e.target.matches('input,select,textarea') && !e.target.matches('#springLeftPct,#springRightPct')) liveRun(); });
+document.addEventListener('change', e=>{ if(e.target.closest('.file-menu,#settingsModal,#startScreen')) return; if(e.target.matches('input,select,textarea') && !e.target.matches('#loadUnit,#supportType,#analysisMode,#spanCount')) liveRun(); });
 
 function init(){
   applyDisplayScale();
@@ -7290,7 +7413,6 @@ function init(){
   updateLCPreview();
   initProfileDropdowns();
   initCustomSectionUI();
-  populateSavedLoadCasePackages();
   populateProjectSelectors();
   applyAccountState();
   refreshUnitUI();
