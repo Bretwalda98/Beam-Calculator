@@ -1502,8 +1502,18 @@ body.plan-plus .ad-slot{display:none!important}
 .file-menu-separator{height:1px;margin:5px 3px;background:var(--border)}
 .file-menu-plan{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 6px 3px;color:var(--muted);font-size:10px}
 .settings-layout{grid-template-columns:150px minmax(0,1fr)}
-.settings-content{min-width:0}
+.settings-panel{display:grid!important;grid-template-rows:54px minmax(0,1fr) 58px;width:min(720px,94vw)!important;height:min(760px,90dvh)!important;max-height:90dvh!important}
+.settings-panel:has(#settingsAccount.active){width:min(920px,94vw)!important}
+.settings-layout{min-height:0!important;height:100%;overflow:hidden}
+.settings-tabs,.settings-content{min-height:0}
+.settings-tabs{overflow:auto}
+.settings-content{min-width:0;overflow:auto!important;overscroll-behavior:contain}
 .settings-account-note{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(var(--accent-rgb),.22);border-radius:9px;background:rgba(var(--accent-rgb),.055);color:var(--muted);font-size:10.5px;line-height:1.55}
+#settingsAccount,#accountSettingsHost{min-width:0}
+#settingsAccount .auth-grid{grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr)!important}
+#settingsAccount .auth-card,#settingsAccount .pricing-card{min-width:0}
+#settingsAccount .auth-card label+label{margin-top:9px}
+#settingsAccount .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .start-branding{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:14px 32px 26px;color:var(--muted);font-size:10.5px}
 .start-disclaimer{max-width:680px;padding:10px 12px;border:1px solid rgba(220,38,38,.25);border-radius:9px;background:rgba(220,38,38,.05);color:var(--text);line-height:1.55}
 .about-card.disclaimer{border-color:rgba(220,38,38,.28)!important;background:rgba(220,38,38,.055)!important}
@@ -1513,17 +1523,38 @@ body.plan-plus .ad-slot{display:none!important}
 #axialLoadCard{overflow:hidden}
 #axialLoadCard input{width:100%;max-width:100%;min-width:0}
 .mini-table .head>*,.mini-table .row>*{min-width:0}
-.trap-grid .head,.trap-grid .row{grid-template-columns:34px 48px repeat(2,minmax(0,1fr))!important;gap:4px!important}
-.trap-grid .head,.trap-grid .row{grid-auto-flow:row}
+.trap-grid{border:0!important;background:transparent!important}
+.trap-grid>.head{display:none!important}
+#multiTrapRows{display:grid;gap:8px}
+.trap-grid .row.trap-entry{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;padding:9px!important;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
+.trap-entry-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.trap-entry-title{display:flex;align-items:center;gap:7px;min-width:0;color:var(--text);font-size:10.5px;font-weight:700}
+.trap-entry-title .tag{display:grid;place-items:center;width:27px;height:24px;border-radius:6px;background:rgba(var(--accent-rgb),.09);color:var(--accent)!important}
+.trap-span-field{display:grid;grid-template-columns:auto 66px;align-items:center;gap:6px;color:var(--muted);font-size:9.5px;font-weight:650}
+.trap-span-field select{min-height:30px!important;margin:0!important;padding:4px 7px!important}
+.trap-entry-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.trap-field{min-width:0}
+.trap-field-label{display:flex;align-items:baseline;justify-content:space-between;gap:5px;margin-bottom:3px;color:var(--text);font-size:9.5px;font-weight:700}
+.trap-field-label small{color:var(--muted);font-size:8px;font-weight:550}
+.trap-field input{min-width:0;width:100%;min-height:32px!important;margin:0!important;padding:5px 7px!important}
 .moment-grid .head,.moment-grid .row{grid-template-columns:34px 48px minmax(0,1fr) minmax(0,1fr)!important;gap:4px!important}
 .point-grid .head,.point-grid .row{grid-template-columns:34px 48px minmax(0,1fr) minmax(0,1fr)!important;gap:4px!important}
+@media(max-width:900px){
+  .settings-layout{grid-template-columns:1fr!important;grid-template-rows:auto minmax(0,1fr)}
+  #settingsAccount .auth-grid{grid-template-columns:minmax(0,1fr)!important}
+}
 @media(max-width:860px){
   .settings-tabs{grid-template-columns:repeat(4,1fr)}
   .file-menu{position:fixed;top:70px;right:10px}
 }
+@media(max-width:680px){
+  #settingsAccount .pricing-grid,#settingsAccount .social-auth{grid-template-columns:minmax(0,1fr)!important}
+}
 @media(max-width:620px){
+  .settings-panel{width:100vw!important;height:100dvh!important;max-height:none!important}
   .start-branding{padding:12px 20px 24px}
   .settings-tabs{display:flex!important;overflow-x:auto}.settings-tab{flex:1 0 92px}
+  .trap-entry-fields{grid-template-columns:minmax(0,1fr)}
 }
 </style>
 </head>
@@ -2911,15 +2942,34 @@ function addMultiPointRow(i, defaults={}){
   $('multiPointRows').appendChild(wrap);
 }
 function addMultiTrapRow(i, defaults={}){
-  const wrap=document.createElement('div'); wrap.className='row';
+  const wrap=document.createElement('div'); wrap.className='row trap-entry';
   const loadCase = defaults.loadCase || getActiveLoadCase();
   wrap.innerHTML=`
-    <div class="tag">T${i+1}</div>
-    <select class="mini" data-kind="multitrap" data-row="${i}" data-field="span" data-case="${loadCase}"${spanSelectorState()}>${spanOptionsHTML(defaults.span||'1')}</select>
-    <input class="mini" type="number" step="0.01" min="0" placeholder="q1" data-kind="multitrap" data-row="${i}" data-field="q1" data-case="${loadCase}" value="${defaults.q1||'0'}">
-    <input class="mini" type="number" step="0.01" min="0" placeholder="q2" data-kind="multitrap" data-row="${i}" data-field="q2" data-case="${loadCase}" value="${defaults.q2||'0'}">
-    <input class="mini" type="number" step="0.01" min="0" placeholder="x1" data-kind="multitrap" data-row="${i}" data-field="x1" data-case="${loadCase}" value="${defaults.x1||'0'}">
-    <input class="mini" type="number" step="0.01" min="0" placeholder="x2" data-kind="multitrap" data-row="${i}" data-field="x2" data-case="${loadCase}" value="${defaults.x2||'0'}">
+    <div class="trap-entry-head">
+      <div class="trap-entry-title"><span class="tag">T${i+1}</span><span>Trapezoidal load</span></div>
+      <div class="trap-span-field">
+        <span>Span</span>
+        <select class="mini" aria-label="Trapezoidal load T${i+1} span" data-kind="multitrap" data-row="${i}" data-field="span" data-case="${loadCase}"${spanSelectorState()}>${spanOptionsHTML(defaults.span||'1')}</select>
+      </div>
+    </div>
+    <div class="trap-entry-fields">
+      <div class="trap-field">
+        <div class="trap-field-label"><span>q1</span><small>start load</small></div>
+        <input class="mini" aria-label="Trapezoidal load T${i+1} start intensity q1" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="q1" data-case="${loadCase}" value="${defaults.q1||'0'}">
+      </div>
+      <div class="trap-field">
+        <div class="trap-field-label"><span>q2</span><small>end load</small></div>
+        <input class="mini" aria-label="Trapezoidal load T${i+1} end intensity q2" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="q2" data-case="${loadCase}" value="${defaults.q2||'0'}">
+      </div>
+      <div class="trap-field">
+        <div class="trap-field-label"><span>x1</span><small>start position</small></div>
+        <input class="mini" aria-label="Trapezoidal load T${i+1} start position x1" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="x1" data-case="${loadCase}" value="${defaults.x1||'0'}">
+      </div>
+      <div class="trap-field">
+        <div class="trap-field-label"><span>x2</span><small>end position</small></div>
+        <input class="mini" aria-label="Trapezoidal load T${i+1} end position x2" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="x2" data-case="${loadCase}" value="${defaults.x2||'0'}">
+      </div>
+    </div>
   `;
   $('multiTrapRows').appendChild(wrap);
 }
@@ -3757,7 +3807,33 @@ function markCalculationSaved(){
   status.classList.remove('pending');
   status.innerHTML='<i class="bi bi-check2"></i><span>All changes calculated</span>';
 }
-function toggleInputs(force){
+let workspaceRedrawFrame=0;
+let workspaceRedrawTimer=0;
+function scheduleWorkspaceRedraw(){
+  cancelAnimationFrame(workspaceRedrawFrame);
+  clearTimeout(workspaceRedrawTimer);
+  workspaceRedrawFrame=requestAnimationFrame(()=>{
+    workspaceRedrawFrame=requestAnimationFrame(()=>runCalc(true));
+  });
+  workspaceRedrawTimer=setTimeout(()=>{
+    const dpr=window.devicePixelRatio||1;
+    const stale=qsa('#beamSketch,canvas.chart').some(canvas=>Math.abs(canvas.width-Math.round(canvas.getBoundingClientRect().width*dpr))>1);
+    if(stale) runCalc(true);
+  },220);
+}
+function initWorkspaceResizeObserver(){
+  const host=document.querySelector('.main-workspace-card');
+  if(!host || typeof ResizeObserver==='undefined' || window._workspaceResizeObserver) return;
+  let previousWidth=host.getBoundingClientRect().width;
+  window._workspaceResizeObserver=new ResizeObserver(entries=>{
+    const width=entries[0]?.contentRect?.width||host.getBoundingClientRect().width;
+    if(Math.abs(width-previousWidth)<1) return;
+    previousWidth=width;
+    scheduleWorkspaceRedraw();
+  });
+  window._workspaceResizeObserver.observe(host);
+}
+function toggleInputs(force,{redraw=true}={}){
   const collapsed=typeof force==='boolean' ? force : !document.body.classList.contains('inputs-collapsed');
   document.body.classList.toggle('inputs-collapsed',collapsed);
   localStorage.setItem('beam_calc_inputs_collapsed',collapsed?'1':'0');
@@ -3765,9 +3841,10 @@ function toggleInputs(force){
   if(icon) icon.className=`bi ${collapsed?'bi-chevron-right':'bi-chevron-left'}`;
   $('railToggleBtn')?.setAttribute('aria-expanded',collapsed?'false':'true');
   $('inputRailToggle')?.setAttribute('aria-expanded',collapsed?'false':'true');
+  if(redraw) scheduleWorkspaceRedraw();
 }
 function initWorkspaceNavigation(){
-  toggleInputs(localStorage.getItem('beam_calc_inputs_collapsed')==='1');
+  toggleInputs(localStorage.getItem('beam_calc_inputs_collapsed')==='1',{redraw:false});
   $('railToggleBtn')?.addEventListener('click',()=>toggleInputs());
   $('inputRailToggle')?.addEventListener('click',()=>toggleInputs(true));
   qsa('.rail-button').forEach(btn=>btn.addEventListener('click',()=>{
@@ -7423,6 +7500,7 @@ function init(){
   syncSecSummary();
   renderSponsorSlot();
   runCalc(true);
+  initWorkspaceResizeObserver();
   window._projectDirty=false;
   setProjectStatus('Not saved yet');
   let sessionStarted=false;
