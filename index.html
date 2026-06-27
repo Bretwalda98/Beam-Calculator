@@ -1697,6 +1697,174 @@ body.layout-mobile .modal-actions{width:100%;display:flex;overflow-x:auto}
 body.layout-mobile .modal-split{grid-template-columns:1fr!important}
 body.layout-mobile .report-frame{min-height:calc(100dvh - 132px)}
 body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760px,94vw)!important}
+.section-selector-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr)!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+.section-controls{min-width:0!important}
+.section-preview-panel{
+  min-width:0!important;
+  border:1px solid var(--border)!important;
+  border-radius:9px!important;
+  background:var(--panel-2)!important;
+  padding:10px!important;
+  box-shadow:none!important;
+}
+.section-preview-header{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin-bottom:8px!important;
+}
+.section-preview-name{font-weight:800!important;color:var(--text)!important;font-size:13px!important;line-height:1.25!important}
+.section-preview-type{
+  flex:0 0 auto!important;
+  border:1px solid var(--border)!important;
+  border-radius:999px!important;
+  padding:3px 8px!important;
+  color:var(--muted)!important;
+  font-size:11px!important;
+  background:var(--panel)!important;
+}
+#sectionProfilePreview{
+  display:block!important;
+  width:100%!important;
+  height:260px!important;
+  border:1px solid var(--border)!important;
+  border-radius:7px!important;
+  background:var(--panel)!important;
+}
+.section-preview-warning{
+  margin-top:8px!important;
+  padding:7px 8px!important;
+  border:1px solid rgba(217,119,6,.35)!important;
+  border-radius:6px!important;
+  background:rgba(217,119,6,.10)!important;
+  color:var(--warning)!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.section-preview-facts{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin-top:8px!important;
+}
+.section-preview-facts .prop-chip{
+  min-width:0!important;
+  padding:7px!important;
+  border-radius:6px!important;
+}
+.section-preview-facts .prop-chip strong,
+.section-preview-facts .prop-chip span{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.multi-loads-scroll{overflow-x:visible!important}
+.multi-load-grid{grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))!important}
+#multiUniformRows,#multiPointRows,#multiTrapRows,#multiMomentRows{display:grid!important;gap:8px!important}
+.mini-table{border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.mini-table .load-entry-card{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  min-width:0!important;
+  padding:9px!important;
+  border:1px solid var(--border)!important;
+  border-radius:8px!important;
+  background:var(--panel)!important;
+}
+.mini-table .load-entry-card.is-loadcase-hidden{display:none!important}
+.load-entry-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+}
+.load-entry-title{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  color:var(--text)!important;
+}
+.load-entry-title .tag{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:30px!important;
+  height:24px!important;
+  padding:0 6px!important;
+  border-radius:999px!important;
+  background:rgba(var(--accent-rgb),.12)!important;
+  color:var(--accent)!important;
+  font-weight:900!important;
+}
+.load-entry-fields{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important;
+  gap:8px!important;
+  min-width:0!important;
+}
+.load-field{min-width:0!important}
+.load-field label{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  min-height:18px!important;
+  margin:0 0 4px!important;
+  color:var(--muted)!important;
+  font-size:11px!important;
+  font-weight:750!important;
+}
+.load-field label small{font-size:10px!important;font-weight:650!important;color:var(--muted)!important}
+.load-field input{
+  width:100%!important;
+  min-width:0!important;
+  min-height:38px!important;
+  margin:0!important;
+}
+.load-remove-btn{
+  width:34px!important;
+  min-width:34px!important;
+  min-height:32px!important;
+  padding:0!important;
+  border-radius:7px!important;
+  color:var(--danger)!important;
+}
+.load-add-btn{
+  width:100%!important;
+  margin-top:8px!important;
+  min-height:38px!important;
+  justify-content:center!important;
+}
+.load-validation-note{
+  min-height:16px!important;
+  color:var(--danger)!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.axial-load-cases{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr))!important;
+  gap:8px!important;
+}
+@media(max-width:760px){
+  .section-selector-layout{grid-template-columns:1fr!important}
+  #sectionProfilePreview{height:230px!important}
+  .section-preview-facts{grid-template-columns:1fr!important}
+  .multi-load-grid{grid-template-columns:1fr!important}
+  .load-entry-fields{grid-template-columns:1fr!important}
+}
+body.layout-mobile .section-selector-layout{grid-template-columns:1fr!important}
+body.layout-mobile .multi-load-grid{grid-template-columns:1fr!important}
+body.layout-mobile .load-entry-fields{grid-template-columns:1fr!important}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -1906,7 +2074,8 @@ body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760
   <details id="sectionAccordion" class="accordion">
     <summary>Section selection</summary>
     <div class="accordion-body">
-      <div class="compact-grid">
+      <div class="section-selector-layout">
+      <div class="section-controls compact-grid">
         <label>Section source
           <select id="sectionSourceMode">
             <option value="library" selected>Library section</option>
@@ -1944,10 +2113,6 @@ body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760
               </select>
             </label>
             <div id="customSectionFields" class="full compact-grid"></div>
-            <div class="custom-preview">
-              <div class="custom-preview-head"><span>Section preview</span><span class="micro-note">Updates as dimensions change</span></div>
-              <canvas id="customSectionPreview" width="640" height="360" aria-label="Custom section geometry preview"></canvas>
-            </div>
             <div class="full custom-actions">
               <button type="button" class="btn" id="saveCustomSectionBtn">Save custom section</button>
               <button type="button" class="btn" id="deleteCustomSectionBtn">Delete saved section</button>
@@ -1975,6 +2140,19 @@ body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760
         </div>
         <div id="sec_summary" class="micro-note full"></div>
       </div>
+      <aside id="sectionPreviewPanel" class="section-preview-panel" aria-label="Selected section preview">
+        <div class="section-preview-header">
+          <div>
+            <div class="mini-title">Section preview</div>
+            <div id="sectionPreviewName" class="section-preview-name">No section selected</div>
+          </div>
+          <div id="sectionPreviewType" class="section-preview-type">Library</div>
+        </div>
+        <canvas id="sectionProfilePreview" width="680" height="420" aria-label="True scaled section geometry preview"></canvas>
+        <div id="sectionPreviewWarning" class="section-preview-warning hide">Missing geometry data for true profile</div>
+        <div id="sectionPreviewFacts" class="section-preview-facts"></div>
+      </aside>
+      </div>
     </div>
   </details>
 
@@ -1988,36 +2166,36 @@ body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760
           <button type="button" class="loadcase-tab" data-loadcase="Q1">Variable loads (Q1)</button>
           <button type="button" class="loadcase-tab" data-loadcase="Q2">Variable loads (Q2)</button>
         </div>
-        <div id="loadModeHint" class="span-mode-hint">Loads are entered by load case using uniform, point, trapezoidal, and moment tables.</div>
+        <div id="loadModeHint" class="span-mode-hint">Loads are entered by load case using x positions measured from the left end of the beam.</div>
         <div class="multi-loads-scroll">
           <div class="multi-load-grid">
             <div class="multi-load-card">
               <div id="uniformLoadTitle" class="mini-title">Uniform loads</div>
               <div class="mini-table uniform-grid">
-                <div class="head"><div>Span</div><div>q</div></div>
                 <div id="multiUniformRows"></div>
               </div>
-            </div>
-            <div class="multi-load-card">
-              <div id="momentLoadTitle" class="mini-title">Moment loads</div>
-              <div class="mini-table moment-grid">
-                <div class="head"><div>Row</div><div>Span</div><div>M</div><div>x</div></div>
-                <div id="multiMomentRows"></div>
-              </div>
-            </div>
-            <div class="multi-load-card">
-              <div id="trapLoadTitle" class="mini-title">Trapezoidal loads</div>
-              <div class="mini-table trap-grid">
-                <div class="head"><div>Row</div><div>Span</div><div>q1</div><div>q2</div><div>x1</div><div>x2</div></div>
-                <div id="multiTrapRows"></div>
-              </div>
+              <button type="button" class="btn load-add-btn" data-add-load="uniform">+ Add uniform load</button>
             </div>
             <div class="multi-load-card">
               <div id="pointLoadTitle" class="mini-title">Point loads</div>
               <div class="mini-table point-grid">
-                <div class="head"><div>Row</div><div>Span</div><div>P</div><div>x</div></div>
                 <div id="multiPointRows"></div>
               </div>
+              <button type="button" class="btn load-add-btn" data-add-load="point">+ Add point load</button>
+            </div>
+            <div class="multi-load-card">
+              <div id="momentLoadTitle" class="mini-title">Moment loads</div>
+              <div class="mini-table moment-grid">
+                <div id="multiMomentRows"></div>
+              </div>
+              <button type="button" class="btn load-add-btn" data-add-load="moment">+ Add moment load</button>
+            </div>
+            <div class="multi-load-card">
+              <div id="trapLoadTitle" class="mini-title">Trapezoidal loads</div>
+              <div class="mini-table trap-grid">
+                <div id="multiTrapRows"></div>
+              </div>
+              <button type="button" class="btn load-add-btn" data-add-load="trap">+ Add trapezoidal load</button>
             </div>
             <div class="multi-load-card single-mode-only" id="axialLoadCard">
               <div id="axialLoadTitle" class="mini-title">Axial force</div>
@@ -2634,10 +2812,10 @@ const CONTROL_HELP = {
   loadsAccordion:'Enter permanent G and variable Q1/Q2 actions as uniform, point, trapezoidal or applied-moment loads.',
   loadCasePackageName:'Name used when saving this reusable load-only template in the browser or downloading it as JSON.',
   savedLoadCasePackage:'Previously saved load templates. Open restores their units, beam spans, G/Q tables, combinations and axial actions for editing.',
-  uniformLoadTitle:'A constant distributed load q applied over the full selected span.',
-  momentLoadTitle:'A concentrated applied moment M positioned at local coordinate x within the selected span.',
+  uniformLoadTitle:'A constant distributed load q applied between x1 and x2 measured from the left end of the beam.',
+  momentLoadTitle:'A concentrated applied moment M positioned at x measured from the left end of the beam.',
   trapLoadTitle:'A linearly varying distributed load from q1 at x1 to q2 at x2.',
-  pointLoadTitle:'A concentrated force P positioned at local coordinate x within the selected span.',
+  pointLoadTitle:'A concentrated force P positioned at x measured from the left end of the beam.',
   axialLoadTitle:'Axial action linked to the active G, Q1 or Q2 load tab. Positive values are compression and negative values are tension.',
   stabilityAccordion:'Controls lateral torsional buckling checks and the effective unrestrained length assumptions.',
   enableLTB:'Enables the EN 1993-1-1 lateral torsional buckling resistance check where the section and data support it.',
@@ -2662,16 +2840,16 @@ const CONTROL_HELP = {
   loadCaseG:'Permanent actions such as self-weight and fixed construction loads.',
   loadCaseQ1:'Leading variable action used at its full selected combination coefficient.',
   loadCaseQ2:'Accompanying variable action, normally reduced by the selected ψ factor.',
-  loadSpan:'Span number on which this load acts.',
+  loadSpan:'Legacy saved-project field. New load positions are measured from the left end of the beam.',
   loadRow:'Load-row identifier used to distinguish multiple actions.',
   loadQ:'Uniform load intensity q in the currently selected distributed-load units.',
   loadP:'Point-load magnitude P in the currently selected force units.',
   loadM:'Applied concentrated moment M in the currently selected moment units.',
-  loadX:'Local distance x from the start of the selected span.',
+  loadX:'Distance x from the left end of the beam.',
   loadQ1:'Distributed-load intensity q1 at the start coordinate x1.',
   loadQ2:'Distributed-load intensity q2 at the end coordinate x2.',
-  loadX1:'Local start coordinate x1 for a partial or trapezoidal load.',
-  loadX2:'Local end coordinate x2 for a partial or trapezoidal load.'
+  loadX1:'Start coordinate x1 measured from the left end of the beam.',
+  loadX2:'End coordinate x2 measured from the left end of the beam.'
 };
 function helpKeyFromHeader(container, text){
   const value=String(text||'').trim().toLowerCase();
@@ -3086,7 +3264,7 @@ function getSpringPercentFor(type, side){
 function convertDisplayedLoadInputs(prevKey, nextKey){
   const prev = unitDefs[prevKey] || unitDefs.tonne;
   const next = unitDefs[nextKey] || unitDefs.tonne;
-  qsa('[data-kind="axial"],[data-kind="multiuniform"],[data-kind="multipoint"][data-field="P"],[data-kind="multitrap"][data-field="q1"],[data-kind="multitrap"][data-field="q2"],[data-kind="multimoment"][data-field="M"]').forEach(el=>{
+  qsa('[data-kind="axial"],[data-kind="multiuniform"][data-field="q"],[data-kind="multipoint"][data-field="P"],[data-kind="multitrap"][data-field="q1"],[data-kind="multitrap"][data-field="q2"],[data-kind="multimoment"][data-field="M"]').forEach(el=>{
     const raw = String(el.value ?? '').trim();
     if(raw==='') return;
     const n = +raw;
@@ -3107,8 +3285,8 @@ function refreshUnitUI(){
   if($('pointLoadTitle')) $('pointLoadTitle').textContent = `Point loads (${u.forceLong})`;
   if($('momentLoadTitle')) $('momentLoadTitle').textContent = `Moment loads (${u.momentShort})`;
   if($('loadModeHint')) $('loadModeHint').textContent = continuous
-    ? 'Enter each load case by span using uniform, point, trapezoidal, and moment tables.'
-    : 'Use the same load-case tabs as the continuous beam. All rows apply to Span 1.';
+    ? 'Enter each load case using x positions measured from the left end across the full continuous beam.'
+    : 'Enter each load case using x positions measured from the left support along the span.';
   $('loadNotes').textContent = `Linear elastic beam analysis using an Euler-Bernoulli beam stiffness model. Positive force and distributed load inputs are downward. Current input units: point loads in ${u.forceLong}, distributed loads in ${u.udlShort}, and moments in ${u.momentShort}.`;
   if($('axialNote')) $('axialNote').textContent = `Axial force uses the same input units as the other loads (${u.forceLong}). Positive = compression.`;
 }
@@ -3126,83 +3304,108 @@ function addSpanLengthRow(i, val='5.0'){
   $('spanLengthRows').appendChild(wrap);
 }
 const multiLoadState = { active:'G' };
+const loadCases = ['G','Q1','Q2'];
 const loadTableCache = {uniform:{}, point:{}, trap:{}, moment:{}};
+const loadCardCounts = {
+  uniform:{G:1,Q1:1,Q2:1},
+  point:{G:1,Q1:1,Q2:1},
+  trap:{G:1,Q1:1,Q2:1},
+  moment:{G:1,Q1:1,Q2:1}
+};
+const loadTypeConfig = {
+  uniform:{host:'multiUniformRows', prefix:'U', label:'Uniform load', kind:'multiuniform', fields:[
+    {name:'q', label:'q', hint:'load intensity', step:'0.01', min:'0'},
+    {name:'x1', label:'x1', hint:'start position', step:'0.01', min:'0'},
+    {name:'x2', label:'x2', hint:'end position', step:'0.01', min:'0'}
+  ]},
+  point:{host:'multiPointRows', prefix:'P', label:'Point load', kind:'multipoint', fields:[
+    {name:'P', label:'P', hint:'point load', step:'0.01', min:'0'},
+    {name:'x', label:'x', hint:'position', step:'0.01', min:'0'}
+  ]},
+  moment:{host:'multiMomentRows', prefix:'M', label:'Moment load', kind:'multimoment', fields:[
+    {name:'M', label:'M', hint:'applied moment', step:'0.01'},
+    {name:'x', label:'x', hint:'position', step:'0.01', min:'0'}
+  ]},
+  trap:{host:'multiTrapRows', prefix:'T', label:'Trapezoidal load', kind:'multitrap', fields:[
+    {name:'q1', label:'q1', hint:'start load', step:'0.01', min:'0'},
+    {name:'q2', label:'q2', hint:'end load', step:'0.01', min:'0'},
+    {name:'x1', label:'x1', hint:'start position', step:'0.01', min:'0'},
+    {name:'x2', label:'x2', hint:'end position', step:'0.01', min:'0'}
+  ]}
+};
 
 function getLoadTableSpanCount(){
   if(getAnalysisMode()==='single') return 1;
   return Math.max(3, Math.min(6, Math.round(parseNum($('spanCount')?.value)||3)));
 }
-function spanOptionsHTML(selected){
-  const count = getLoadTableSpanCount();
-  let html='';
-  for(let i=1;i<=count;i++) html += `<option value="${i}" ${String(selected||'')===String(i)?'selected':''}>${i}</option>`;
-  return html;
-}
-function spanSelectorState(){ return getAnalysisMode()==='single' ? ' disabled aria-label="Span 1"' : ''; }
 function getActiveLoadCase(){ return multiLoadState.active || 'G'; }
 function setActiveLoadCase(lc){ multiLoadState.active = lc; qsa('.loadcase-tab').forEach(b=>b.classList.toggle('active', b.dataset.loadcase===lc)); syncMultiLoadInputsVisibility(); }
-function addSpanLoadRow(i, defaults={}){
-  const wrap = document.createElement('div');
-  wrap.className='row';
-  wrap.innerHTML = `
-    <div class="tag">${i+1}</div>
-    <input class="mini" type="number" step="0.01" min="0" placeholder="q" data-kind="multiuniform" data-row="${i}" data-case="G" value="${defaults.G||'0'}">
-  `;
-  $('multiUniformRows').appendChild(wrap);
+
+function currentBeamLengthForDefaults(){
+  try{
+    const cfg=getSpanConfig();
+    if(cfg?.L>0) return cfg.L;
+  }catch(err){}
+  return parseNum($('span')?.value) || 6;
 }
-function addMultiPointRow(i, defaults={}){
-  const wrap=document.createElement('div'); wrap.className='row';
-  const loadCase = defaults.loadCase || getActiveLoadCase();
-  wrap.innerHTML=`
-    <div class="tag">P${i+1}</div>
-    <select class="mini" data-kind="multipoint" data-row="${i}" data-field="span" data-case="${loadCase}"${spanSelectorState()}>${spanOptionsHTML(defaults.span||'1')}</select>
-    <input class="mini" type="number" step="0.01" min="0" placeholder="P" data-kind="multipoint" data-row="${i}" data-field="P" data-case="${loadCase}" value="${defaults.P||'0'}">
-    <input class="mini" type="number" step="0.01" min="0" placeholder="x" data-kind="multipoint" data-row="${i}" data-field="x" data-case="${loadCase}" value="${defaults.x||'0'}">
-  `;
-  $('multiPointRows').appendChild(wrap);
+function defaultLoadValue(type, field){
+  if((type==='uniform' || type==='trap') && field==='x2') return fmt3(currentBeamLengthForDefaults());
+  return '0';
 }
-function addMultiTrapRow(i, defaults={}){
-  const wrap=document.createElement('div'); wrap.className='row trap-entry';
-  const loadCase = defaults.loadCase || getActiveLoadCase();
+function cacheCurrentLoadTables(){
+  Object.values(loadTableCache).forEach(bucket=>Object.keys(bucket).forEach(key=>delete bucket[key]));
+  Object.entries(loadTypeConfig).forEach(([type,cfg])=>{
+    loadCases.forEach(loadCase=>{
+      const rows=qsa(`#${cfg.host} .load-entry-card[data-case="${loadCase}"]`);
+      loadCardCounts[type][loadCase]=Math.max(1, rows.length);
+      rows.forEach((rowEl,index)=>{
+        const row=Number.isFinite(+rowEl.dataset.row)?+rowEl.dataset.row:index;
+        cfg.fields.forEach(field=>{
+          const el=rowEl.querySelector(`[data-kind="${cfg.kind}"][data-field="${field.name}"]`);
+          loadTableCache[type][`${loadCase}:${row}:${field.name}`]=el?.value ?? '';
+        });
+      });
+    });
+  });
+}
+function cachedLoadValue(type, loadCase, row, field){
+  const value=loadTableCache[type]?.[`${loadCase}:${row}:${field}`];
+  return value!==undefined ? value : defaultLoadValue(type, field);
+}
+function setLoadCardCount(type, loadCase, count){
+  if(!loadCardCounts[type]) return;
+  loadCardCounts[type][loadCase]=Math.max(1, Math.min(24, Math.round(count)||1));
+}
+function addLoadCard(type, row, defaults={}){
+  const cfg=loadTypeConfig[type];
+  const host=$(cfg?.host);
+  if(!cfg || !host) return;
+  const loadCase=defaults.loadCase || getActiveLoadCase();
+  const id=`${cfg.prefix}${row+1}`;
+  const wrap=document.createElement('div');
+  wrap.className='row load-entry-card';
+  wrap.dataset.loadType=type;
+  wrap.dataset.case=loadCase;
+  wrap.dataset.row=String(row);
+  const fields=cfg.fields.map(field=>{
+    const value=defaults[field.name] ?? cachedLoadValue(type, loadCase, row, field.name);
+    const minAttr=field.min!==undefined ? ` min="${field.min}"` : '';
+    const help=`${field.label}: ${field.hint}. Position values are measured from the left end of the full beam.`;
+    return `
+      <div class="load-field">
+        <label>${field.label}<small>${field.hint}</small><span class="info-tip" tabindex="0" role="button" aria-label="${escHtml(help)}" data-info-title="${escHtml(id + ' ' + field.label)}" data-info-detail="${escHtml(help)}"><i class="bi bi-info-lg"></i></span></label>
+        <input class="mini" type="number" step="${field.step || '0.01'}"${minAttr} placeholder="0.00" data-kind="${cfg.kind}" data-row="${row}" data-field="${field.name}" data-case="${loadCase}" value="${escHtml(value)}">
+      </div>`;
+  }).join('');
   wrap.innerHTML=`
-    <div class="trap-entry-head">
-      <div class="trap-entry-title"><span class="tag">T${i+1}</span><span>Trapezoidal load</span></div>
-      <div class="trap-span-field">
-        <span>Span</span>
-        <select class="mini" aria-label="Trapezoidal load T${i+1} span" data-kind="multitrap" data-row="${i}" data-field="span" data-case="${loadCase}"${spanSelectorState()}>${spanOptionsHTML(defaults.span||'1')}</select>
-      </div>
+    <div class="load-entry-head">
+      <div class="load-entry-title"><span class="tag">${id}</span><span>${cfg.label}</span></div>
+      ${row>0 ? `<button type="button" class="btn load-remove-btn" data-remove-load="${type}" data-row="${row}" data-case="${loadCase}" aria-label="Remove ${id}"><i class="bi bi-trash"></i></button>` : ''}
     </div>
-    <div class="trap-entry-fields">
-      <div class="trap-field">
-        <div class="trap-field-label"><span>q1</span><small>start load</small></div>
-        <input class="mini" aria-label="Trapezoidal load T${i+1} start intensity q1" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="q1" data-case="${loadCase}" value="${defaults.q1||'0'}">
-      </div>
-      <div class="trap-field">
-        <div class="trap-field-label"><span>q2</span><small>end load</small></div>
-        <input class="mini" aria-label="Trapezoidal load T${i+1} end intensity q2" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="q2" data-case="${loadCase}" value="${defaults.q2||'0'}">
-      </div>
-      <div class="trap-field">
-        <div class="trap-field-label"><span>x1</span><small>start position</small></div>
-        <input class="mini" aria-label="Trapezoidal load T${i+1} start position x1" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="x1" data-case="${loadCase}" value="${defaults.x1||'0'}">
-      </div>
-      <div class="trap-field">
-        <div class="trap-field-label"><span>x2</span><small>end position</small></div>
-        <input class="mini" aria-label="Trapezoidal load T${i+1} end position x2" type="number" step="0.01" min="0" placeholder="0.00" data-kind="multitrap" data-row="${i}" data-field="x2" data-case="${loadCase}" value="${defaults.x2||'0'}">
-      </div>
-    </div>
+    <div class="load-entry-fields">${fields}</div>
+    <div class="load-validation-note" data-load-error="${type}:${loadCase}:${row}"></div>
   `;
-  $('multiTrapRows').appendChild(wrap);
-}
-function addMultiMomentRow(i, defaults={}){
-  const wrap=document.createElement('div'); wrap.className='row';
-  const loadCase = defaults.loadCase || getActiveLoadCase();
-  wrap.innerHTML=`
-    <div class="tag">M${i+1}</div>
-    <select class="mini" data-kind="multimoment" data-row="${i}" data-field="span" data-case="${loadCase}"${spanSelectorState()}>${spanOptionsHTML(defaults.span||'1')}</select>
-    <input class="mini" type="number" step="0.01" placeholder="M" data-kind="multimoment" data-row="${i}" data-field="M" data-case="${loadCase}" value="${defaults.M||'0'}">
-    <input class="mini" type="number" step="0.01" min="0" placeholder="x" data-kind="multimoment" data-row="${i}" data-field="x" data-case="${loadCase}" value="${defaults.x||'0'}">
-  `;
-  $('multiMomentRows').appendChild(wrap);
+  host.appendChild(wrap);
 }
 function syncMultiLoadInputsVisibility(){
   const active = getActiveLoadCase();
@@ -3210,45 +3413,49 @@ function syncMultiLoadInputsVisibility(){
     const host=$(id); if(!host) return;
     Array.from(host.children).forEach(row=>{
       const first=row.querySelector('[data-case]');
-      row.style.display = (!first || first.dataset.case===active) ? '' : 'none';
+      row.classList.toggle('is-loadcase-hidden', !!first && first.dataset.case!==active);
     });
   });
   qsa('[data-axial-case]').forEach(label=>label.classList.toggle('is-active',label.dataset.axialCase===active));
 }
-function rebuildMultiLoadTables(){
-  const count = getLoadTableSpanCount();
-  const single = getAnalysisMode()==='single';
-  const prev = loadTableCache;
-  qsa('[data-kind="multiuniform"]').forEach(el=>{ prev.uniform[`${el.dataset.case}:${el.dataset.row}`]=el.value; });
-  qsa('[data-kind="multipoint"],[data-kind="multitrap"],[data-kind="multimoment"]').forEach(el=>{
-    const bucket = el.dataset.kind==='multipoint' ? prev.point : el.dataset.kind==='multitrap' ? prev.trap : prev.moment;
-    const key=`${el.dataset.case}:${el.dataset.row}:${el.dataset.field}`; bucket[key]=el.value;
-  });
+function rebuildMultiLoadTables({useCache=true}={}){
+  if(useCache) cacheCurrentLoadTables();
   $('multiUniformRows').innerHTML=''; $('multiPointRows').innerHTML=''; $('multiTrapRows').innerHTML=''; $('multiMomentRows').innerHTML='';
-  ['G','Q1','Q2'].forEach(loadCase=>{
-    for(let i=0;i<count;i++){
-      const wrap=document.createElement('div'); wrap.className='row';
-      const uniformDefault = !single && loadCase==='Q1' && i<2 ? '2.0' : '0';
-      wrap.innerHTML=`<div class="tag">${i+1}</div><input class="mini" type="number" step="0.01" min="0" placeholder="q" data-kind="multiuniform" data-row="${i}" data-case="${loadCase}" value="${prev.uniform[`${loadCase}:${i}`]||uniformDefault}">`;
-      $('multiUniformRows').appendChild(wrap);
-    }
-    for(let i=0;i<8;i++) addMultiPointRow(i,{
-      loadCase,
-      span:prev.point[`${loadCase}:${i}:span`]||'1',
-      P:prev.point[`${loadCase}:${i}:P`]||(single && loadCase==='G' && i<2 ? '50' : '0'),
-      x:prev.point[`${loadCase}:${i}:x`]||(single && loadCase==='G' && i===0 ? '1.5' : single && loadCase==='G' && i===1 ? '4.5' : '0')
+  loadCases.forEach(loadCase=>{
+    Object.keys(loadTypeConfig).forEach(type=>{
+      const count=loadCardCounts[type]?.[loadCase] || 1;
+      for(let i=0;i<count;i++) addLoadCard(type, i, {loadCase});
     });
-    for(let i=0;i<8;i++) addMultiTrapRow(i,{
-      loadCase,
-      span:prev.trap[`${loadCase}:${i}:span`]||'1',
-      q1:prev.trap[`${loadCase}:${i}:q1`]||(single && loadCase==='Q1' && i===0 ? '5' : '0'),
-      q2:prev.trap[`${loadCase}:${i}:q2`]||(single && loadCase==='Q1' && i===0 ? '5' : '0'),
-      x1:prev.trap[`${loadCase}:${i}:x1`]||(single && loadCase==='Q1' && i===0 ? '2.0' : '0'),
-      x2:prev.trap[`${loadCase}:${i}:x2`]||(single && loadCase==='Q1' && i===0 ? '4.0' : '0')
-    });
-    for(let i=0;i<6;i++) addMultiMomentRow(i,{loadCase,span:prev.moment[`${loadCase}:${i}:span`]||'1',M:prev.moment[`${loadCase}:${i}:M`]||'0',x:prev.moment[`${loadCase}:${i}:x`]||'0'});
   });
   syncMultiLoadInputsVisibility();
+  decorateContextHelp();
+}
+function appendLoadCard(type){
+  const cfg=loadTypeConfig[type];
+  if(!cfg) return;
+  const loadCase=getActiveLoadCase();
+  cacheCurrentLoadTables();
+  const next=(loadCardCounts[type][loadCase]||1)+1;
+  setLoadCardCount(type, loadCase, next);
+  cfg.fields.forEach(field=>{
+    const key=`${loadCase}:${next-1}:${field.name}`;
+    if(loadTableCache[type][key]===undefined) loadTableCache[type][key]=defaultLoadValue(type, field.name);
+  });
+  rebuildMultiLoadTables({useCache:false});
+}
+function removeLoadCard(type, loadCase, row){
+  const cfg=loadTypeConfig[type];
+  if(!cfg || row<=0) return;
+  cacheCurrentLoadTables();
+  const count=loadCardCounts[type][loadCase]||1;
+  for(let i=row;i<count-1;i++){
+    cfg.fields.forEach(field=>{
+      loadTableCache[type][`${loadCase}:${i}:${field.name}`]=loadTableCache[type][`${loadCase}:${i+1}:${field.name}`] ?? defaultLoadValue(type, field.name);
+    });
+  }
+  cfg.fields.forEach(field=>delete loadTableCache[type][`${loadCase}:${count-1}:${field.name}`]);
+  setLoadCardCount(type, loadCase, count-1);
+  rebuildMultiLoadTables({useCache:false});
 }
 const LOAD_CASE_STORAGE_KEY='beam_calc_load_cases_v1';
 const LOAD_CASE_FILE_FORMAT='beam-calculator-load-case';
@@ -3295,6 +3502,16 @@ function loadInputValue(kind,loadCase,row,field=''){
   const fieldSelector=field?`[data-field="${field}"]`:'';
   return $(`[data-kind="${kind}"][data-case="${loadCase}"][data-row="${row}"]${fieldSelector}`)?.value ?? '';
 }
+function collectLoadRows(type, loadCase){
+  const cfg=loadTypeConfig[type];
+  if(!cfg) return [];
+  return qsa(`#${cfg.host} .load-entry-card[data-case="${loadCase}"]`).map((card,index)=>{
+    const row=Number.isFinite(+card.dataset.row) ? +card.dataset.row : index;
+    const item={row,id:`${cfg.prefix}${index+1}`,active:true,positionMode:'global'};
+    cfg.fields.forEach(field=>{ item[field.name]=loadInputValue(cfg.kind, loadCase, row, field.name); });
+    return item;
+  });
+}
 function collectCurrentLoadCasePackage(name,existing={}){
   const now=new Date().toISOString();
   const mode=getAnalysisMode();
@@ -3328,12 +3545,12 @@ function collectCurrentLoadCasePackage(name,existing={}){
     },
     loadCases:{}
   };
-  ['G','Q1','Q2'].forEach(loadCase=>{
+  loadCases.forEach(loadCase=>{
     packageData.loadCases[loadCase]={
-      uniform:qsa(`[data-kind="multiuniform"][data-case="${loadCase}"]`).map(el=>({row:+el.dataset.row,span:+el.dataset.row+1,q:el.value})),
-      points:Array.from({length:8},(_,row)=>({row,span:loadInputValue('multipoint',loadCase,row,'span'),P:loadInputValue('multipoint',loadCase,row,'P'),x:loadInputValue('multipoint',loadCase,row,'x')})),
-      trapezoidal:Array.from({length:8},(_,row)=>({row,span:loadInputValue('multitrap',loadCase,row,'span'),q1:loadInputValue('multitrap',loadCase,row,'q1'),q2:loadInputValue('multitrap',loadCase,row,'q2'),x1:loadInputValue('multitrap',loadCase,row,'x1'),x2:loadInputValue('multitrap',loadCase,row,'x2')})),
-      moments:Array.from({length:6},(_,row)=>({row,span:loadInputValue('multimoment',loadCase,row,'span'),M:loadInputValue('multimoment',loadCase,row,'M'),x:loadInputValue('multimoment',loadCase,row,'x')}))
+      uniform:collectLoadRows('uniform',loadCase),
+      points:collectLoadRows('point',loadCase),
+      trapezoidal:collectLoadRows('trap',loadCase),
+      moments:collectLoadRows('moment',loadCase)
     };
   });
   return packageData;
@@ -3363,23 +3580,77 @@ function setLoadTableValue(kind,loadCase,row,field,value){
   const element=$(`[data-kind="${kind}"][data-case="${loadCase}"][data-row="${row}"]${fieldSelector}`);
   if(element && value!==undefined && value!==null) element.value=String(value);
 }
-function restoreLoadRows(packageData){
-  ['G','Q1','Q2'].forEach(loadCase=>{
-    const data=packageData.loadCases?.[loadCase]||{};
-    (Array.isArray(data.uniform)?data.uniform:[]).slice(0,6).forEach((item,index)=>setLoadTableValue('multiuniform',loadCase,Number.isFinite(+item.row)?+item.row:index,'',item.q));
-    (Array.isArray(data.points)?data.points:[]).slice(0,8).forEach((item,index)=>{
-      const row=Number.isFinite(+item.row)?+item.row:index;
-      ['span','P','x'].forEach(field=>setLoadTableValue('multipoint',loadCase,row,field,item[field]));
-    });
-    (Array.isArray(data.trapezoidal)?data.trapezoidal:[]).slice(0,8).forEach((item,index)=>{
-      const row=Number.isFinite(+item.row)?+item.row:index;
-      ['span','q1','q2','x1','x2'].forEach(field=>setLoadTableValue('multitrap',loadCase,row,field,item[field]));
-    });
-    (Array.isArray(data.moments)?data.moments:[]).slice(0,6).forEach((item,index)=>{
-      const row=Number.isFinite(+item.row)?+item.row:index;
-      ['span','M','x'].forEach(field=>setLoadTableValue('multimoment',loadCase,row,field,item[field]));
+function resetLoadCardCounts(){
+  Object.keys(loadCardCounts).forEach(type=>loadCases.forEach(loadCase=>{ loadCardCounts[type][loadCase]=1; }));
+}
+function safeRestoreSpanConfig(){
+  try{ return getSpanConfig(); }
+  catch(err){
+    const L=parseNum($('span')?.value)||0;
+    return {mode:'single', count:1, lengths:[L], supportXs:[0,L], L};
+  }
+}
+function savedRowHasLoad(type,item){
+  if(item?.active===true) return true;
+  if(type==='uniform') return Math.abs(parseNum(item?.q)||0)>1e-12;
+  if(type==='point') return Math.abs(parseNum(item?.P)||0)>1e-12;
+  if(type==='trap') return Math.abs(parseNum(item?.q1)||0)>1e-12 || Math.abs(parseNum(item?.q2)||0)>1e-12;
+  if(type==='moment') return Math.abs(parseNum(item?.M)||0)>1e-12;
+  return false;
+}
+function savedSpanIndex(item, spanCfg){
+  const raw=parseInt(item?.span ?? item?.spanIndex ?? '',10);
+  if(Number.isFinite(raw)) return Math.max(0, Math.min((spanCfg.count||1)-1, raw-1));
+  const row=Number.isFinite(+item?.row) ? +item.row : 0;
+  return Math.max(0, Math.min((spanCfg.count||1)-1, row));
+}
+function savedPosition(item, field, spanCfg){
+  const value=parseNum(item?.[field]) || 0;
+  const hasSavedGlobal=item?.positionMode==='global' || item?.span===undefined || item?.span===null || item?.span==='';
+  if(hasSavedGlobal) return value;
+  return (spanCfg.supportXs?.[savedSpanIndex(item, spanCfg)] || 0) + value;
+}
+function normaliseSavedLoadRows(type, rawRows, spanCfg){
+  const rows=(Array.isArray(rawRows)?rawRows:[]).filter(item=>savedRowHasLoad(type,item));
+  const source=rows.length ? rows : [{}];
+  return source.map(item=>{
+    if(type==='uniform'){
+      const spanIdx=savedSpanIndex(item, spanCfg);
+      return {
+        q:item.q ?? '0',
+        x1:item.x1!==undefined ? savedPosition(item,'x1',spanCfg) : (spanCfg.supportXs?.[spanIdx] || 0),
+        x2:item.x2!==undefined ? savedPosition(item,'x2',spanCfg) : (spanCfg.supportXs?.[spanIdx+1] ?? spanCfg.L ?? currentBeamLengthForDefaults())
+      };
+    }
+    if(type==='point') return {P:item.P ?? '0', x:savedPosition(item,'x',spanCfg)};
+    if(type==='trap') return {q1:item.q1 ?? '0', q2:item.q2 ?? '0', x1:savedPosition(item,'x1',spanCfg), x2:item.x2!==undefined ? savedPosition(item,'x2',spanCfg) : currentBeamLengthForDefaults()};
+    if(type==='moment') return {M:item.M ?? '0', x:savedPosition(item,'x',spanCfg)};
+    return {};
+  });
+}
+function primeLoadRows(type, loadCase, rows){
+  const cfg=loadTypeConfig[type];
+  const next=rows.length ? rows : [{}];
+  setLoadCardCount(type, loadCase, next.length);
+  next.forEach((item,row)=>{
+    cfg.fields.forEach(field=>{
+      const value=item[field.name] ?? defaultLoadValue(type, field.name);
+      loadTableCache[type][`${loadCase}:${row}:${field.name}`]=String(value);
     });
   });
+}
+function restoreLoadRows(packageData){
+  clearLoadTableCache();
+  resetLoadCardCounts();
+  const spanCfg=safeRestoreSpanConfig();
+  loadCases.forEach(loadCase=>{
+    const data=packageData.loadCases?.[loadCase]||{};
+    primeLoadRows('uniform',loadCase,normaliseSavedLoadRows('uniform',data.uniform,spanCfg));
+    primeLoadRows('point',loadCase,normaliseSavedLoadRows('point',data.points,spanCfg));
+    primeLoadRows('trap',loadCase,normaliseSavedLoadRows('trap',data.trapezoidal,spanCfg));
+    primeLoadRows('moment',loadCase,normaliseSavedLoadRows('moment',data.moments,spanCfg));
+  });
+  rebuildMultiLoadTables({useCache:false});
 }
 function applyLoadCasePackage(packageData,{deferCalc=false}={}){
   const data=normaliseLoadCasePackage(packageData);
@@ -4750,9 +5021,9 @@ function getSelectedProfile(){
   return list.find(s=>s.name===nm) || null;
 }
 function syncSecSummary(){
-  if(isCustomSectionMode()) renderCustomSectionPreview();
   const sec = getSelectedProfile();
-  if(!sec){ $('sec_summary').innerHTML = isCustomSectionMode() ? `<span class="red">${_customSectionLastError || 'Enter valid custom-section dimensions.'}</span>` : ''; updateCustomSectionSummary(null); return; }
+  if(!sec){ renderSectionProfilePreview(null); $('sec_summary').innerHTML = isCustomSectionMode() ? `<span class="red">${_customSectionLastError || 'Enter valid custom-section dimensions.'}</span>` : ''; updateCustomSectionSummary(null); return; }
+  renderSectionProfilePreview(sec);
   updateCustomSectionSummary(isCustomSectionMode() ? sec : null);
   const I = calcI_mm4(sec);
   const cls = getSectionClass();
@@ -5133,12 +5404,92 @@ function getCustomFormValues(){
   (tpl?.fields || []).forEach(f=> vals[f.key] = customSafeNum($(`[data-custom-field="${f.key}"]`)?.value) || 0);
   return {type,tpl,vals};
 }
-function renderCustomSectionPreview(){
-  const canvas = $('customSectionPreview');
-  if(!canvas || !isCustomSectionMode()) return;
+function sectionDim(sec, keys){
+  for(const key of keys){
+    const value=Number(sec?.[key]);
+    if(Number.isFinite(value) && value>0) return value;
+  }
+  return 0;
+}
+function roundedRectPath(ctx,x,y,w,h,r){
+  const rr=Math.max(0,Math.min(r,w/2,h/2));
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.lineTo(x+w-rr,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+  ctx.lineTo(x+w,y+h-rr);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+  ctx.lineTo(x+rr,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+  ctx.lineTo(x,y+rr);
+  ctx.quadraticCurveTo(x,y,x+rr,y);
+  ctx.closePath();
+}
+function drawDimLine(ctx,x1,y1,x2,y2,label,text,muted){
+  ctx.save();
+  ctx.strokeStyle=muted;
+  ctx.fillStyle=text;
+  ctx.lineWidth=1;
+  ctx.font='700 10px Inter, Segoe UI, sans-serif';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const ang=Math.atan2(y2-y1,x2-x1);
+  const tick=5;
+  [[x1,y1],[x2,y2]].forEach(([x,y])=>{
+    ctx.beginPath();
+    ctx.moveTo(x+Math.cos(ang+Math.PI/2)*tick,y+Math.sin(ang+Math.PI/2)*tick);
+    ctx.lineTo(x+Math.cos(ang-Math.PI/2)*tick,y+Math.sin(ang-Math.PI/2)*tick);
+    ctx.stroke();
+  });
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  if(Math.abs(x2-x1)<Math.abs(y2-y1)){
+    ctx.translate(mx-8,my);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.fillText(label,0,0);
+  }else{
+    ctx.textAlign='center';
+    ctx.fillText(label,mx,my-5);
+  }
+  ctx.restore();
+}
+function drawSectionAxes(ctx,cx,cy,w,h,text,muted){
+  ctx.save();
+  ctx.strokeStyle=muted;
+  ctx.fillStyle=muted;
+  ctx.setLineDash([5,4]);
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(cx-w*.58,cy); ctx.lineTo(cx+w*.58,cy); ctx.moveTo(cx,cy-h*.58); ctx.lineTo(cx,cy+h*.58); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='800 10px Inter, Segoe UI, sans-serif';
+  ctx.fillText('y-y',cx+w*.48,cy-6);
+  ctx.fillText('z-z',cx+6,cy-h*.48);
+  ctx.restore();
+}
+function drawSectionPreviewFacts(sec, warning){
+  const host=$('sectionPreviewFacts');
+  if(!host) return;
+  if(!sec){ host.innerHTML=''; $('sectionPreviewWarning')?.classList.add('hide'); return; }
+  const mods=getSectionModuli(sec);
+  const ars=getSectionAreas(sec);
+  const facts=[
+    ['h', `${fmt2(sectionDim(sec,['h_mm','D_mm','a_mm']))} mm`],
+    ['b', `${fmt2(sectionDim(sec,['b_mm','D_mm']))} mm`],
+    ['A', `${ars.A ? Math.round(ars.A).toLocaleString('en-GB') : '-'} mm²`],
+    ['Mass', `${sec.mass_kg_m ? fmt2(sec.mass_kg_m) : '-'} kg/m`],
+    ['Iy', `${sec.Iy_mm4 ? Math.round(sec.Iy_mm4).toLocaleString('en-GB') : '-'} mm⁴`],
+    ['Wel,y', `${mods.Wel ? Math.round(mods.Wel).toLocaleString('en-GB') : '-'} mm³`],
+    ['Wpl,y', `${mods.Wpl ? Math.round(mods.Wpl).toLocaleString('en-GB') : '-'} mm³`],
+    ['Av,z', `${sec.Avz_mm2 ? Math.round(sec.Avz_mm2).toLocaleString('en-GB') : '-'} mm²`]
+  ];
+  host.innerHTML=facts.map(([k,v])=>`<div class="prop-chip"><strong>${escHtml(k)}</strong><span>${escHtml(v)}</span></div>`).join('');
+  $('sectionPreviewWarning')?.classList.toggle('hide', !warning);
+}
+function renderSectionProfilePreview(sec){
+  const canvas = $('sectionProfilePreview');
+  if(!canvas) return;
   const bounds = canvas.getBoundingClientRect();
   const width = Math.max(280, Math.round(bounds.width || 560));
-  const height = Math.max(180, Math.round(bounds.height || 230));
+  const height = Math.max(210, Math.round(bounds.height || 260));
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   canvas.width = Math.round(width*dpr);
   canvas.height = Math.round(height*dpr);
@@ -5152,47 +5503,113 @@ function renderCustomSectionPreview(){
   const border = style.getPropertyValue('--border').trim() || '#dfe4ec';
   ctx.clearRect(0,0,width,height);
   ctx.fillStyle=panel; ctx.fillRect(0,0,width,height);
-  const {type,vals} = getCustomFormValues();
-  const overallH = Math.max(1, vals.h || vals.D || vals.a || 1);
-  const overallB = Math.max(1, vals.b || vals.D || 1);
-  const padX = 66, padY = 34;
-  const scale = Math.min((width-2*padX)/overallB, (height-2*padY)/overallH);
-  const drawW = overallB*scale, drawH=overallH*scale;
+  if($('sectionPreviewName')) $('sectionPreviewName').textContent=sec?.name || 'No section selected';
+  if($('sectionPreviewType')) $('sectionPreviewType').textContent=isCustomSectionMode() ? 'Custom' : 'Library';
+  if(!sec){
+    ctx.fillStyle=muted; ctx.font='700 12px Inter, Segoe UI, sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Select a section to preview the true profile',width/2,height/2);
+    drawSectionPreviewFacts(null,false);
+    return;
+  }
+  const fam=getFamilyKey(sec);
+  const famUpper=String(fam||'').toUpperCase();
+  const h=sectionDim(sec,['h_mm','D_mm','a_mm']);
+  const b=sectionDim(sec,['b_mm','D_mm']);
+  const tw=sectionDim(sec,['tw_mm','web_thickness_mm']);
+  const tf=sectionDim(sec,['tf_mm','flange_thickness_mm']);
+  const t=sectionDim(sec,['t_mm','thickness_mm']);
+  const r=sectionDim(sec,['r_mm','root_radius_mm','r1_mm']);
+  const isI=['IPE','IPN','HEA','HEB','HEM','HEAA','UB','UC','UBP','J','CUSTOM_I','CUSTOM_PLATE_GIRDER'].includes(famUpper);
+  const isBox=['RHS','SHS','CFRHS','CUSTOM_BOX'].includes(famUpper);
+  const isChs=['CHS','CUSTOM_CHS'].includes(famUpper) || (!!sec.D_mm && !isBox);
+  const isChannel=['UPE','UPN','PFC','CH','CUSTOM_CHANNEL'].includes(famUpper);
+  const isTee=['CUSTOM_TEE','TEE','T'].includes(famUpper);
+  const isAngle=['CUSTOM_ANGLE','RSA','ANGLE','L'].includes(famUpper);
+  const overallH=Math.max(1,h || (isAngle ? sectionDim(sec,['a_mm']) : 0) || 1);
+  const overallB=Math.max(1,b || 1);
+  let missing=false;
+  const padX=72, padY=38;
+  const scale=Math.min((width-2*padX)/overallB,(height-2*padY)/overallH);
+  const drawW=overallB*scale, drawH=overallH*scale;
   const x0=(width-drawW)/2, y0=(height-drawH)/2;
-  const rect=(x,y,w,h)=>ctx.fillRect(x0+x*scale, y0+drawH-(y+h)*scale, w*scale, h*scale);
+  const sx=v=>x0+v*scale;
+  const sy=v=>y0+drawH-v*scale;
+  const fillRect=(x,y,w,h)=>ctx.fillRect(sx(x),sy(y+h),w*scale,h*scale);
   ctx.fillStyle=accent;
-  if(type==='welded_i' || type==='plate_girder'){
-    rect(0,0,overallB,vals.tf); rect((overallB-vals.tw)/2,vals.tf,vals.tw,overallH-2*vals.tf); rect(0,overallH-vals.tf,overallB,vals.tf);
-  }else if(type==='rhs'){
-    ctx.fillRect(x0,y0,drawW,drawH);
+  ctx.strokeStyle=border;
+  ctx.lineWidth=1;
+  if(isI && h && b && tw && tf){
+    const webX=(b-tw)/2;
+    fillRect(0,0,b,tf);
+    fillRect(webX,tf,tw,Math.max(0,h-2*tf));
+    fillRect(0,h-tf,b,tf);
+    if(r>0){
+      ctx.strokeStyle=text; ctx.lineWidth=1.2;
+      [[webX,tf,1,1],[webX+tw,tf,-1,1],[webX,h-tf,1,-1],[webX+tw,h-tf,-1,-1]].forEach(([x,y,dx,dy])=>{
+        ctx.beginPath();
+        ctx.arc(sx(x+dx*r),sy(y+dy*r),r*scale,dx>0?Math.PI:0,dy>0?Math.PI*1.5:Math.PI*.5,dx<0);
+        ctx.stroke();
+      });
+    }
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(b)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`h=${fmt2(h)} mm`,text,muted);
+    drawDimLine(ctx,sx(webX),y0+drawH/2+18,sx(webX+tw),y0+drawH/2+18,`tw=${fmt2(tw)}`,text,muted);
+    drawDimLine(ctx,x0+drawW+18,y0,x0+drawW+18,y0+tf*scale,`tf=${fmt2(tf)}`,text,muted);
+  }else if(isBox && h && b && t){
+    roundedRectPath(ctx,x0,y0,drawW,drawH,r*scale); ctx.fill();
     ctx.fillStyle=panel;
-    ctx.fillRect(x0+vals.t*scale,y0+vals.t*scale,Math.max(0,drawW-2*vals.t*scale),Math.max(0,drawH-2*vals.t*scale));
-  }else if(type==='box_asymmetric'){
-    ctx.fillRect(x0,y0,drawW,drawH);
-    ctx.fillStyle=panel;
-    ctx.fillRect(x0+vals.tLeft*scale,y0+vals.tTop*scale,Math.max(0,drawW-(vals.tLeft+vals.tRight)*scale),Math.max(0,drawH-(vals.tTop+vals.tBottom)*scale));
-  }else if(type==='chs'){
-    const radius=drawW/2;
-    ctx.beginPath(); ctx.arc(width/2,height/2,radius,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=panel; ctx.beginPath(); ctx.arc(width/2,height/2,Math.max(0,radius-vals.t*scale),0,Math.PI*2); ctx.fill();
-  }else if(type==='channel'){
-    rect(0,0,vals.tw,overallH); rect(0,0,overallB,vals.tf); rect(0,overallH-vals.tf,overallB,vals.tf);
-  }else if(type==='tee'){
-    rect((overallB-vals.tw)/2,0,vals.tw,overallH-vals.tf); rect(0,overallH-vals.tf,overallB,vals.tf);
-  }else if(type==='angle'){
-    rect(0,0,vals.t,vals.a); rect(0,0,vals.b,vals.t);
+    roundedRectPath(ctx,x0+t*scale,y0+t*scale,Math.max(0,drawW-2*t*scale),Math.max(0,drawH-2*t*scale),Math.max(0,(r-t)*scale)); ctx.fill();
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(b)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`h=${fmt2(h)} mm`,text,muted);
+    drawDimLine(ctx,x0+drawW+18,y0,x0+drawW+18,y0+t*scale,`t=${fmt2(t)}`,text,muted);
+  }else if(isChs && (sec.D_mm || h) && t){
+    const D=sectionDim(sec,['D_mm','h_mm','b_mm']);
+    const radius=(D*scale)/2;
+    const cx=x0+drawW/2, cy=y0+drawH/2;
+    ctx.beginPath(); ctx.arc(cx,cy,radius,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=panel; ctx.beginPath(); ctx.arc(cx,cy,Math.max(0,radius-t*scale),0,Math.PI*2); ctx.fill();
+    drawDimLine(ctx,cx-radius,y0+drawH+22,cx+radius,y0+drawH+22,`D=${fmt2(D)} mm`,text,muted);
+    drawDimLine(ctx,cx+radius+18,cy-radius,cx+radius+18,cy-radius+t*scale,`t=${fmt2(t)}`,text,muted);
+  }else if(isChannel && h && b && tw && tf){
+    fillRect(0,0,tw,h);
+    fillRect(0,0,b,tf);
+    fillRect(0,h-tf,b,tf);
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(b)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`h=${fmt2(h)} mm`,text,muted);
+    drawDimLine(ctx,x0+drawW+18,y0,x0+drawW+18,y0+tf*scale,`tf=${fmt2(tf)}`,text,muted);
+    drawDimLine(ctx,x0,y0+drawH/2+18,x0+tw*scale,y0+drawH/2+18,`tw=${fmt2(tw)}`,text,muted);
+  }else if(isTee && h && b && tw && tf){
+    fillRect((b-tw)/2,0,tw,h-tf);
+    fillRect(0,h-tf,b,tf);
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(b)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`h=${fmt2(h)} mm`,text,muted);
+  }else if(isAngle && h && b && t){
+    fillRect(0,0,t,h);
+    fillRect(0,0,b,t);
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(b)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`a=${fmt2(h)} mm`,text,muted);
+    drawDimLine(ctx,x0+drawW+18,y0+drawH-t*scale,x0+drawW+18,y0+drawH,`t=${fmt2(t)}`,text,muted);
   }else{
-    rect(0,0,overallB,overallH);
+    missing=true;
+    ctx.fillStyle=accent;
+    fillRect(0,0,overallB,overallH);
+    drawDimLine(ctx,x0,y0+drawH+22,x0+drawW,y0+drawH+22,`b=${fmt2(overallB)} mm`,text,muted);
+    drawDimLine(ctx,x0-26,y0,x0-26,y0+drawH,`h=${fmt2(overallH)} mm`,text,muted);
   }
   ctx.strokeStyle=border; ctx.lineWidth=1;
   ctx.strokeRect(x0-.5,y0-.5,drawW+1,drawH+1);
-  ctx.setLineDash([4,4]); ctx.strokeStyle=muted;
-  ctx.beginPath(); ctx.moveTo(width/2,y0-10); ctx.lineTo(width/2,y0+drawH+10); ctx.moveTo(x0-10,height/2); ctx.lineTo(x0+drawW+10,height/2); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle=text; ctx.font='600 11px Inter, Segoe UI, sans-serif'; ctx.textAlign='center';
-  ctx.fillText(`${overallB.toFixed(1)} mm`,width/2,height-9);
-  ctx.save(); ctx.translate(14,height/2); ctx.rotate(-Math.PI/2); ctx.fillText(`${overallH.toFixed(1)} mm`,0,0); ctx.restore();
-  ctx.fillStyle=muted; ctx.font='500 10px Inter, Segoe UI, sans-serif'; ctx.textAlign='right';
-  ctx.fillText(CUSTOM_SECTION_TEMPLATES[type]?.label || 'Custom section',width-10,15);
+  drawSectionAxes(ctx,x0+drawW/2,y0+drawH/2,drawW,drawH,text,muted);
+  ctx.fillStyle=muted; ctx.font='700 10px Inter, Segoe UI, sans-serif'; ctx.textAlign='right';
+  const dimParts=[];
+  if(tw) dimParts.push(`tw ${fmt2(tw)} mm`);
+  if(tf) dimParts.push(`tf ${fmt2(tf)} mm`);
+  if(t) dimParts.push(`t ${fmt2(t)} mm`);
+  if(r) dimParts.push(`r ${fmt2(r)} mm`);
+  ctx.fillText(dimParts.join('  ') || famUpper || 'Profile',width-10,16);
+  drawSectionPreviewFacts(sec,missing);
+}
+function renderCustomSectionPreview(){
+  renderSectionProfilePreview(getSelectedProfile());
 }
 function loadSavedCustomSection(index){
   const list = getSavedCustomSections();
@@ -5268,42 +5685,68 @@ function updateCustomSectionSummary(sec){
 }
 
 
+function clearLoadCardErrors(){
+  qsa('[data-load-error]').forEach(el=>{ el.textContent=''; });
+}
+function setLoadCardError(type, loadCase, row, message){
+  const host=$(`[data-load-error="${type}:${loadCase}:${row}"]`);
+  if(host) host.textContent=message;
+}
+function readLoadField(kind, loadCase, row, field){
+  return parseNum($(`[data-kind="${kind}"][data-case="${loadCase}"][data-row="${row}"][data-field="${field}"]`)?.value);
+}
+function validatePositionRange(type, loadCase, row, label, x, L){
+  if(!(x>=0 && x<=L)){
+    const msg=`${label} (${loadCase}): x must be between 0 and ${fmt2(L)} m.`;
+    setLoadCardError(type, loadCase, row, msg);
+    throw new Error(msg);
+  }
+}
+function validateLoadRange(type, loadCase, row, label, x1, x2, L){
+  if(!(x1>=0 && x2>x1 && x2<=L)){
+    const msg=`${label} (${loadCase}): enter x1 and x2 within 0 to ${fmt2(L)} m with x2 greater than x1.`;
+    setLoadCardError(type, loadCase, row, msg);
+    throw new Error(msg);
+  }
+}
 function gatherLoads(L, sec){
   const points=[];
   const udls=[];
   const spanCfg = getSpanConfig();
+  clearLoadCardErrors();
 
-  ['G','Q1','Q2'].forEach(loadCase=>{
-      spanCfg.lengths.forEach((len, i)=>{
-        const el = $(`[data-kind="multiuniform"][data-case="${loadCase}"][data-row="${i}"]`);
-        const q = parseNum(el?.value) || 0;
+  loadCases.forEach(loadCase=>{
+      qsa(`[data-kind="multiuniform"][data-case="${loadCase}"][data-field="q"]`).forEach((el,index)=>{
+        const row=Number.isFinite(+el.dataset.row)?+el.dataset.row:index;
+        const label=`U${index+1}`;
+        const q = parseNum(el.value) || 0;
+        const x1 = readLoadField('multiuniform',loadCase,row,'x1') ?? 0;
+        const x2 = readLoadField('multiuniform',loadCase,row,'x2') ?? 0;
         if(q>0){
-          const seg={label:`S${i+1}`, x1:spanCfg.supportXs[i], x2:spanCfg.supportXs[i+1], G:0, Q1:0, Q2:0, span:i+1};
+          validateLoadRange('uniform',loadCase,row,label,x1,x2,L);
+          const seg={label, sourceType:'uniform', x1, x2, G:0, Q1:0, Q2:0};
           seg[loadCase]=q; udls.push(seg);
         }
       });
-      for(let i=0;i<8;i++){
-        const spanSel = parseInt($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
-        const P = parseNum($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="P"]`)?.value) || 0;
-        const x = parseNum($(`[data-kind="multipoint"][data-case="${loadCase}"][data-row="${i}"][data-field="x"]`)?.value) || 0;
+      qsa(`[data-kind="multipoint"][data-case="${loadCase}"][data-field="P"]`).forEach((el,index)=>{
+        const row=Number.isFinite(+el.dataset.row)?+el.dataset.row:index;
+        const label=`P${index+1}`;
+        const P = parseNum(el.value) || 0;
+        const x = readLoadField('multipoint',loadCase,row,'x') ?? 0;
         if(P>0){
-          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
-          const len = spanCfg.lengths[spanIdx];
-          if(!(x>=0 && x<=len)) throw new Error(`Point load P${i+1} (${loadCase}): x must be within span ${spanSel} length.`);
-          const absx = spanCfg.supportXs[spanIdx] + x;
-          const p={label:`P${i+1}`, x:absx, G:0, Q1:0, Q2:0}; p[loadCase]=P; points.push(p);
+          validatePositionRange('point',loadCase,row,label,x,L);
+          const p={label, x, G:0, Q1:0, Q2:0}; p[loadCase]=P; points.push(p);
         }
-      }
-      for(let i=0;i<8;i++){
-        const spanSel = parseInt($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
-        const q1 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="q1"]`)?.value) || 0;
-        const q2 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="q2"]`)?.value) || 0;
-        const x1 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="x1"]`)?.value) || 0;
-        const x2 = parseNum($(`[data-kind="multitrap"][data-case="${loadCase}"][data-row="${i}"][data-field="x2"]`)?.value) || 0;
+      });
+      qsa(`[data-kind="multitrap"][data-case="${loadCase}"][data-field="q1"]`).forEach((el,index)=>{
+        const row=Number.isFinite(+el.dataset.row)?+el.dataset.row:index;
+        const label=`T${index+1}`;
+        const q1 = parseNum(el.value) || 0;
+        const q2 = readLoadField('multitrap',loadCase,row,'q2') || 0;
+        const x1 = readLoadField('multitrap',loadCase,row,'x1') ?? 0;
+        const x2 = readLoadField('multitrap',loadCase,row,'x2') ?? 0;
         if(q1>0 || q2>0){
-          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
-          const len = spanCfg.lengths[spanIdx];
-          if(!(x1>=0 && x2>x1 && x2<=len)) throw new Error(`Trapezoidal load T${i+1} (${loadCase}): enter valid x1<x2 within span ${spanSel}.`);
+          validateLoadRange('trap',loadCase,row,label,x1,x2,L);
           const nseg = 8;
           for(let j=0;j<nseg;j++){
             const a = x1 + (x2-x1)*j/nseg;
@@ -5311,22 +5754,21 @@ function gatherLoads(L, sec){
             const qa = q1 + (q2-q1)*(j/nseg);
             const qb = q1 + (q2-q1)*((j+1)/nseg);
             const qavg = 0.5*(qa+qb);
-            const seg={label:`T${i+1}.${j+1}`, x1:spanCfg.supportXs[spanIdx]+a, x2:spanCfg.supportXs[spanIdx]+b, G:0,Q1:0,Q2:0, span:spanSel};
+            const seg={label, sourceType:'trap', reportLabel:label, segmentIndex:j+1, segmentCount:nseg, q1, q2, loadCase, x1:a, x2:b, reportX1:x1, reportX2:x2, G:0,Q1:0,Q2:0};
             seg[loadCase]=qavg; udls.push(seg);
           }
         }
-      }
-      for(let i=0;i<6;i++){
-        const spanSel = parseInt($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="span"]`)?.value||'1',10);
-        const M = parseNum($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="M"]`)?.value) || 0;
-        const x = parseNum($(`[data-kind="multimoment"][data-case="${loadCase}"][data-row="${i}"][data-field="x"]`)?.value) || 0;
+      });
+      qsa(`[data-kind="multimoment"][data-case="${loadCase}"][data-field="M"]`).forEach((el,index)=>{
+        const row=Number.isFinite(+el.dataset.row)?+el.dataset.row:index;
+        const label=`M${index+1}`;
+        const M = parseNum(el.value) || 0;
+        const x = readLoadField('multimoment',loadCase,row,'x') ?? 0;
         if(Math.abs(M)>1e-12){
-          const spanIdx = Math.max(1, Math.min(spanCfg.count, spanSel)) - 1;
-          const len = spanCfg.lengths[spanIdx];
-          if(!(x>=0 && x<=len)) throw new Error(`Moment load M${i+1} (${loadCase}): x must be within span ${spanSel} length.`);
-          points.push({label:`M${i+1}`, x:spanCfg.supportXs[spanIdx]+x, G:0,Q1:0,Q2:0, momentCase:loadCase, M});
+          validatePositionRange('moment',loadCase,row,label,x,L);
+          points.push({label, x, G:0,Q1:0,Q2:0, momentCase:loadCase, M});
         }
-      }
+      });
   });
 
   if($('includeSW').checked && sec){
@@ -6746,18 +7188,26 @@ function getReportImages(){
 }
 function buildReportLoadRows(rawLoads, unit){
   const rows=[];
+  const seenTrapLoads=new Set();
   (rawLoads?.udls||[]).forEach(load=>{
     if(!((load.G||0)||(load.Q1||0)||(load.Q2||0))) return;
-    rows.push(`<tr><td>${escHtml(load.label||'UDL')}</td><td>${load.span ? `Span ${escHtml(load.span)}` : '-'}</td><td>${fmt2(load.x1)} to ${fmt2(load.x2)} m</td><td>UDL</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
+    if(load.sourceType==='trap'){
+      const key=`${load.loadCase}:${load.reportLabel||load.label}`;
+      if(seenTrapLoads.has(key)) return;
+      seenTrapLoads.add(key);
+      rows.push(`<tr><td>${escHtml(load.reportLabel||load.label||'T')}</td><td>${fmt2(load.reportX1 ?? load.x1)} to ${fmt2(load.reportX2 ?? load.x2)} m</td><td>Trapezoidal</td><td>${escHtml(load.loadCase||'G')}: q1=${fmt3(load.q1||0)}, q2=${fmt3(load.q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
+      return;
+    }
+    rows.push(`<tr><td>${escHtml(load.label||'UDL')}</td><td>${fmt2(load.x1)} to ${fmt2(load.x2)} m</td><td>${load.sourceType==='uniform'?'Uniform':'UDL'}</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
   });
   (rawLoads?.points||[]).forEach(load=>{
     if(Math.abs(load.M||0)>1e-12){
-      rows.push(`<tr><td>${escHtml(load.label||'Moment')}</td><td>-</td><td>x=${fmt2(load.x)} m</td><td>Moment</td><td>${fmt3(load.M)} ${escHtml(unit.momentShort)} in ${escHtml(load.momentCase||'G')}</td></tr>`);
+      rows.push(`<tr><td>${escHtml(load.label||'Moment')}</td><td>x=${fmt2(load.x)} m</td><td>Moment</td><td>${fmt3(load.M)} ${escHtml(unit.momentShort)} in ${escHtml(load.momentCase||'G')}</td></tr>`);
     }else if((load.G||0)||(load.Q1||0)||(load.Q2||0)){
-      rows.push(`<tr><td>${escHtml(load.label||'Point')}</td><td>-</td><td>x=${fmt2(load.x)} m</td><td>Point</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.forceLong)}</td></tr>`);
+      rows.push(`<tr><td>${escHtml(load.label||'Point')}</td><td>x=${fmt2(load.x)} m</td><td>Point</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.forceLong)}</td></tr>`);
     }
   });
-  return rows.length ? rows.join('') : '<tr><td colspan="5">No non-zero user-entered loads.</td></tr>';
+  return rows.length ? rows.join('') : '<tr><td colspan="4">No non-zero user-entered loads.</td></tr>';
 }
 
 function embeddedPreviewThemeCss(){
@@ -7099,7 +7549,7 @@ ${meta.projectNotes ? `<div class="section full"><h2>Notes/comments</h2><div cla
 <div class="section full">
   <h2>Load data</h2>
   <table class="check">
-    <thead><tr><th>Label</th><th>Span</th><th>Position</th><th>Type</th><th>Characteristic components</th></tr></thead>
+    <thead><tr><th>Label</th><th>Position</th><th>Type</th><th>Characteristic components</th></tr></thead>
     <tbody>${loadRows}</tbody>
   </table>
 </div>
@@ -7295,7 +7745,17 @@ function buildLatexReport(data){
   const limitRatio=Math.max(1,+$('deflLimit').value||300);
   const unit=currentUnit();
   const pointRows=(rawLoads?.points||[]).filter(p=>((p.G||0)!==0)||((p.Q1||0)!==0)||((p.Q2||0)!==0)||Math.abs(p.M||0)>0);
-  const udlRows=(rawLoads?.udls||[]).filter(u=>((u.G||0)!==0)||((u.Q1||0)!==0)||((u.Q2||0)!==0));
+  const udlRows=[];
+  const latexTrapRows=new Set();
+  (rawLoads?.udls||[]).forEach(u=>{
+    if(!(((u.G||0)!==0)||((u.Q1||0)!==0)||((u.Q2||0)!==0))) return;
+    if(u.sourceType==='trap'){
+      const key=`${u.loadCase}:${u.reportLabel||u.label}`;
+      if(latexTrapRows.has(key)) return;
+      latexTrapRows.add(key);
+    }
+    udlRows.push(u);
+  });
   const spanRows=computeContinuousSpanChecks({spanCfg,uls,check,ltb});
   const lines=[];
   const push=s=>lines.push(s);
@@ -7363,7 +7823,10 @@ function buildLatexReport(data){
   push(`The interface accepts ${escLatex(unit.forceLong)}, ${escLatex(unit.udlShort)} and ${escLatex(unit.momentShort)}. Each entered action is converted to the internal kN system before analysis.`);
   if($('includeSW').checked) push(`Section self-weight is included as a permanent action: $w_{sw}=m g/1000=${fmt3(sec.mass_kg_m)}\\times9.81/1000=${fmt3(sec.mass_kg_m*9.81/1000)}\\,kN/m$.`);
   push(String.raw`\begin{longtable}{p{0.16\textwidth}p{0.18\textwidth}p{0.54\textwidth}}\toprule Action & Position & Characteristic components \\ \midrule`);
-  udlRows.forEach(u=>push(`${escLatex(u.label||'UDL')} & $x=${fmt2(u.x1)}$ to ${fmt2(u.x2)} m & $G=${fmt3(u.G||0)}$, $Q_1=${fmt3(u.Q1||0)}$, $Q_2=${fmt3(u.Q2||0)}$ ${escLatex(unit.udlShort)} \\\\`));
+  udlRows.forEach(u=>{
+    if(u.sourceType==='trap') push(`${escLatex(u.reportLabel||u.label||'T')} & $x=${fmt2(u.reportX1 ?? u.x1)}$ to ${fmt2(u.reportX2 ?? u.x2)} m & ${escLatex(u.loadCase||'G')}: $q_1=${fmt3(u.q1||0)}$, $q_2=${fmt3(u.q2||0)}$ ${escLatex(unit.udlShort)} \\\\`);
+    else push(`${escLatex(u.label||'UDL')} & $x=${fmt2(u.x1)}$ to ${fmt2(u.x2)} m & $G=${fmt3(u.G||0)}$, $Q_1=${fmt3(u.Q1||0)}$, $Q_2=${fmt3(u.Q2||0)}$ ${escLatex(unit.udlShort)} \\\\`);
+  });
   pointRows.forEach(p=>{
     if(Math.abs(p.M||0)>1e-12) push(`${escLatex(p.label||'Moment')} & $x=${fmt2(p.x)}$ m & $M=${fmt3(p.M)}$ ${escLatex(unit.momentShort)} in load case ${escLatex(p.momentCase||'G')} \\\\`);
     else push(`${escLatex(p.label||'Point load')} & $x=${fmt2(p.x)}$ m & $G=${fmt3(p.G||0)}$, $Q_1=${fmt3(p.Q1||0)}$, $Q_2=${fmt3(p.Q2||0)}$ ${escLatex(unit.forceLong)} \\\\`);
@@ -7906,6 +8369,17 @@ document.addEventListener('change',event=>{
   if(event.target.matches('input,select,textarea')) markProjectDirty();
 },true);
 qsa('.loadcase-tab').forEach(btn=>{ if(btn._wiredLc) return; btn._wiredLc=true; btn.addEventListener('click', ()=>{ setActiveLoadCase(btn.dataset.loadcase); }); });
+qsa('[data-add-load]').forEach(btn=>{
+  if(btn._wiredAddLoad) return;
+  btn._wiredAddLoad=true;
+  btn.addEventListener('click',()=>{ appendLoadCard(btn.dataset.addLoad); runCalc(); });
+});
+document.addEventListener('click',event=>{
+  const btn=event.target.closest('[data-remove-load]');
+  if(!btn) return;
+  removeLoadCard(btn.dataset.removeLoad, btn.dataset.case || getActiveLoadCase(), parseInt(btn.dataset.row||'0',10));
+  runCalc();
+});
 initInspectorTabs();
 initSplitters();
 $('recalcBtn').addEventListener('click', ()=>runCalc(true));
