@@ -10096,4 +10096,11 @@ const PROFILE_DB = {
     }
   ]
 };
-window.PROFILE_DB = PROFILE_DB;
+
+if (typeof module !== 'undefined') {
+  module.exports = { PROFILE_DB };
+}
+
+if (typeof window !== 'undefined') {
+  window.PROFILE_DB = PROFILE_DB;
+}

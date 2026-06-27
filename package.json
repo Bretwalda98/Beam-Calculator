@@ -1,0 +1,16 @@
+{
+  "name": "professional-beam-calculator",
+  "version": "35.0.0",
+  "private": true,
+  "description": "Backend-first professional beam calculator web application.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check backend/services/calculation-service.js && node --check public/app.js",
+    "smoke": "node backend/tests/smoke-calculate.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}
