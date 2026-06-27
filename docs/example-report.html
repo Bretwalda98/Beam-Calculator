@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Example submission report - Primary beam check</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm 18mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #0f172a; background: #f8fafc; font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.38; }
+    main { max-width: 1120px; margin: 0 auto; background: #fff; }
+    header.report-header, footer.report-footer { position: fixed; left: 14mm; right: 14mm; color: #475569; font-size: 8.5pt; }
+    header.report-header { top: 6mm; display: flex; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 3mm; }
+    footer.report-footer { bottom: 6mm; display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 3mm; }
+    .page { min-height: 100vh; padding: 20mm 12mm 16mm; page-break-after: always; background: #fff; }
+    .page:last-child { page-break-after: auto; }
+    .title-page { display: grid; gap: 12mm; align-content: start; }
+    .title-block { border: 2px solid #0f172a; display: grid; grid-template-columns: 180px 1fr; }
+    .logo-cell { border-right: 2px solid #0f172a; padding: 8mm; display: grid; place-items: center; min-height: 120px; }
+    .logo-cell img { max-width: 145px; max-height: 88px; object-fit: contain; }
+    .logo-placeholder { width: 116px; height: 72px; border: 2px solid #334155; display: grid; place-items: center; font-weight: 700; color: #334155; }
+    .title-main { padding: 8mm; }
+    h1 { margin: 0 0 5mm; font-size: 22pt; letter-spacing: 0; }
+    h2 { margin: 0 0 4mm; font-size: 16pt; color: #0f172a; border-bottom: 2px solid #1e3a8a; padding-bottom: 2mm; }
+    h3 { margin: 0; font-size: 12pt; }
+    .muted, .code-ref { color: #475569; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; align-items: start; }
+    .graphics-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5mm; }
+    .status-banner { padding: 5mm; border: 2px solid #15803d; background: #f0fdf4; font-size: 16pt; font-weight: 700; text-align: center; }
+    .status-banner.fail { border-color: #dc2626; background: #fef2f2; }
+    table { width: 100%; border-collapse: collapse; margin: 0 0 5mm; table-layout: fixed; }
+    th, td { border: 1px solid #cbd5e1; padding: 2.4mm 2.6mm; vertical-align: top; word-wrap: break-word; }
+    th { background: #e2e8f0; color: #0f172a; font-weight: 700; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+    .compact th, .compact td { padding: 1.8mm 2mm; font-size: 9.5pt; }
+    .figure { margin: 0 0 6mm; page-break-inside: avoid; }
+    .figure svg { display: block; width: 100%; height: auto; }
+    .caption { margin-top: 1.5mm; color: #475569; font-size: 9pt; }
+    .calc-block { border: 1px solid #cbd5e1; padding: 4mm; margin: 0 0 5mm; page-break-inside: avoid; }
+    .calc-head { display: flex; justify-content: space-between; gap: 4mm; align-items: center; margin-bottom: 1.5mm; }
+    .status-pill { display: inline-block; min-width: 62px; text-align: center; border: 1px solid #64748b; padding: 1mm 2mm; font-size: 8.5pt; font-weight: 700; }
+    .status-pill.pass { color: #166534; border-color: #15803d; background: #f0fdf4; }
+    .status-pill.fail { color: #991b1b; border-color: #dc2626; background: #fef2f2; }
+    .status-pill.warning { color: #92400e; border-color: #b45309; background: #fffbeb; }
+    .equation { font-family: "Courier New", monospace; background: #f8fafc; border: 1px solid #cbd5e1; padding: 2.5mm; margin: 2mm 0; }
+    .calc-steps { display: grid; grid-template-columns: 38mm 1fr; gap: 1mm 3mm; margin: 3mm 0 0; }
+    .calc-steps dt { font-weight: 700; color: #334155; }
+    .calc-steps dd { margin: 0; }
+    .warning-box { border: 1px solid #b45309; background: #fffbeb; padding: 3mm; margin: 3mm 0 5mm; }
+    .warning-box p { margin: 0 0 1.5mm; }
+    .warning-box p:last-child { margin-bottom: 0; }
+    .signature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; margin-top: 10mm; }
+    .signature { border: 1px solid #94a3b8; height: 30mm; padding: 3mm; }
+    @media print {
+      body { background: #fff; }
+      main { max-width: none; }
+      .page { min-height: auto; }
+      a { color: inherit; text-decoration: none; }
+    }
+    @media screen {
+      body { padding: 18px; }
+      main { box-shadow: 0 18px 60px rgba(15,23,42,.18); }
+      .page { min-height: 1120px; border-bottom: 12px solid #e2e8f0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="report-header">
+    <span>Example submission report / Primary beam check</span>
+    <span>Revision P01 / 2026-06-27</span>
+  </header>
+  <footer class="report-footer">
+    <span>Example Engineering Ltd</span>
+    <span>Page <span class="page-number"></span></span>
+  </footer>
+  <main>
+    <section class="page title-page">
+      <div class="title-block">
+        <div class="logo-cell"><div class="logo-placeholder">EE</div></div>
+        <div class="title-main">
+          <h1>Primary beam check</h1>
+          <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Company</td><td>Example Engineering Ltd</td></tr><tr><td>Client</td><td>Example Client</td></tr><tr><td>Project</td><td>Example submission report</td></tr><tr><td>Job/reference</td><td>JOB-001</td></tr><tr><td>Calculation title</td><td>Primary beam check</td></tr><tr><td>Beam/member mark</td><td>B1</td></tr><tr><td>Revision</td><td>P01</td></tr><tr><td>Revision description</td><td>Initial issue for review</td></tr><tr><td>Prepared by</td><td>A Engineer</td></tr><tr><td>Checked by</td><td>C Checker</td></tr><tr><td>Approved by</td><td>A Approver</td></tr><tr><td>Date</td><td>2026-06-27</td></tr><tr><td>Software version</td><td>35.0.0</td></tr><tr><td>Design code</td><td>EN 1993-1-1</td></tr><tr><td>National Annex</td><td>UK National Annex</td></tr></tbody>
+  </table>
+        </div>
+      </div>
+      <div class="status-banner ">Overall PASS - Governing IR 0.40791</div>
+      <div class="grid-2">
+        <div>
+          <h2>Executive Summary</h2>
+          <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Overall status</td><td>PASS</td></tr><tr><td>Governing utilisation ratio</td><td>0.40791</td></tr><tr><td>Governing design check</td><td>Deflection (0.40791)</td></tr><tr><td>Beam section</td><td>HEA HE 200 A</td></tr><tr><td>Steel grade</td><td>S355</td></tr><tr><td>Span</td><td>6 m</td></tr><tr><td>Support condition</td><td>Simply supported</td></tr><tr><td>Maximum moment</td><td>25.9209 kN m</td></tr><tr><td>Maximum shear</td><td>13.5306 kN</td></tr><tr><td>Maximum axial load</td><td>0 kN</td></tr><tr><td>Maximum deflection</td><td>8.15824 mm</td></tr></tbody>
+  </table>
+        </div>
+        <div>
+          <h2>Warnings</h2>
+          <div class="warning-box"><p>tw/tf are not explicit in this section row; drawing dimensions are derived from A, Av,z, h and b for reporting only.</p><p>Company logo not supplied in project metadata.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>Input Data</h2>
+      <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Section</td><td>HEA HE 200 A</td></tr><tr><td>Material</td><td>S355</td></tr><tr><td>Support condition</td><td>Simply supported</td></tr><tr><td>Span</td><td>6 m</td></tr><tr><td>Effective lengths</td><td>LTB/restraint assumptions recorded in calculation checks; member span 6 m.</td></tr><tr><td>Load combination</td><td>EN 1990 Eq 6.10</td></tr><tr><td>Self weight</td><td>Included</td></tr><tr><td>LTB assumptions</td><td>LTB enabled with 0 intermediate restraints.</td></tr><tr><td>Design assumptions</td><td>Support condition modelled as Simply supported. Load combination: EN 1990 Eq 6.10. Self weight included from section mass. gamma_M0 = 1; gamma_M1 = 1. LTB enabled with 0 intermediate restraints. Section data source: ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1).</td></tr><tr><td>Notes/comments</td><td>Generated example report for Beam Calculator reporting QA.</td></tr></tbody>
+  </table>
+      <h2>Load Data</h2>
+      <table>
+    <thead><tr><th>Load</th><th>Type</th><th>Position</th><th>Magnitude</th></tr></thead>
+    <tbody><tr><td>Full-span UDL</td><td>UDL</td><td>0 to 6 m</td><td>G 2, Q1 0, Q2 0</td></tr><tr><td>Self-weight</td><td>UDL</td><td>0 to 6 m</td><td>G 0.415, Q1 0, Q2 0 (self weight)</td></tr><tr><td>Point Q1</td><td>Point load</td><td>3 m</td><td>G 0, Q1 5, Q2 0</td></tr></tbody>
+  </table>
+      <div class="figure"><svg viewBox="0 0 900 250" role="img" aria-label="Loading diagram">
+    <defs>
+      <style>
+        text{font-family:Arial,sans-serif}
+        .beam{stroke:#0f172a;stroke-width:5;stroke-linecap:round}
+        .dim{stroke:#334155;stroke-width:1.1;marker-start:url(#dimArr);marker-end:url(#dimArr)}
+        .load-arrow{stroke:#991b1b;stroke-width:2.2;marker-end:url(#loadArr)}
+        .reaction-arrow{stroke:#166534;stroke-width:2.2;marker-end:url(#reactArr)}
+        .load-label,.reaction-label,.dim-text{font-size:12px;fill:#0f172a}
+      </style>
+      <marker id="dimArr" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#334155"/></marker>
+      <marker id="loadArr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#991b1b"/></marker>
+      <marker id="reactArr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#166534"/></marker>
+    </defs>
+    <rect x="1" y="1" width="898" height="248" fill="#fff" stroke="#cbd5e1"/>
+    <line x1="84" y1="128" x2="804" y2="128" class="beam"/>
+    <path d="M 84 136 L 67 170 L 101 170 Z" fill="#e2e8f0" stroke="#334155"/>
+      <line x1="59" y1="170" x2="109" y2="170" stroke="#334155"/><path d="M 804 136 L 787 170 L 821 170 Z" fill="#e2e8f0" stroke="#334155"/>
+      <line x1="779" y1="170" x2="829" y2="170" stroke="#334155"/>
+    <g>
+      <rect x="84" y="42" width="720" height="18" fill="#fee2e2" stroke="#991b1b"/>
+      <line x1="120" y1="45" x2="120" y2="120" class="load-arrow"/><line x1="192" y1="45" x2="192" y2="120" class="load-arrow"/><line x1="264" y1="45" x2="264" y2="120" class="load-arrow"/><line x1="336" y1="45" x2="336" y2="120" class="load-arrow"/><line x1="408" y1="45" x2="408" y2="120" class="load-arrow"/><line x1="480" y1="45" x2="480" y2="120" class="load-arrow"/><line x1="552" y1="45" x2="552" y2="120" class="load-arrow"/><line x1="624" y1="45" x2="624" y2="120" class="load-arrow"/><line x1="696" y1="45" x2="696" y2="120" class="load-arrow"/><line x1="768" y1="45" x2="768" y2="120" class="load-arrow"/>
+      <text x="88" y="35" class="load-label">Full-span UDL (G 2)</text>
+      <text x="410" y="196" class="dim-text">0 to 6 m</text>
+    </g><g>
+      <rect x="84" y="42" width="720" height="18" fill="#fef3c7" stroke="#991b1b"/>
+      <line x1="120" y1="45" x2="120" y2="120" class="load-arrow"/><line x1="192" y1="45" x2="192" y2="120" class="load-arrow"/><line x1="264" y1="45" x2="264" y2="120" class="load-arrow"/><line x1="336" y1="45" x2="336" y2="120" class="load-arrow"/><line x1="408" y1="45" x2="408" y2="120" class="load-arrow"/><line x1="480" y1="45" x2="480" y2="120" class="load-arrow"/><line x1="552" y1="45" x2="552" y2="120" class="load-arrow"/><line x1="624" y1="45" x2="624" y2="120" class="load-arrow"/><line x1="696" y1="45" x2="696" y2="120" class="load-arrow"/><line x1="768" y1="45" x2="768" y2="120" class="load-arrow"/>
+      <text x="88" y="19" class="load-label">Self-weight (G 0.415)</text>
+      <text x="410" y="196" class="dim-text">0 to 6 m</text>
+    </g>
+    <g>
+      <line x1="444" y1="30" x2="444" y2="120" class="load-arrow"/>
+      <text x="452" y="25" class="load-label">Point Q1 (Q1 5)</text>
+      <text x="422" y="196" class="dim-text">x=3 m</text>
+    </g>
+    <g>
+      <line x1="84" y1="214" x2="84" y2="176" class="reaction-arrow"/>
+      <text x="50" y="232" class="reaction-label">R1 = 13.531 kN</text>
+    </g><g>
+      <line x1="804" y1="214" x2="804" y2="176" class="reaction-arrow"/>
+      <text x="770" y="232" class="reaction-label">R2 = 13.531 kN</text>
+    </g>
+    <line x1="84" y1="222" x2="804" y2="222" class="dim"/>
+    <text x="406" y="248" class="dim-text">Span L = 6 m</text>
+  </svg><p class="caption">Figure 1. Loading diagram with supports, dimensions, input load components and ULS reactions.</p></div>
+    </section>
+
+    <section class="page">
+      <h2>Beam Section Data</h2>
+      <div class="grid-2">
+        <div class="figure"><svg viewBox="0 0 520 340" role="img" aria-label="Beam section geometry">
+    <defs>
+      <style>
+        .section-fill{fill:#dbeafe;stroke:#1e3a8a;stroke-width:2}
+        .section-hole{fill:#fff;stroke:#1e3a8a;stroke-width:2}
+        .dim{stroke:#334155;stroke-width:1.2;marker-start:url(#arr);marker-end:url(#arr)}
+        .axis{stroke:#b91c1c;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#arr)}
+        .radius{fill:none;stroke:#334155;stroke-width:1.2}
+        text{font-family:Arial,sans-serif}
+        .dim-text{font-size:14px;fill:#0f172a}
+        .axis-text{font-size:14px;fill:#b91c1c;font-weight:700}
+      </style>
+      <marker id="arr" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+        <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#334155"/>
+      </marker>
+    </defs>
+    <rect x="1" y="1" width="518" height="338" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="138.94736842105263" y="40" width="242.10526315789474" height="10.835829701642643" class="section-fill"/>
+      <rect x="253.6412969202966" y="50.835829701642645" width="12.717406159406796" height="208.32834059671472" class="section-fill"/>
+      <rect x="138.94736842105263" y="259.16417029835736" width="242.10526315789474" height="10.835829701642643" class="section-fill"/>
+
+      <line x1="417.0526315789474" y1="40" x2="417.0526315789474" y2="270" class="dim"/>
+  <text x="427.0526315789474" y="155" class="dim-text">h = 190 mm</text>
+      <line x1="138.94736842105263" y1="306" x2="381.0526315789474" y2="306" class="dim"/>
+  <text x="216" y="328" class="dim-text">b = 200 mm</text>
+      <line x1="253.6412969202966" y1="155" x2="266.3587030797034" y2="155" class="dim"/>
+  <text x="274.3587030797034" y="147" class="dim-text">tw = 10.5 mm</text>
+      <line x1="309.0526315789474" y1="40" x2="309.0526315789474" y2="50.835829701642645" class="dim"/>
+  <text x="315.0526315789474" y="58" class="dim-text">tf = 9 mm</text>
+    <line x1="88" y1="155" x2="432" y2="155" class="axis"/>
+  <text x="334" y="145" class="axis-text">local y-y axis</text>
+    <line x1="260" y1="292" x2="260" y2="36" class="axis"/>
+  <text x="270" y="48" class="axis-text">local z-z axis</text>
+  </svg><p class="caption">Figure 2. Section profile generated from stored section geometry. Derived dimensions are flagged in warnings.</p></div>
+        <div>
+          <table>
+    <thead><tr><th>Property</th><th>Value</th><th>Unit</th></tr></thead>
+    <tbody><tr><td>A</td><td>5,388.535</td><td>mm2</td></tr><tr><td>Iy</td><td>36,920,000</td><td>mm4</td></tr><tr><td>Iz</td><td>13,350,000</td><td>mm4</td></tr><tr><td>Wel,y</td><td>388,600</td><td>mm3</td></tr><tr><td>Wel,z</td><td>-</td><td>mm3</td></tr><tr><td>Wpl,y</td><td>429,400</td><td>mm3</td></tr><tr><td>Wpl,z</td><td>-</td><td>mm3</td></tr><tr><td>Av,z</td><td>1,808</td><td>mm2</td></tr><tr><td>Mass</td><td>42.3</td><td>kg/m</td></tr><tr><td>Classification</td><td>-</td><td></td></tr><tr><td>h</td><td>190</td><td>mm</td></tr><tr><td>b</td><td>200</td><td>mm</td></tr><tr><td>tw</td><td>10.506</td><td>mm</td></tr><tr><td>tf</td><td>8.951</td><td>mm</td></tr><tr><td>t</td><td>-</td><td>mm</td></tr><tr><td>r</td><td>-</td><td>mm</td></tr></tbody>
+  </table>
+        </div>
+      </div>
+      <h2>Source / Index Reference</h2>
+      <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Source name</td><td>ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1)</td></tr><tr><td>Standard/catalogue/reference</td><td>https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx</td></tr><tr><td>Region</td><td>Source to be confirmed</td></tr><tr><td>Version/date</td><td>Source to be confirmed</td></tr><tr><td>Section types</td><td>HEA</td></tr><tr><td>Assumptions/limitations</td><td>HEA properties use verified published table. Verified against the published ArcelorMittal table and converted to the app&#39;s mm-based units.</td></tr></tbody>
+  </table>
+    </section>
+
+    <section class="page">
+      <h2>Structural Graphs</h2>
+      <div class="graphics-grid">
+        <div class="figure"><svg viewBox="0 0 900 260" role="img" aria-label="Shear Force Diagram">
+    <defs>
+      <style>
+        text{font-family:Arial,sans-serif}
+        .axis{stroke:#334155;stroke-width:1.2}
+        .grid{stroke:#e2e8f0;stroke-width:1}
+        .plot{fill:none;stroke:#dc2626;stroke-width:2.4}
+        .title{font-size:16px;font-weight:700;fill:#0f172a}
+        .label{font-size:12px;fill:#334155}
+      </style>
+    </defs>
+    <rect x="1" y="1" width="898" height="258" fill="#fff" stroke="#cbd5e1"/>
+    <text x="28" y="26" class="title">Shear Force Diagram</text>
+    <line x1="72" y1="42" x2="858" y2="42" class="grid"/><line x1="72" y1="83.5" x2="858" y2="83.5" class="grid"/><line x1="72" y1="125" x2="858" y2="125" class="grid"/><line x1="72" y1="166.5" x2="858" y2="166.5" class="grid"/><line x1="72" y1="208" x2="858" y2="208" class="grid"/>
+    <line x1="72" y1="208" x2="858" y2="208" class="axis"/>
+    <line x1="72" y1="42" x2="72" y2="208" class="axis"/>
+    <line x1="72" y1="125" x2="858" y2="125" class="axis"/>
+    <path d="M 72.00 51.96 L 76.91 52.62 L 81.83 53.28 L 86.74 53.94 L 91.65 54.60 L 96.56 55.26 L 101.47 55.92 L 106.39 56.58 L 111.30 57.24 L 116.21 57.90 L 121.13 58.56 L 126.04 59.22 L 130.95 59.88 L 135.86 60.54 L 140.78 61.20 L 145.69 61.86 L 150.60 62.52 L 155.51 63.18 L 160.43 63.84 L 165.34 64.50 L 170.25 65.16 L 175.16 65.82 L 180.07 66.48 L 184.99 67.14 L 189.90 67.80 L 194.81 68.46 L 199.73 69.12 L 204.64 69.78 L 209.55 70.44 L 214.46 71.10 L 219.38 71.76 L 224.29 72.42 L 229.20 73.08 L 234.11 73.74 L 239.03 74.40 L 243.94 75.06 L 248.85 75.72 L 253.76 76.38 L 258.68 77.04 L 263.59 77.70 L 268.50 78.36 L 273.41 79.02 L 278.33 79.68 L 283.24 80.34 L 288.15 81.00 L 293.06 81.66 L 297.98 82.32 L 302.89 82.98 L 307.80 83.64 L 312.71 84.30 L 317.63 84.96 L 322.54 85.62 L 327.45 86.28 L 332.36 86.94 L 337.27 87.60 L 342.19 88.26 L 347.10 88.92 L 352.01 89.58 L 356.93 90.24 L 361.84 90.90 L 366.75 91.56 L 371.66 92.22 L 376.57 92.88 L 381.49 93.54 L 386.40 94.20 L 391.31 94.86 L 396.23 95.52 L 401.14 96.18 L 406.05 96.84 L 410.96 97.50 L 415.88 98.16 L 420.79 98.82 L 425.70 99.48 L 430.61 100.14 L 435.52 100.80 L 440.44 101.46 L 445.35 102.12 L 450.26 102.78 L 455.18 103.44 L 460.09 104.10 L 465.00 145.24 L 469.91 145.90 L 474.83 146.56 L 479.74 147.22 L 484.65 147.88 L 489.56 148.54 L 494.47 149.20 L 499.39 149.86 L 504.30 150.52 L 509.21 151.18 L 514.13 151.84 L 519.04 152.50 L 523.95 153.16 L 528.86 153.82 L 533.78 154.48 L 538.69 155.14 L 543.60 155.80 L 548.51 156.46 L 553.42 157.12 L 558.34 157.78 L 563.25 158.44 L 568.16 159.10 L 573.08 159.76 L 577.99 160.42 L 582.90 161.08 L 587.81 161.74 L 592.73 162.40 L 597.64 163.06 L 602.55 163.72 L 607.46 164.38 L 612.38 165.04 L 617.29 165.70 L 622.20 166.36 L 627.11 167.02 L 632.02 167.68 L 636.94 168.34 L 641.85 169.00 L 646.76 169.66 L 651.67 170.32 L 656.59 170.98 L 661.50 171.64 L 666.41 172.30 L 671.33 172.96 L 676.24 173.62 L 681.15 174.28 L 686.06 174.94 L 690.98 175.60 L 695.89 176.26 L 700.80 176.92 L 705.71 177.58 L 710.63 178.24 L 715.54 178.90 L 720.45 179.56 L 725.36 180.22 L 730.27 180.88 L 735.19 181.54 L 740.10 182.20 L 745.01 182.86 L 749.92 183.52 L 754.84 184.18 L 759.75 184.84 L 764.66 185.50 L 769.58 186.16 L 774.49 186.82 L 779.40 187.48 L 784.31 188.14 L 789.23 188.80 L 794.14 189.46 L 799.05 190.12 L 803.96 190.78 L 808.88 191.44 L 813.79 192.10 L 818.70 192.76 L 823.61 193.42 L 828.52 194.08 L 833.44 194.74 L 838.35 195.40 L 843.26 196.06 L 848.17 196.72 L 853.09 197.38 L 858.00 125.00" class="plot"/>
+    <text x="72" y="240" class="label">x (m)</text>
+    <text x="18" y="54" class="label">kN</text>
+    <text x="72" y="58" class="label">Peak 13.531 kN at 0 m</text>
+  </svg><p class="caption">Figure 3. Shear force diagram.</p></div>
+        <div class="figure"><svg viewBox="0 0 900 260" role="img" aria-label="Bending Moment Diagram">
+    <defs>
+      <style>
+        text{font-family:Arial,sans-serif}
+        .axis{stroke:#334155;stroke-width:1.2}
+        .grid{stroke:#e2e8f0;stroke-width:1}
+        .plot{fill:none;stroke:#155eef;stroke-width:2.4}
+        .title{font-size:16px;font-weight:700;fill:#0f172a}
+        .label{font-size:12px;fill:#334155}
+      </style>
+    </defs>
+    <rect x="1" y="1" width="898" height="258" fill="#fff" stroke="#cbd5e1"/>
+    <text x="28" y="26" class="title">Bending Moment Diagram</text>
+    <line x1="72" y1="42" x2="858" y2="42" class="grid"/><line x1="72" y1="83.5" x2="858" y2="83.5" class="grid"/><line x1="72" y1="125" x2="858" y2="125" class="grid"/><line x1="72" y1="166.5" x2="858" y2="166.5" class="grid"/><line x1="72" y1="208" x2="858" y2="208" class="grid"/>
+    <line x1="72" y1="208" x2="858" y2="208" class="axis"/>
+    <line x1="72" y1="42" x2="72" y2="208" class="axis"/>
+    <line x1="72" y1="125" x2="858" y2="125" class="axis"/>
+    <path d="M 72.00 125.00 L 76.91 123.58 L 81.83 122.17 L 86.74 120.77 L 91.65 119.38 L 96.56 118.01 L 101.47 116.65 L 106.39 115.31 L 111.30 113.98 L 116.21 112.66 L 121.13 111.35 L 126.04 110.05 L 130.95 108.77 L 135.86 107.50 L 140.78 106.25 L 145.69 105.01 L 150.60 103.78 L 155.51 102.56 L 160.43 101.36 L 165.34 100.17 L 170.25 98.99 L 175.16 97.82 L 180.07 96.67 L 184.99 95.53 L 189.90 94.41 L 194.81 93.29 L 199.73 92.19 L 204.64 91.11 L 209.55 90.03 L 214.46 88.97 L 219.38 87.92 L 224.29 86.89 L 229.20 85.86 L 234.11 84.85 L 239.03 83.86 L 243.94 82.87 L 248.85 81.90 L 253.76 80.94 L 258.68 80.00 L 263.59 79.06 L 268.50 78.15 L 273.41 77.24 L 278.33 76.34 L 283.24 75.46 L 288.15 74.60 L 293.06 73.74 L 297.98 72.90 L 302.89 72.07 L 307.80 71.25 L 312.71 70.45 L 317.63 69.66 L 322.54 68.88 L 327.45 68.12 L 332.36 67.37 L 337.27 66.63 L 342.19 65.90 L 347.10 65.19 L 352.01 64.49 L 356.93 63.80 L 361.84 63.13 L 366.75 62.47 L 371.66 61.82 L 376.57 61.19 L 381.49 60.56 L 386.40 59.95 L 391.31 59.36 L 396.23 58.77 L 401.14 58.20 L 406.05 57.65 L 410.96 57.10 L 415.88 56.57 L 420.79 56.05 L 425.70 55.54 L 430.61 55.05 L 435.52 54.57 L 440.44 54.10 L 445.35 53.65 L 450.26 53.21 L 455.18 52.78 L 460.09 52.36 L 465.00 51.96 L 469.91 52.36 L 474.83 52.78 L 479.74 53.21 L 484.65 53.65 L 489.56 54.10 L 494.47 54.57 L 499.39 55.05 L 504.30 55.54 L 509.21 56.05 L 514.13 56.57 L 519.04 57.10 L 523.95 57.65 L 528.86 58.20 L 533.78 58.77 L 538.69 59.36 L 543.60 59.95 L 548.51 60.56 L 553.42 61.19 L 558.34 61.82 L 563.25 62.47 L 568.16 63.13 L 573.08 63.80 L 577.99 64.49 L 582.90 65.19 L 587.81 65.90 L 592.73 66.63 L 597.64 67.37 L 602.55 68.12 L 607.46 68.88 L 612.38 69.66 L 617.29 70.45 L 622.20 71.25 L 627.11 72.07 L 632.02 72.90 L 636.94 73.74 L 641.85 74.60 L 646.76 75.46 L 651.67 76.34 L 656.59 77.24 L 661.50 78.15 L 666.41 79.06 L 671.33 80.00 L 676.24 80.94 L 681.15 81.90 L 686.06 82.87 L 690.98 83.86 L 695.89 84.85 L 700.80 85.86 L 705.71 86.89 L 710.63 87.92 L 715.54 88.97 L 720.45 90.03 L 725.36 91.11 L 730.27 92.19 L 735.19 93.29 L 740.10 94.41 L 745.01 95.53 L 749.92 96.67 L 754.84 97.82 L 759.75 98.99 L 764.66 100.17 L 769.58 101.36 L 774.49 102.56 L 779.40 103.78 L 784.31 105.01 L 789.23 106.25 L 794.14 107.50 L 799.05 108.77 L 803.96 110.05 L 808.88 111.35 L 813.79 112.66 L 818.70 113.98 L 823.61 115.31 L 828.52 116.65 L 833.44 118.01 L 838.35 119.38 L 843.26 120.77 L 848.17 122.17 L 853.09 123.58 L 858.00 125.00" class="plot"/>
+    <text x="72" y="240" class="label">x (m)</text>
+    <text x="18" y="54" class="label">kN m</text>
+    <text x="465" y="58" class="label">Peak 25.921 kN m at 3 m</text>
+  </svg><p class="caption">Figure 4. Bending moment diagram.</p></div>
+        <div class="figure"><svg viewBox="0 0 900 260" role="img" aria-label="Deflection Diagram">
+    <defs>
+      <style>
+        text{font-family:Arial,sans-serif}
+        .axis{stroke:#334155;stroke-width:1.2}
+        .grid{stroke:#e2e8f0;stroke-width:1}
+        .plot{fill:none;stroke:#15803d;stroke-width:2.4}
+        .title{font-size:16px;font-weight:700;fill:#0f172a}
+        .label{font-size:12px;fill:#334155}
+      </style>
+    </defs>
+    <rect x="1" y="1" width="898" height="258" fill="#fff" stroke="#cbd5e1"/>
+    <text x="28" y="26" class="title">Deflection Diagram</text>
+    <line x1="72" y1="42" x2="858" y2="42" class="grid"/><line x1="72" y1="83.5" x2="858" y2="83.5" class="grid"/><line x1="72" y1="125" x2="858" y2="125" class="grid"/><line x1="72" y1="166.5" x2="858" y2="166.5" class="grid"/><line x1="72" y1="208" x2="858" y2="208" class="grid"/>
+    <line x1="72" y1="208" x2="858" y2="208" class="axis"/>
+    <line x1="72" y1="42" x2="72" y2="208" class="axis"/>
+    <line x1="72" y1="125" x2="858" y2="125" class="axis"/>
+    <path d="M 72.00 125.00 L 76.91 123.57 L 81.83 122.15 L 86.74 120.72 L 91.65 119.30 L 96.56 117.88 L 101.47 116.46 L 106.39 115.05 L 111.30 113.64 L 116.21 112.24 L 121.13 110.83 L 126.04 109.44 L 130.95 108.05 L 135.86 106.67 L 140.78 105.29 L 145.69 103.93 L 150.60 102.57 L 155.51 101.22 L 160.43 99.88 L 165.34 98.55 L 170.25 97.23 L 175.16 95.92 L 180.07 94.62 L 184.99 93.33 L 189.90 92.05 L 194.81 90.79 L 199.73 89.54 L 204.64 88.30 L 209.55 87.08 L 214.46 85.87 L 219.38 84.68 L 224.29 83.50 L 229.20 82.34 L 234.11 81.19 L 239.03 80.06 L 243.94 78.95 L 248.85 77.86 L 253.76 76.78 L 258.68 75.72 L 263.59 74.68 L 268.50 73.65 L 273.41 72.65 L 278.33 71.67 L 283.24 70.70 L 288.15 69.76 L 293.06 68.84 L 297.98 67.94 L 302.89 67.05 L 307.80 66.20 L 312.71 65.36 L 317.63 64.55 L 322.54 63.75 L 327.45 62.99 L 332.36 62.24 L 337.27 61.52 L 342.19 60.82 L 347.10 60.15 L 352.01 59.50 L 356.93 58.88 L 361.84 58.28 L 366.75 57.71 L 371.66 57.16 L 376.57 56.64 L 381.49 56.14 L 386.40 55.67 L 391.31 55.23 L 396.23 54.82 L 401.14 54.43 L 406.05 54.07 L 410.96 53.74 L 415.88 53.43 L 420.79 53.15 L 425.70 52.91 L 430.61 52.69 L 435.52 52.49 L 440.44 52.33 L 445.35 52.20 L 450.26 52.09 L 455.18 52.02 L 460.09 51.98 L 465.00 51.96 L 469.91 51.98 L 474.83 52.02 L 479.74 52.09 L 484.65 52.20 L 489.56 52.33 L 494.47 52.49 L 499.39 52.69 L 504.30 52.91 L 509.21 53.15 L 514.13 53.43 L 519.04 53.74 L 523.95 54.07 L 528.86 54.43 L 533.78 54.82 L 538.69 55.23 L 543.60 55.67 L 548.51 56.14 L 553.42 56.64 L 558.34 57.16 L 563.25 57.71 L 568.16 58.28 L 573.08 58.88 L 577.99 59.50 L 582.90 60.15 L 587.81 60.82 L 592.73 61.52 L 597.64 62.24 L 602.55 62.99 L 607.46 63.75 L 612.38 64.55 L 617.29 65.36 L 622.20 66.20 L 627.11 67.05 L 632.02 67.94 L 636.94 68.84 L 641.85 69.76 L 646.76 70.70 L 651.67 71.67 L 656.59 72.65 L 661.50 73.65 L 666.41 74.68 L 671.33 75.72 L 676.24 76.78 L 681.15 77.86 L 686.06 78.95 L 690.98 80.06 L 695.89 81.19 L 700.80 82.34 L 705.71 83.50 L 710.63 84.68 L 715.54 85.87 L 720.45 87.08 L 725.36 88.30 L 730.27 89.54 L 735.19 90.79 L 740.10 92.05 L 745.01 93.33 L 749.92 94.62 L 754.84 95.92 L 759.75 97.23 L 764.66 98.55 L 769.58 99.88 L 774.49 101.22 L 779.40 102.57 L 784.31 103.93 L 789.23 105.29 L 794.14 106.67 L 799.05 108.05 L 803.96 109.44 L 808.88 110.83 L 813.79 112.24 L 818.70 113.64 L 823.61 115.05 L 828.52 116.46 L 833.44 117.88 L 838.35 119.30 L 843.26 120.72 L 848.17 122.15 L 853.09 123.57 L 858.00 125.00" class="plot"/>
+    <text x="72" y="240" class="label">x (m)</text>
+    <text x="18" y="54" class="label">mm</text>
+    <text x="465" y="58" class="label">Peak 11.449 mm at 3 m</text>
+  </svg><p class="caption">Figure 5. Deflection diagram.</p></div>
+        <div class="figure"><svg viewBox="0 0 900 288" role="img" aria-label="Utilisation diagram">
+    <style>text{font-family:Arial,sans-serif}.title{font-size:16px;font-weight:700;fill:#0f172a}.label{font-size:12px;fill:#0f172a}</style>
+    <rect x="1" y="1" width="898" height="286" fill="#fff" stroke="#cbd5e1"/>
+    <text x="28" y="28" class="title">Utilisation Ratios</text>
+    <line x1="791.8518518518518" y1="45" x2="791.8518518518518" y2="258" stroke="#dc2626" stroke-dasharray="5 4"/>
+    <text x="796.8518518518518" y="42" class="label">IR = 1.0</text>
+    <text x="30" y="68" class="label">Moment</text>
+      <rect x="190" y="54" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="54" width="102.33888888888889" height="18" fill="#155eef"/>
+      <text x="300.3388888888889" y="68" class="label">0.17004</text><text x="30" y="98" class="label">Shear</text>
+      <rect x="190" y="84" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="84" width="21.97361111111111" height="18" fill="#155eef"/>
+      <text x="219.9736111111111" y="98" class="label">0.03651</text><text x="30" y="128" class="label">Axial</text>
+      <rect x="190" y="114" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="114" width="0" height="18" fill="#155eef"/>
+      <text x="198" y="128" class="label">0</text><text x="30" y="158" class="label">Deflection</text>
+      <rect x="190" y="144" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="144" width="245.50138888888884" height="18" fill="#155eef"/>
+      <text x="443.50138888888887" y="158" class="label">0.40791</text><text x="30" y="188" class="label">Ltb</text>
+      <rect x="190" y="174" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="174" width="106.59398148148146" height="18" fill="#155eef"/>
+      <text x="304.5939814814815" y="188" class="label">0.17711</text><text x="30" y="218" class="label">Support</text>
+      <rect x="190" y="204" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="204" width="24.41712962962963" height="18" fill="#155eef"/>
+      <text x="222.41712962962964" y="218" class="label">0.04057</text><text x="30" y="248" class="label">Combined</text>
+      <rect x="190" y="234" width="650" height="18" fill="#e2e8f0"/>
+      <rect x="190" y="234" width="106.59398148148146" height="18" fill="#155eef"/>
+      <text x="304.5939814814815" y="248" class="label">0.17711</text>
+  </svg><p class="caption">Figure 6. Utilisation diagram for active checks.</p></div>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>Engineering Calculations</h2>
+      <article class="calc-block">
+    <div class="calc-head">
+      <h3>Design basis</h3>
+      <span class="status-pill info">INFO</span>
+    </div>
+    <p class="code-ref">EN 1990 / EN 1993-1-1</p>
+    <div class="equation">ULS and SLS combinations selected by project input.</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Combination</td><td>EN 1990 Eq 6.10</td></tr><tr><td>Design code</td><td>EN 1993-1-1</td></tr><tr><td>National Annex</td><td>UK National Annex</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2; SLS: Eq 6.14a: LC = G + Q1 + 0.7*Q2</dd>
+      <dt>Unit conversion</dt><dd>Loads entered in project units are converted to kN and kN m internally before design checks.</dd>
+      <dt>Result</dt><dd>ULS: ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2</dd>
+      <dt>Resistance</dt><dd>Not applicable</dd>
+      <dt>Utilisation</dt><dd>Not applicable</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Support reactions</h3>
+      <span class="status-pill info">INFO</span>
+    </div>
+    <p class="code-ref">Elastic beam analysis, equilibrium</p>
+    <div class="equation">K d = F, reactions R = Kd - F</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>L</td><td>6 m</td></tr><tr><td>Support condition</td><td>Simply supported</td></tr><tr><td>Max |R|</td><td>13.531 kN</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>Server finite-element beam model assembled from entered loads and supports.</dd>
+      <dt>Unit conversion</dt><dd>R[kN] converted to kN for display.</dd>
+      <dt>Result</dt><dd>Maximum reaction = 13.531 kN</dd>
+      <dt>Resistance</dt><dd>Support reaction is an action result; support shear resistance checked separately.</dd>
+      <dt>Utilisation</dt><dd>See support/web check.</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Major-axis bending resistance</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.2.5</p>
+    <div class="equation">M_y,Rd = W_y f_y / gamma_M0</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>W_y</td><td>429400 mm^3</td></tr><tr><td>f_y</td><td>355 MPa</td></tr><tr><td>gamma_M0</td><td>1</td></tr><tr><td>M_y,Ed</td><td>25.921 kN m</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>429400 mm^3 x 355 N/mm^2 / 1</dd>
+      <dt>Unit conversion</dt><dd>N mm converted to kN m by dividing by 1,000,000, then to display units.</dd>
+      <dt>Result</dt><dd>M_y,Rd = 152.437 kN m</dd>
+      <dt>Resistance</dt><dd>152.437 kN m</dd>
+      <dt>Utilisation</dt><dd>IR = M_y,Ed / M_y,Rd = 0.17004</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Shear resistance</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.2.6</p>
+    <div class="equation">V_pl,Rd = A_v f_y / (sqrt(3) gamma_M0)</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>A_v,z</td><td>1808 mm^2</td></tr><tr><td>f_y</td><td>355 MPa</td></tr><tr><td>gamma_M0</td><td>1</td></tr><tr><td>V_z,Ed</td><td>13.531 kN</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>1808 mm^2 x 355 N/mm^2 / (sqrt(3) x 1)</dd>
+      <dt>Unit conversion</dt><dd>N converted to kN by dividing by 1,000, then to display units.</dd>
+      <dt>Result</dt><dd>V_z,Rd = 370.566 kN</dd>
+      <dt>Resistance</dt><dd>370.566 kN</dd>
+      <dt>Utilisation</dt><dd>IR = V_z,Ed / V_z,Rd = 0.03651</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Axial resistance</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.2.3 / 6.2.4</p>
+    <div class="equation">N_c,Rd = A f_y / gamma_M0; N_t,Rd = A f_y / gamma_M0</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>A</td><td>5389 mm^2</td></tr><tr><td>A_eff</td><td>5389 mm^2</td></tr><tr><td>N_Ed</td><td>0 kN</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>5389 mm^2 x 355 N/mm^2 / 1</dd>
+      <dt>Unit conversion</dt><dd>N converted to kN by dividing by 1,000, then to display units.</dd>
+      <dt>Result</dt><dd>N_Rd = 1912.93 kN</dd>
+      <dt>Resistance</dt><dd>1912.93 kN</dd>
+      <dt>Utilisation</dt><dd>IR = N_Ed / N_Rd = 0</dd>
+    </dl>
+    <div class="warning-box"><p>No axial design action entered.</p></div>
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Serviceability deflection</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 7.2 and project deflection limit</p>
+    <div class="equation">delta_IR = delta_max / delta_allow; delta_allow = L / limit</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>L</td><td>6000 mm</td></tr><tr><td>Limit</td><td>L/300</td></tr><tr><td>delta_max</td><td>8.158 mm</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>delta_allow = 6000 mm / 300</dd>
+      <dt>Unit conversion</dt><dd>Finite element deflection is calculated in mm.</dd>
+      <dt>Result</dt><dd>delta_allow = 20 mm</dd>
+      <dt>Resistance</dt><dd>20 mm</dd>
+      <dt>Utilisation</dt><dd>IR = 0.40791</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Section classification</h3>
+      <span class="status-pill info">INFO</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 5.5</p>
+    <div class="equation">Section class selected from project input and used to choose W_pl, W_el or W_eff.</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Selected class</td><td>Class 2</td></tr><tr><td>Resistance modulus</td><td>Wpl,y</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>Class 2 uses Wpl,y.</dd>
+      <dt>Unit conversion</dt><dd>Not applicable.</dd>
+      <dt>Result</dt><dd>Section class = 2</dd>
+      <dt>Resistance</dt><dd>Wpl,y</dd>
+      <dt>Utilisation</dt><dd>Not applicable.</dd>
+    </dl>
+    <div class="warning-box"><p>Automatic plate-element classification is not performed; selected class must be justified by the designer.</p></div>
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Lateral torsional buckling</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.3.2</p>
+    <div class="equation">M_b,Rd = chi_LT W_y f_y / gamma_M1</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>M_cr</td><td>133.568 kN m</td></tr><tr><td>lambda_LT</td><td>1.0683</td></tr><tr><td>chi_LT</td><td>0.96007</td></tr><tr><td>L_b</td><td>6000 mm</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>0.96007 x 429400 mm^3 x 355 N/mm^2 / 1</dd>
+      <dt>Unit conversion</dt><dd>N mm converted to kN m by dividing by 1,000,000, then to display units.</dd>
+      <dt>Result</dt><dd>M_b,Rd = 146.351 kN m</dd>
+      <dt>Resistance</dt><dd>146.351 kN m</dd>
+      <dt>Utilisation</dt><dd>IR_LT = 0.17711</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Support/web bearing screening</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">EN 1993-1-5 style screening check</p>
+    <div class="equation">IR = V_Ed / V_b,z,Rd</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>V_Ed</td><td>13.531 kN</td></tr><tr><td>V_b,z,Rd</td><td>333.51 kN</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>13.5306 / 333.50985</dd>
+      <dt>Unit conversion</dt><dd>kN converted to kN for display.</dd>
+      <dt>Result</dt><dd>Support IR = 0.04057</dd>
+      <dt>Resistance</dt><dd>333.51 kN</dd>
+      <dt>Utilisation</dt><dd>IR = 0.04057</dd>
+    </dl>
+    <div class="warning-box"><p>Support/web result is a screening check and may require detailed EN 1993-1-5 verification.</p></div>
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Compression member buckling</h3>
+      <span class="status-pill info">INFO</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.3.1 and 6.3.3</p>
+    <div class="equation">N_b,Rd = chi A f_y / gamma_M1; interaction IR = N_Ed/N_b,Rd + k M_Ed/M_Rd</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Member buckling</td><td>Not active</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>No compression force applied.</dd>
+      <dt>Unit conversion</dt><dd>N converted to kN by dividing by 1,000, then to display units.</dd>
+      <dt>Result</dt><dd>Not active</dd>
+      <dt>Resistance</dt><dd>Not applicable</dd>
+      <dt>Utilisation</dt><dd>Not applicable</dd>
+    </dl>
+
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Combined axial and bending interaction</h3>
+      <span class="status-pill info">INFO</span>
+    </div>
+    <p class="code-ref">EN 1993-1-1 Clause 6.2.9 / 6.3.3 simplified interaction</p>
+    <div class="equation">IR = N_Ed/N_Rd + M_y,Ed/M_y,Rd</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>N_Ed/N_Rd</td><td>0</td></tr><tr><td>M_y,Ed/M_y,Rd</td><td>0.17004</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>0 + 0.17004</dd>
+      <dt>Unit conversion</dt><dd>Dimensionless utilisation ratio.</dd>
+      <dt>Result</dt><dd>IR_NM = 0.17711</dd>
+      <dt>Resistance</dt><dd>Combined interaction limit = 1.0</dd>
+      <dt>Utilisation</dt><dd>IR = 0.17711</dd>
+    </dl>
+    <div class="warning-box"><p>No axial action entered; combined interaction is not governing.</p></div>
+  </article><article class="calc-block">
+    <div class="calc-head">
+      <h3>Governing utilisation</h3>
+      <span class="status-pill pass">PASS</span>
+    </div>
+    <p class="code-ref">Project acceptance criterion</p>
+    <div class="equation">Governing IR = max(all active utilisation ratios)</div>
+    <table class="compact">
+    <thead><tr><th>Symbol</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Moment IR</td><td>0.17004</td></tr><tr><td>Shear IR</td><td>0.03651</td></tr><tr><td>Deflection IR</td><td>0.40791</td></tr><tr><td>Support IR</td><td>0.04057</td></tr></tbody>
+  </table>
+    <dl class="calc-steps">
+      <dt>Numerical substitution</dt><dd>max(...) = 0.40791</dd>
+      <dt>Unit conversion</dt><dd>Dimensionless utilisation ratio.</dd>
+      <dt>Result</dt><dd>Governing IR = 0.40791</dd>
+      <dt>Resistance</dt><dd>Limit = 1.0</dd>
+      <dt>Utilisation</dt><dd>IR = 0.40791</dd>
+    </dl>
+    <div class="warning-box"><p>tw/tf are not explicit in this section row; drawing dimensions are derived from A, Av,z, h and b for reporting only.</p></div>
+  </article>
+    </section>
+
+    <section class="page">
+      <h2>Pass / Fail Checks</h2>
+      <table>
+    <thead><tr><th>Check</th><th>IR</th><th>Status</th><th>Detail</th></tr></thead>
+    <tbody><tr><td>Moment</td><td>0.17004</td><td>PASS</td><td>152.437</td></tr><tr><td>Shear</td><td>0.03651</td><td>PASS</td><td>370.5665</td></tr><tr><td>Axial</td><td>0</td><td>PASS</td><td>-</td></tr><tr><td>Deflection</td><td>0.40791</td><td>PASS</td><td>-</td></tr><tr><td>Ltb</td><td>0.17711</td><td>PASS</td><td>-</td></tr><tr><td>Support</td><td>0.04057</td><td>PASS</td><td>-</td></tr><tr><td>Combined</td><td>0.17711</td><td>PASS</td><td>-</td></tr><tr><td>Member Buckling</td><td>-</td><td>INFO</td><td>-</td></tr></tbody>
+  </table>
+      <h2>Assumptions</h2>
+      <table>
+    <thead><tr><th>Assumption</th></tr></thead>
+    <tbody><tr><td>Support condition modelled as Simply supported.</td></tr><tr><td>Load combination: EN 1990 Eq 6.10.</td></tr><tr><td>Self weight included from section mass.</td></tr><tr><td>gamma_M0 = 1; gamma_M1 = 1.</td></tr><tr><td>LTB enabled with 0 intermediate restraints.</td></tr><tr><td>Section data source: ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1).</td></tr></tbody>
+  </table>
+      <h2>Revision History</h2>
+      <table>
+    <thead><tr><th>Revision</th><th>Date</th><th>Description</th><th>Prepared by</th><th>Checked by</th><th>Approved by</th></tr></thead>
+    <tbody><tr><td>P01</td><td>2026-06-27</td><td>Initial issue for review</td><td>A Engineer</td><td>C Checker</td><td>A Approver</td></tr></tbody>
+  </table>
+      <h2>References</h2>
+      <table>
+    <thead><tr><th>Reference type</th><th>Source</th><th>Details</th></tr></thead>
+    <tbody><tr><td>Section database</td><td>ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1)</td><td>https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx</td></tr><tr><td>Material database</td><td>Server material library</td><td>Grade S355; project design code EN 1993-1-1</td></tr><tr><td>Design standard</td><td>EN 1993-1-1</td><td>UK National Annex</td></tr><tr><td>Load combinations</td><td>EN 1990 Eq 6.10</td><td>ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2</td></tr></tbody>
+  </table>
+    </section>
+
+    <section class="page">
+      <h2>Appendix A - Section Property Table</h2>
+      <table>
+    <thead><tr><th>Property</th><th>Value</th><th>Unit</th></tr></thead>
+    <tbody><tr><td>A</td><td>5,388.535</td><td>mm2</td></tr><tr><td>Iy</td><td>36,920,000</td><td>mm4</td></tr><tr><td>Iz</td><td>13,350,000</td><td>mm4</td></tr><tr><td>Wel,y</td><td>388,600</td><td>mm3</td></tr><tr><td>Wel,z</td><td>-</td><td>mm3</td></tr><tr><td>Wpl,y</td><td>429,400</td><td>mm3</td></tr><tr><td>Wpl,z</td><td>-</td><td>mm3</td></tr><tr><td>Av,z</td><td>1,808</td><td>mm2</td></tr><tr><td>Mass</td><td>42.3</td><td>kg/m</td></tr><tr><td>Classification</td><td>-</td><td></td></tr><tr><td>h</td><td>190</td><td>mm</td></tr><tr><td>b</td><td>200</td><td>mm</td></tr><tr><td>tw</td><td>10.506</td><td>mm</td></tr><tr><td>tf</td><td>8.951</td><td>mm</td></tr><tr><td>t</td><td>-</td><td>mm</td></tr><tr><td>r</td><td>-</td><td>mm</td></tr></tbody>
+  </table>
+      <h2>Appendix B - Load and Combination Tables</h2>
+      <table>
+    <thead><tr><th>Load</th><th>Type</th><th>Position</th><th>Magnitude</th></tr></thead>
+    <tbody><tr><td>Full-span UDL</td><td>UDL</td><td>0 to 6 m</td><td>G 2, Q1 0, Q2 0</td></tr><tr><td>Self-weight</td><td>UDL</td><td>0 to 6 m</td><td>G 0.415, Q1 0, Q2 0 (self weight)</td></tr><tr><td>Point Q1</td><td>Point load</td><td>3 m</td><td>G 0, Q1 5, Q2 0</td></tr></tbody>
+  </table>
+      <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>ULS combination</td><td>ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2</td></tr><tr><td>SLS combination</td><td>SLS: Eq 6.14a: LC = G + Q1 + 0.7*Q2</td></tr></tbody>
+  </table>
+      <h2>Final Summary</h2>
+      <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td>Overall status</td><td>PASS</td></tr><tr><td>Governing utilisation</td><td>0.40791</td></tr><tr><td>Critical design check</td><td>Deflection</td></tr><tr><td>Warnings</td><td>tw/tf are not explicit in this section row; drawing dimensions are derived from A, Av,z, h and b for reporting only.; Company logo not supplied in project metadata.</td></tr><tr><td>Engineer comments</td><td>Generated example report for Beam Calculator reporting QA.</td></tr><tr><td>Checker comments</td><td>-</td></tr></tbody>
+  </table>
+      <div class="signature-grid">
+        <div class="signature"><strong>Prepared by</strong><br>A Engineer</div>
+        <div class="signature"><strong>Checked by</strong><br>C Checker</div>
+        <div class="signature"><strong>Approved by</strong><br>A Approver</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

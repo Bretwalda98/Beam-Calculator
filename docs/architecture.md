@@ -18,14 +18,15 @@ The public frontend is only a presentation layer. It handles forms, theme/layout
 2. Browser sends normalized JSON to `POST /api/calculate`.
 3. Server validates inputs, loads the section/material from server files, runs the finite element solver and design checks, and returns result data.
 4. Browser renders the returned summary, checks, and graph series.
-5. Server-generated PDF is requested through `POST /api/pdf`.
+5. Server-generated reports are requested through `POST /api/report/html`, `POST /api/report/latex`, or the lightweight fallback `POST /api/pdf`.
 
 ## Backend Modules
 
 - `backend/services/calculation-service.js`: server-side solver and engineering checks.
 - `backend/services/sections-service.js`: section lookup, source metadata, and source index generation.
 - `backend/services/project-service.js`: authenticated project and revision persistence for the local development store.
-- `backend/services/pdf-service.js`: server-side PDF generation without exposing report logic to the client.
+- `backend/services/report-service.js`: server-side report model, HTML print package, LaTeX source, SVG figures, and PDF fallback generation without exposing report logic to the client.
+- `backend/services/pdf-service.js`: compatibility wrapper for the PDF fallback export.
 - `backend/auth/auth-service.js`: OAuth provider configuration gates. Authentication is not faked when secrets are missing.
 - `backend/middleware/http.js`: security headers, CORS, rate limits, JSON parsing, signed-cookie helpers, auth guard.
 

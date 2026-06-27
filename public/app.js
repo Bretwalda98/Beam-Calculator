@@ -71,15 +71,25 @@ function readForm() {
   const span = Number(form.get('span'));
   const pointLoad = Number(form.get('pointQ1') || 0);
   const pointX = Number(form.get('pointX') || 0);
+  const reportDate = form.get('date') || new Date().toISOString().slice(0, 10);
   return {
     metadata: {
       projectName: form.get('projectName'),
+      clientName: form.get('clientName'),
+      companyName: form.get('companyName'),
+      companyLogoUrl: form.get('companyLogoUrl'),
       jobReference: form.get('jobReference'),
+      calculationTitle: form.get('calculationTitle') || 'Beam section check',
+      beamMark: form.get('beamMark'),
       revision: form.get('revision'),
+      revisionDescription: form.get('revisionDescription'),
       engineerName: form.get('engineerName'),
       checkedBy: form.get('checkedBy'),
-      calculationTitle: 'Beam section check',
-      date: new Date().toISOString().slice(0, 10)
+      approvedBy: form.get('approvedBy'),
+      date: reportDate,
+      designCode: form.get('designCode') || 'EN 1993-1-1',
+      nationalAnnex: form.get('nationalAnnex') || 'UK National Annex / project default',
+      notes: form.get('notes')
     },
     section: { family: form.get('sectionFamily'), name: form.get('sectionName') },
     material: { grade: form.get('material') },
@@ -234,10 +244,39 @@ async function downloadPdf() {
     body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
   });
   const blob = await res.blob();
+  downloadBlob(blob, 'beam-calculation.pdf');
+}
+
+async function openHtmlReport() {
+  if (!state.lastResult) await calculate();
+  const res = await api('/api/report/html', {
+    method: 'POST',
+    body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
+  });
+  const html = await res.text();
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank', 'noopener');
+  if (!win) downloadBlob(blob, 'beam-calculation-report.html');
+  setStatus('Report package generated. Use browser print to create the final PDF.', 'ok');
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+async function downloadLatex() {
+  if (!state.lastResult) await calculate();
+  const res = await api('/api/report/latex', {
+    method: 'POST',
+    body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
+  });
+  const blob = await res.blob();
+  downloadBlob(blob, 'beam-calculation-report.tex');
+}
+
+function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'beam-calculation.pdf';
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -261,9 +300,12 @@ $('#googleSignIn').addEventListener('click', () => startAuth('google'));
 $('#appleSignIn').addEventListener('click', () => startAuth('apple'));
 $('#signOut').addEventListener('click', async () => { await api('/api/auth/logout', { method: 'POST' }); await refreshSession(); });
 $('#saveProject').addEventListener('click', () => saveProject().catch((err) => setStatus(err.message, 'error')));
+$('#openReport').addEventListener('click', () => openHtmlReport().catch((err) => setStatus(err.message, 'error')));
+$('#downloadLatex').addEventListener('click', () => downloadLatex().catch((err) => setStatus(err.message, 'error')));
 $('#downloadPdf').addEventListener('click', () => downloadPdf().catch((err) => setStatus(err.message, 'error')));
 $('#loadSources').addEventListener('click', () => loadSources().catch((err) => setStatus(err.message, 'error')));
 addEventListener('resize', applySettings);
+$('[name="date"]').value = new Date().toISOString().slice(0, 10);
 applySettings();
 Promise.all([loadFamilies(), loadSources(), refreshSession()])
   .then(() => calculate())

@@ -46,4 +46,21 @@ Each save creates a new project revision in the project record. The development 
 
 - `POST /api/pdf`
 
-Generates a server-side PDF from a supplied calculation result or from a supplied calculation input.
+Generates a server-side lightweight PDF fallback from a supplied calculation result or from a supplied calculation input.
+
+## Reports
+
+- `POST /api/report/html`
+- `POST /api/report/latex`
+
+Both endpoints accept the same body shape:
+
+```json
+{
+  "input": {},
+  "result": {},
+  "metadata": {}
+}
+```
+
+If `input` is present, the server recalculates where needed so older saved results can be upgraded to the current report object format. The HTML endpoint returns a professional print package with title page, executive summary, section SVG, loading diagram, graphs, calculation objects, assumptions, revision history, references, appendices, and final signature summary. The LaTeX endpoint returns generated `.tex` source from the same calculation objects.

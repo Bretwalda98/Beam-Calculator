@@ -1,0 +1,385 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Example submission report}
+\rhead{Revision P01}
+\cfoot{\thepage}
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\Large Example Engineering Ltd\\[6mm]}
+{\LARGE\bfseries Primary beam check\\[6mm]}
+{\large Example submission report\\[3mm]}
+\begin{longtable}{p{0.35\linewidth}p{0.55\linewidth}}
+Client & Example Client \\
+Job/reference & JOB-001 \\
+Beam/member mark & B1 \\
+Revision & P01 \\
+Revision description & Initial issue for review \\
+Prepared by & A Engineer \\
+Checked by & C Checker \\
+Approved by & A Approver \\
+Date & 2026-06-27 \\
+Software version & 35.0.0 \\
+Design code & EN 1993-1-1 \\
+National Annex & UK National Annex \\
+\end{longtable}
+\vfill
+{\Huge\bfseries Overall PASS\\[3mm]}
+{\Large Governing IR 0.40791}
+\end{titlepage}
+
+\section{Executive Summary}
+\begin{longtable}{p{0.38\linewidth}p{0.52\linewidth}}
+\textbf{Item} & \textbf{Value} \\
+Overall status & PASS \\
+Governing utilisation ratio & 0.40791 \\
+Governing design check & Deflection \\
+Beam section & HEA HE 200 A \\
+Steel grade & S355 \\
+Span & 6 m \\
+Maximum moment & 25.9209 kN m \\
+Maximum shear & 13.5306 kN \\
+Maximum deflection & 8.15824 mm \\
+\end{longtable}
+
+\section{Input Data}
+\begin{longtable}{p{0.38\linewidth}p{0.52\linewidth}}
+Section & HEA HE 200 A \\
+Material & S355 \\
+Support condition & Simply supported \\
+Load combination & EN 1990 Eq 6.10 \\
+Notes/comments & Generated example report for Beam Calculator reporting QA. \\
+\end{longtable}
+
+\section{Section Properties}
+\begin{longtable}{p{0.30\linewidth}p{0.30\linewidth}p{0.20\linewidth}}
+\textbf{Property} & \textbf{Value} & \textbf{Unit} \\
+A & 5,388.535 & mm2 \\
+Iy & 36,920,000 & mm4 \\
+Iz & 13,350,000 & mm4 \\
+Wel,y & 388,600 & mm3 \\
+Wel,z & - & mm3 \\
+Wpl,y & 429,400 & mm3 \\
+Wpl,z & - & mm3 \\
+Av,z & 1,808 & mm2 \\
+Mass & 42.3 & kg/m \\
+Classification & - &  \\
+h & 190 & mm \\
+b & 200 & mm \\
+tw & 10.506 & mm \\
+tf & 8.951 & mm \\
+t & - & mm \\
+r & - & mm \\
+\end{longtable}
+
+\section{Engineering Calculations}
+\subsection{Design basis}
+\textbf{Code reference:} EN 1990 / EN 1993-1-1\\
+\textbf{Status:} INFO
+
+\[
+ULS and SLS combinations selected by project input.
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+Combination & EN 1990 Eq 6.10 \\
+Design code & EN 1993-1-1 \\
+National Annex & UK National Annex \\
+\end{longtable}
+
+\textbf{Numerical substitution:} ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2; SLS: Eq 6.14a: LC = G + Q1 + 0.7*Q2\\
+\textbf{Unit conversion:} Loads entered in project units are converted to kN and kN m internally before design checks.\\
+\textbf{Result:} ULS: ULS: Eq 6.10: LC = 1.35*G + 1.5*Q1 + 1.5*0.7*Q2\\
+\textbf{Resistance:} Not applicable\\
+\textbf{Utilisation:} Not applicable\\
+
+
+\subsection{Support reactions}
+\textbf{Code reference:} Elastic beam analysis, equilibrium\\
+\textbf{Status:} INFO
+
+\[
+K d = F, reactions R = Kd - F
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+L & 6 m \\
+Support condition & Simply supported \\
+Max |R| & 13.531 kN \\
+\end{longtable}
+
+\textbf{Numerical substitution:} Server finite-element beam model assembled from entered loads and supports.\\
+\textbf{Unit conversion:} R[kN] converted to kN for display.\\
+\textbf{Result:} Maximum reaction = 13.531 kN\\
+\textbf{Resistance:} Support reaction is an action result; support shear resistance checked separately.\\
+\textbf{Utilisation:} See support/web check.\\
+
+
+\subsection{Major-axis bending resistance}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.2.5\\
+\textbf{Status:} PASS
+
+\[
+M\_y,Rd = W\_y f\_y / gamma\_M0
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+W\_y & 429400 mm\textasciicircum{}3 \\
+f\_y & 355 MPa \\
+gamma\_M0 & 1 \\
+M\_y,Ed & 25.921 kN m \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 429400 mm\textasciicircum{}3 x 355 N/mm\textasciicircum{}2 / 1\\
+\textbf{Unit conversion:} N mm converted to kN m by dividing by 1,000,000, then to display units.\\
+\textbf{Result:} M\_y,Rd = 152.437 kN m\\
+\textbf{Resistance:} 152.437 kN m\\
+\textbf{Utilisation:} IR = M\_y,Ed / M\_y,Rd = 0.17004\\
+
+
+\subsection{Shear resistance}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.2.6\\
+\textbf{Status:} PASS
+
+\[
+V\_pl,Rd = A\_v f\_y / (sqrt(3) gamma\_M0)
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+A\_v,z & 1808 mm\textasciicircum{}2 \\
+f\_y & 355 MPa \\
+gamma\_M0 & 1 \\
+V\_z,Ed & 13.531 kN \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 1808 mm\textasciicircum{}2 x 355 N/mm\textasciicircum{}2 / (sqrt(3) x 1)\\
+\textbf{Unit conversion:} N converted to kN by dividing by 1,000, then to display units.\\
+\textbf{Result:} V\_z,Rd = 370.566 kN\\
+\textbf{Resistance:} 370.566 kN\\
+\textbf{Utilisation:} IR = V\_z,Ed / V\_z,Rd = 0.03651\\
+
+
+\subsection{Axial resistance}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.2.3 / 6.2.4\\
+\textbf{Status:} PASS
+
+\[
+N\_c,Rd = A f\_y / gamma\_M0; N\_t,Rd = A f\_y / gamma\_M0
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+A & 5389 mm\textasciicircum{}2 \\
+A\_eff & 5389 mm\textasciicircum{}2 \\
+N\_Ed & 0 kN \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 5389 mm\textasciicircum{}2 x 355 N/mm\textasciicircum{}2 / 1\\
+\textbf{Unit conversion:} N converted to kN by dividing by 1,000, then to display units.\\
+\textbf{Result:} N\_Rd = 1912.93 kN\\
+\textbf{Resistance:} 1912.93 kN\\
+\textbf{Utilisation:} IR = N\_Ed / N\_Rd = 0\\
+\textbf{Warnings:} No axial design action entered.
+
+
+\subsection{Serviceability deflection}
+\textbf{Code reference:} EN 1993-1-1 Clause 7.2 and project deflection limit\\
+\textbf{Status:} PASS
+
+\[
+delta\_IR = delta\_max / delta\_allow; delta\_allow = L / limit
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+L & 6000 mm \\
+Limit & L/300 \\
+delta\_max & 8.158 mm \\
+\end{longtable}
+
+\textbf{Numerical substitution:} delta\_allow = 6000 mm / 300\\
+\textbf{Unit conversion:} Finite element deflection is calculated in mm.\\
+\textbf{Result:} delta\_allow = 20 mm\\
+\textbf{Resistance:} 20 mm\\
+\textbf{Utilisation:} IR = 0.40791\\
+
+
+\subsection{Section classification}
+\textbf{Code reference:} EN 1993-1-1 Clause 5.5\\
+\textbf{Status:} INFO
+
+\[
+Section class selected from project input and used to choose W\_pl, W\_el or W\_eff.
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+Selected class & Class 2 \\
+Resistance modulus & Wpl,y \\
+\end{longtable}
+
+\textbf{Numerical substitution:} Class 2 uses Wpl,y.\\
+\textbf{Unit conversion:} Not applicable.\\
+\textbf{Result:} Section class = 2\\
+\textbf{Resistance:} Wpl,y\\
+\textbf{Utilisation:} Not applicable.\\
+\textbf{Warnings:} Automatic plate-element classification is not performed; selected class must be justified by the designer.
+
+
+\subsection{Lateral torsional buckling}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.3.2\\
+\textbf{Status:} PASS
+
+\[
+M\_b,Rd = chi\_LT W\_y f\_y / gamma\_M1
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+M\_cr & 133.568 kN m \\
+lambda\_LT & 1.0683 \\
+chi\_LT & 0.96007 \\
+L\_b & 6000 mm \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 0.96007 x 429400 mm\textasciicircum{}3 x 355 N/mm\textasciicircum{}2 / 1\\
+\textbf{Unit conversion:} N mm converted to kN m by dividing by 1,000,000, then to display units.\\
+\textbf{Result:} M\_b,Rd = 146.351 kN m\\
+\textbf{Resistance:} 146.351 kN m\\
+\textbf{Utilisation:} IR\_LT = 0.17711\\
+
+
+\subsection{Support/web bearing screening}
+\textbf{Code reference:} EN 1993-1-5 style screening check\\
+\textbf{Status:} PASS
+
+\[
+IR = V\_Ed / V\_b,z,Rd
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+V\_Ed & 13.531 kN \\
+V\_b,z,Rd & 333.51 kN \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 13.5306 / 333.50985\\
+\textbf{Unit conversion:} kN converted to kN for display.\\
+\textbf{Result:} Support IR = 0.04057\\
+\textbf{Resistance:} 333.51 kN\\
+\textbf{Utilisation:} IR = 0.04057\\
+\textbf{Warnings:} Support/web result is a screening check and may require detailed EN 1993-1-5 verification.
+
+
+\subsection{Compression member buckling}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.3.1 and 6.3.3\\
+\textbf{Status:} INFO
+
+\[
+N\_b,Rd = chi A f\_y / gamma\_M1; interaction IR = N\_Ed/N\_b,Rd + k M\_Ed/M\_Rd
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+Member buckling & Not active \\
+\end{longtable}
+
+\textbf{Numerical substitution:} No compression force applied.\\
+\textbf{Unit conversion:} N converted to kN by dividing by 1,000, then to display units.\\
+\textbf{Result:} Not active\\
+\textbf{Resistance:} Not applicable\\
+\textbf{Utilisation:} Not applicable\\
+
+
+\subsection{Combined axial and bending interaction}
+\textbf{Code reference:} EN 1993-1-1 Clause 6.2.9 / 6.3.3 simplified interaction\\
+\textbf{Status:} INFO
+
+\[
+IR = N\_Ed/N\_Rd + M\_y,Ed/M\_y,Rd
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+N\_Ed/N\_Rd & 0 \\
+M\_y,Ed/M\_y,Rd & 0.17004 \\
+\end{longtable}
+
+\textbf{Numerical substitution:} 0 + 0.17004\\
+\textbf{Unit conversion:} Dimensionless utilisation ratio.\\
+\textbf{Result:} IR\_NM = 0.17711\\
+\textbf{Resistance:} Combined interaction limit = 1.0\\
+\textbf{Utilisation:} IR = 0.17711\\
+\textbf{Warnings:} No axial action entered; combined interaction is not governing.
+
+
+\subsection{Governing utilisation}
+\textbf{Code reference:} Project acceptance criterion\\
+\textbf{Status:} PASS
+
+\[
+Governing IR = max(all active utilisation ratios)
+\]
+
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+\textbf{Variable} & \textbf{Value} \\
+Moment IR & 0.17004 \\
+Shear IR & 0.03651 \\
+Deflection IR & 0.40791 \\
+Support IR & 0.04057 \\
+\end{longtable}
+
+\textbf{Numerical substitution:} max(...) = 0.40791\\
+\textbf{Unit conversion:} Dimensionless utilisation ratio.\\
+\textbf{Result:} Governing IR = 0.40791\\
+\textbf{Resistance:} Limit = 1.0\\
+\textbf{Utilisation:} IR = 0.40791\\
+\textbf{Warnings:} tw/tf are not explicit in this section row; drawing dimensions are derived from A, Av,z, h and b for reporting only.
+
+
+
+\section{Pass Fail Checks}
+\begin{longtable}{p{0.24\linewidth}p{0.15\linewidth}p{0.15\linewidth}p{0.36\linewidth}}
+\textbf{Check} & \textbf{IR} & \textbf{Status} & \textbf{Detail} \\
+Moment & 0.17004 & PASS & 152.437 \\
+Shear & 0.03651 & PASS & 370.5665 \\
+Axial & 0 & PASS & - \\
+Deflection & 0.40791 & PASS & - \\
+Ltb & 0.17711 & PASS & - \\
+Support & 0.04057 & PASS & - \\
+Combined & 0.17711 & PASS & - \\
+Member Buckling & - & INFO & - \\
+\end{longtable}
+
+\section{Assumptions}
+\begin{itemize}
+\item Support condition modelled as Simply supported.
+\item Load combination: EN 1990 Eq 6.10.
+\item Self weight included from section mass.
+\item gamma\_M0 = 1; gamma\_M1 = 1.
+\item LTB enabled with 0 intermediate restraints.
+\item Section data source: ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1).
+\end{itemize}
+
+\section{References}
+\begin{longtable}{p{0.28\linewidth}p{0.62\linewidth}}
+Section database & ArcelorMittal Sections and Merchant Bars Sales Programme (V2026-1) - https://sections.arcelormittal.com/repo/Sections/Sections\%20and\%20Merchant\%20Bars-ArcelorMittal\_V2026-1.xlsx \\
+Design standard & EN 1993-1-1 / UK National Annex \\
+Material database & S355 from server material library \\
+\end{longtable}
+
+\section{Final Summary}
+Overall PASS with governing utilisation 0.40791. Critical design check: Deflection.
+
+\end{document}

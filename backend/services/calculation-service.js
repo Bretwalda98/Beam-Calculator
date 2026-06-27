@@ -879,6 +879,367 @@ function interpolate(xs, ys, x) {
   return ys[ys.length - 1] || 0;
 }
 
+function valueUnit(value, unit, dp = 3) {
+  return `${round(value, dp)} ${unit}`;
+}
+
+function passFail(pass) {
+  return pass ? 'PASS' : 'FAIL';
+}
+
+function getSectionReportGeometry(section) {
+  const family = getFamilyKey(section);
+  const h = numOrNull(section.h_mm || section.d_mm);
+  const b = numOrNull(section.b_mm);
+  const area = getSectionAreas(section).A;
+  const warnings = [];
+  let tw = numOrNull(section.tw_mm);
+  let tf = numOrNull(section.tf_mm);
+  if ((!tw || !tf) && h && b && area) {
+    const geometry = estimateOpenSectionGeometry(section);
+    if (geometry) {
+      tw = tw || geometry.tw;
+      tf = tf || geometry.tf;
+      warnings.push('tw/tf are not explicit in this section row; drawing dimensions are derived from A, Av,z, h and b for reporting only.');
+    }
+  }
+  return {
+    family,
+    type: ['RHS', 'SHS', 'CFRHS'].includes(family) ? 'rhs'
+      : ['PFC', 'CH', 'UPE', 'UPN'].includes(family) ? 'channel'
+        : family.includes('ANGLE') ? 'angle'
+          : 'i',
+    h_mm: h || null,
+    b_mm: b || null,
+    tw_mm: tw || null,
+    tf_mm: tf || numOrNull(section.t_mm) || null,
+    t_mm: numOrNull(section.t_mm) || null,
+    r_mm: numOrNull(section.r_mm || section.r1_mm) || null,
+    warnings
+  };
+}
+
+function getFullSectionProperties(section, check) {
+  const moduli = getSectionModuli(section);
+  const areas = getSectionAreas(section);
+  return {
+    dimensions: getSectionReportGeometry(section),
+    A_mm2: round(areas.A || 0, 3),
+    Aeff_mm2: round(areas.Aeff || areas.A || 0, 3),
+    Iy_mm4: round(calcI_mm4(section), 3),
+    Iz_mm4: round(getSectionLTBProps(section).Iz || section.Iz_mm4 || 0, 3),
+    It_mm4: round(getSectionLTBProps(section).It || section.It_mm4 || 0, 3),
+    Iw_mm6: round(getSectionLTBProps(section).Iw || section.Iw_mm6 || 0, 3),
+    Wel_y_mm3: round(moduli.Wel || 0, 3),
+    Wel_z_mm3: round(section.Wel_z_mm3 || 0, 3),
+    Wpl_y_mm3: round(moduli.Wpl || 0, 3),
+    Wpl_z_mm3: round(section.Wpl_z_mm3 || 0, 3),
+    Weff_y_mm3: round(moduli.Weff || 0, 3),
+    Avz_mm2: round(section.Avz_mm2 || 0, 3),
+    mass_kg_m: round(section.mass_kg_m || 0, 3),
+    classification: `Class ${check.cls}`,
+    databaseStatus: section.ltb_data_status || section.section_data_status || 'server_section_row'
+  };
+}
+
+function buildCalculationObject({ id, title, codeReference, equation, variables, substitution, unitConversion, result, resistance, utilisation, status, warnings = [] }) {
+  return {
+    id,
+    title,
+    codeReference,
+    equation,
+    variables,
+    substitution,
+    unitConversion,
+    result,
+    resistance,
+    utilisation,
+    status,
+    warnings
+  };
+}
+
+function buildCalculationPackage(context) {
+  const {
+    input,
+    section,
+    material,
+    settings,
+    unit,
+    L,
+    supportType,
+    lc,
+    rawLoads,
+    uls,
+    sls,
+    check,
+    ltb,
+    endSupport,
+    memberBuckling,
+    deflAllow_mm,
+    deflPeak,
+    deflIR,
+    supportIR,
+    IR_NM,
+    passNM,
+    passAll,
+    governingIR,
+    maxReaction
+  } = context;
+  const source = getSectionSourceInfo(section);
+  const warnings = [
+    ...getSectionReportGeometry(section).warnings,
+    check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
+    ltb.enabled && !ltb.available ? `LTB unavailable: ${ltb.message}` : null,
+    memberBuckling.active && !memberBuckling.available ? `Member buckling unavailable: ${memberBuckling.message}` : null,
+    !source.title || source.title === 'Source to be confirmed' ? 'Section source to be confirmed.' : null
+  ].filter(Boolean);
+  const calculations = [
+    buildCalculationObject({
+      id: 'design-basis',
+      title: 'Design basis',
+      codeReference: 'EN 1990 / EN 1993-1-1',
+      equation: 'ULS and SLS combinations selected by project input.',
+      variables: [
+        { symbol: 'Combination', value: lc.name },
+        { symbol: 'Design code', value: input.metadata?.designCode || 'EN 1993-1-1' },
+        { symbol: 'National Annex', value: input.metadata?.nationalAnnex || 'UK National Annex / project default' }
+      ],
+      substitution: `${lc.uls.note}; ${lc.sls.note}`,
+      unitConversion: 'Loads entered in project units are converted to kN and kN m internally before design checks.',
+      result: `ULS: ${lc.uls.note}`,
+      resistance: 'Not applicable',
+      utilisation: 'Not applicable',
+      status: 'INFO',
+      warnings: []
+    }),
+    buildCalculationObject({
+      id: 'support-reactions',
+      title: 'Support reactions',
+      codeReference: 'Elastic beam analysis, equilibrium',
+      equation: 'K d = F, reactions R = Kd - F',
+      variables: [
+        { symbol: 'L', value: valueUnit(L, 'm') },
+        { symbol: 'Support condition', value: SUPPORT_LABELS[supportType] || supportType },
+        { symbol: 'Max |R|', value: valueUnit(unit.fromBaseForce(maxReaction), unit.forceShort) }
+      ],
+      substitution: 'Server finite-element beam model assembled from entered loads and supports.',
+      unitConversion: `R[kN] converted to ${unit.forceShort} for display.`,
+      result: `Maximum reaction = ${valueUnit(unit.fromBaseForce(maxReaction), unit.forceShort)}`,
+      resistance: 'Support reaction is an action result; support shear resistance checked separately.',
+      utilisation: 'See support/web check.',
+      status: 'INFO',
+      warnings: []
+    }),
+    buildCalculationObject({
+      id: 'bending-resistance',
+      title: 'Major-axis bending resistance',
+      codeReference: 'EN 1993-1-1 Clause 6.2.5',
+      equation: 'M_y,Rd = W_y f_y / gamma_M0',
+      variables: [
+        { symbol: 'W_y', value: valueUnit(check.Wsel.W, 'mm^3', 0) },
+        { symbol: 'f_y', value: valueUnit(material.fy, 'MPa', 0) },
+        { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
+        { symbol: 'M_y,Ed', value: valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort) }
+      ],
+      substitution: `${round(check.Wsel.W, 0)} mm^3 x ${material.fy} N/mm^2 / ${round(settings.gammaM0, 3)}`,
+      unitConversion: 'N mm converted to kN m by dividing by 1,000,000, then to display units.',
+      result: `M_y,Rd = ${valueUnit(unit.fromBaseMoment(check.momentRdForCheck), unit.momentShort)}`,
+      resistance: valueUnit(unit.fromBaseMoment(check.momentRdForCheck), unit.momentShort),
+      utilisation: `IR = M_y,Ed / M_y,Rd = ${round(check.IR_M, 5)}`,
+      status: passFail(check.passM),
+      warnings: check.mv.trigger ? [check.mv.note] : []
+    }),
+    buildCalculationObject({
+      id: 'shear-resistance',
+      title: 'Shear resistance',
+      codeReference: 'EN 1993-1-1 Clause 6.2.6',
+      equation: 'V_pl,Rd = A_v f_y / (sqrt(3) gamma_M0)',
+      variables: [
+        { symbol: 'A_v,z', value: valueUnit(section.Avz_mm2 || 0, 'mm^2', 0) },
+        { symbol: 'f_y', value: valueUnit(material.fy, 'MPa', 0) },
+        { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
+        { symbol: 'V_z,Ed', value: valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort) }
+      ],
+      substitution: `${round(section.Avz_mm2 || 0, 0)} mm^2 x ${material.fy} N/mm^2 / (sqrt(3) x ${round(settings.gammaM0, 3)})`,
+      unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
+      result: `V_z,Rd = ${valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort)}`,
+      resistance: valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort),
+      utilisation: `IR = V_z,Ed / V_z,Rd = ${round(check.IR_V, 5)}`,
+      status: passFail(check.passV),
+      warnings: []
+    }),
+    buildCalculationObject({
+      id: 'axial-resistance',
+      title: 'Axial resistance',
+      codeReference: 'EN 1993-1-1 Clause 6.2.3 / 6.2.4',
+      equation: 'N_c,Rd = A f_y / gamma_M0; N_t,Rd = A f_y / gamma_M0',
+      variables: [
+        { symbol: 'A', value: valueUnit(check.areas.A || 0, 'mm^2', 0) },
+        { symbol: 'A_eff', value: valueUnit(check.areas.Aeff || check.areas.A || 0, 'mm^2', 0) },
+        { symbol: 'N_Ed', value: valueUnit(unit.fromBaseForce(check.axialEd), unit.forceShort) }
+      ],
+      substitution: `${round(check.areas.A || 0, 0)} mm^2 x ${material.fy} N/mm^2 / ${round(settings.gammaM0, 3)}`,
+      unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
+      result: `N_Rd = ${valueUnit(unit.fromBaseForce(check.axialEd >= 0 ? check.NcRd : check.NtRd), unit.forceShort)}`,
+      resistance: valueUnit(unit.fromBaseForce(check.axialEd >= 0 ? check.NcRd : check.NtRd), unit.forceShort),
+      utilisation: `IR = N_Ed / N_Rd = ${round(check.IR_N, 5)}`,
+      status: passFail(check.passN),
+      warnings: Math.abs(check.axialEd) < 1e-9 ? ['No axial design action entered.'] : []
+    }),
+    buildCalculationObject({
+      id: 'deflection',
+      title: 'Serviceability deflection',
+      codeReference: 'EN 1993-1-1 Clause 7.2 and project deflection limit',
+      equation: 'delta_IR = delta_max / delta_allow; delta_allow = L / limit',
+      variables: [
+        { symbol: 'L', value: valueUnit(L * 1000, 'mm', 0) },
+        { symbol: 'Limit', value: `L/${settings.deflectionLimit}` },
+        { symbol: 'delta_max', value: valueUnit(deflPeak, 'mm') }
+      ],
+      substitution: `delta_allow = ${round(L * 1000, 0)} mm / ${round(settings.deflectionLimit, 0)}`,
+      unitConversion: 'Finite element deflection is calculated in mm.',
+      result: `delta_allow = ${valueUnit(deflAllow_mm, 'mm')}`,
+      resistance: valueUnit(deflAllow_mm, 'mm'),
+      utilisation: `IR = ${round(deflIR, 5)}`,
+      status: passFail(deflPeak <= deflAllow_mm),
+      warnings: []
+    }),
+    buildCalculationObject({
+      id: 'section-classification',
+      title: 'Section classification',
+      codeReference: 'EN 1993-1-1 Clause 5.5',
+      equation: 'Section class selected from project input and used to choose W_pl, W_el or W_eff.',
+      variables: [
+        { symbol: 'Selected class', value: `Class ${check.cls}` },
+        { symbol: 'Resistance modulus', value: check.Wsel.label }
+      ],
+      substitution: `Class ${check.cls} uses ${check.Wsel.label}.`,
+      unitConversion: 'Not applicable.',
+      result: `Section class = ${check.cls}`,
+      resistance: check.Wsel.label,
+      utilisation: 'Not applicable.',
+      status: 'INFO',
+      warnings: ['Automatic plate-element classification is not performed; selected class must be justified by the designer.']
+    }),
+    buildCalculationObject({
+      id: 'ltb',
+      title: 'Lateral torsional buckling',
+      codeReference: 'EN 1993-1-1 Clause 6.3.2',
+      equation: 'M_b,Rd = chi_LT W_y f_y / gamma_M1',
+      variables: ltb.enabled && ltb.available ? [
+        { symbol: 'M_cr', value: valueUnit(unit.fromBaseMoment(ltb.Mcr), unit.momentShort) },
+        { symbol: 'lambda_LT', value: round(ltb.lambdaLT, 5) },
+        { symbol: 'chi_LT', value: round(ltb.chiLT, 5) },
+        { symbol: 'L_b', value: valueUnit(ltb.Lb_mm, 'mm', 0) }
+      ] : [{ symbol: 'LTB', value: ltb.enabled ? 'Unavailable' : 'Disabled' }],
+      substitution: ltb.enabled && ltb.available ? `${round(ltb.chiLT, 5)} x ${round(check.Wsel.W, 0)} mm^3 x ${material.fy} N/mm^2 / ${round(settings.gammaM1, 3)}` : (ltb.message || 'LTB disabled by input.'),
+      unitConversion: 'N mm converted to kN m by dividing by 1,000,000, then to display units.',
+      result: ltb.enabled && ltb.available ? `M_b,Rd = ${valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort)}` : (ltb.message || 'LTB disabled'),
+      resistance: ltb.enabled && ltb.available ? valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort) : 'Not available',
+      utilisation: ltb.enabled && ltb.available ? `IR_LT = ${round(ltb.IR_LT, 5)}` : 'Not applicable',
+      status: ltb.enabled ? (ltb.available ? passFail(ltb.pass) : 'WARNING') : 'INFO',
+      warnings: ltb.enabled && !ltb.available ? [ltb.message] : []
+    }),
+    buildCalculationObject({
+      id: 'support-web',
+      title: 'Support/web bearing screening',
+      codeReference: 'EN 1993-1-5 style screening check',
+      equation: 'IR = V_Ed / V_b,z,Rd',
+      variables: [
+        { symbol: 'V_Ed', value: valueUnit(unit.fromBaseForce(endSupport.Ved), unit.forceShort) },
+        { symbol: 'V_b,z,Rd', value: valueUnit(unit.fromBaseForce(endSupport.VbRd), unit.forceShort) }
+      ],
+      substitution: `${round(unit.fromBaseForce(endSupport.Ved), 5)} / ${round(unit.fromBaseForce(endSupport.VbRd), 5)}`,
+      unitConversion: `kN converted to ${unit.forceShort} for display.`,
+      result: `Support IR = ${round(supportIR, 5)}`,
+      resistance: valueUnit(unit.fromBaseForce(endSupport.VbRd), unit.forceShort),
+      utilisation: `IR = ${round(supportIR, 5)}`,
+      status: passFail(endSupport.pass),
+      warnings: ['Support/web result is a screening check and may require detailed EN 1993-1-5 verification.']
+    }),
+    buildCalculationObject({
+      id: 'member-buckling',
+      title: 'Compression member buckling',
+      codeReference: 'EN 1993-1-1 Clause 6.3.1 and 6.3.3',
+      equation: 'N_b,Rd = chi A f_y / gamma_M1; interaction IR = N_Ed/N_b,Rd + k M_Ed/M_Rd',
+      variables: memberBuckling.active && memberBuckling.available ? [
+        { symbol: 'chi_y', value: round(memberBuckling.chiY, 5) },
+        { symbol: 'chi_z', value: round(memberBuckling.chiZ, 5) },
+        { symbol: 'N_b,y,Rd', value: valueUnit(unit.fromBaseForce(memberBuckling.NbYRd), unit.forceShort) },
+        { symbol: 'N_b,z,Rd', value: valueUnit(unit.fromBaseForce(memberBuckling.NbZRd), unit.forceShort) }
+      ] : [{ symbol: 'Member buckling', value: memberBuckling.active ? 'Unavailable' : 'Not active' }],
+      substitution: memberBuckling.active && memberBuckling.available ? `max(IR_y=${round(memberBuckling.IRy, 5)}, IR_z=${round(memberBuckling.IRz, 5)})` : (memberBuckling.message || 'No compression force applied.'),
+      unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
+      result: memberBuckling.active && memberBuckling.available ? `Governing member buckling IR = ${round(memberBuckling.governing, 5)}` : (memberBuckling.message || 'Not active'),
+      resistance: memberBuckling.active && memberBuckling.available ? `${valueUnit(unit.fromBaseForce(memberBuckling.NbYRd), unit.forceShort)} / ${valueUnit(unit.fromBaseForce(memberBuckling.NbZRd), unit.forceShort)}` : 'Not applicable',
+      utilisation: memberBuckling.active && memberBuckling.available ? `IR = ${round(memberBuckling.governing, 5)}` : 'Not applicable',
+      status: memberBuckling.active ? (memberBuckling.available ? passFail(memberBuckling.pass) : 'WARNING') : 'INFO',
+      warnings: memberBuckling.active && !memberBuckling.available ? [memberBuckling.message] : []
+    }),
+    buildCalculationObject({
+      id: 'combined-interaction',
+      title: 'Combined axial and bending interaction',
+      codeReference: 'EN 1993-1-1 Clause 6.2.9 / 6.3.3 simplified interaction',
+      equation: 'IR = N_Ed/N_Rd + M_y,Ed/M_y,Rd',
+      variables: [
+        { symbol: 'N_Ed/N_Rd', value: round(check.IR_N, 5) },
+        { symbol: 'M_y,Ed/M_y,Rd', value: round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5) }
+      ],
+      substitution: `${round(check.IR_N, 5)} + ${round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5)}`,
+      unitConversion: 'Dimensionless utilisation ratio.',
+      result: `IR_NM = ${round(IR_NM, 5)}`,
+      resistance: 'Combined interaction limit = 1.0',
+      utilisation: `IR = ${round(IR_NM, 5)}`,
+      status: Math.abs(check.axialEd) > 1e-9 ? passFail(passNM) : 'INFO',
+      warnings: Math.abs(check.axialEd) > 1e-9 ? [] : ['No axial action entered; combined interaction is not governing.']
+    }),
+    buildCalculationObject({
+      id: 'governing-summary',
+      title: 'Governing utilisation',
+      codeReference: 'Project acceptance criterion',
+      equation: 'Governing IR = max(all active utilisation ratios)',
+      variables: [
+        { symbol: 'Moment IR', value: round(check.IR_M, 5) },
+        { symbol: 'Shear IR', value: round(check.IR_V, 5) },
+        { symbol: 'Deflection IR', value: round(deflIR, 5) },
+        { symbol: 'Support IR', value: round(supportIR, 5) }
+      ],
+      substitution: `max(...) = ${round(governingIR, 5)}`,
+      unitConversion: 'Dimensionless utilisation ratio.',
+      result: `Governing IR = ${round(governingIR, 5)}`,
+      resistance: 'Limit = 1.0',
+      utilisation: `IR = ${round(governingIR, 5)}`,
+      status: passFail(passAll),
+      warnings
+    })
+  ];
+  return {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    designCode: input.metadata?.designCode || 'EN 1993-1-1',
+    nationalAnnex: input.metadata?.nationalAnnex || 'UK National Annex / project default',
+    assumptions: [
+      `Support condition modelled as ${SUPPORT_LABELS[supportType] || supportType}.`,
+      `Load combination: ${lc.name}.`,
+      rawLoads.udls.some((u) => u.isSelf) ? 'Self weight included from section mass.' : 'Self weight not included.',
+      `gamma_M0 = ${settings.gammaM0}; gamma_M1 = ${settings.gammaM1}.`,
+      settings.enableLTB ? `LTB enabled with ${settings.ltbRestraints} intermediate restraints.` : 'LTB disabled by user input.',
+      `Section data source: ${source.title}.`
+    ],
+    revisionHistory: [{
+      revision: input.metadata?.revision || '-',
+      date: input.metadata?.date || new Date().toISOString().slice(0, 10),
+      description: input.metadata?.revisionDescription || 'Current calculation issue',
+      preparedBy: input.metadata?.engineerName || '-',
+      checkedBy: input.metadata?.checkedBy || '-',
+      approvedBy: input.metadata?.approvedBy || '-'
+    }],
+    warnings,
+    calculations
+  };
+}
+
 function calculateBeam(input) {
   const sectionRef = input.section || {};
   const section = getSection(sectionRef.family, sectionRef.name);
@@ -988,6 +1349,33 @@ function calculateBeam(input) {
   );
   const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling;
   const maxReaction = Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
+  const fullSectionProperties = getFullSectionProperties(section, check);
+  const calculationPackage = buildCalculationPackage({
+    input,
+    section,
+    material,
+    settings,
+    unit,
+    L,
+    supportType,
+    lc,
+    rawLoads,
+    uls,
+    sls,
+    check,
+    ltb,
+    endSupport,
+    memberBuckling,
+    deflAllow_mm,
+    deflPeak,
+    deflIR,
+    supportIR,
+    IR_NM,
+    passNM,
+    passAll,
+    governingIR,
+    maxReaction
+  });
   return {
     calculationId: randomUUID(),
     generatedAt: new Date().toISOString(),
@@ -1023,6 +1411,18 @@ function calculateBeam(input) {
       combined: { ir: round(IR_NM, 5), pass: passNM },
       memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false }
     },
+    loads: {
+      raw: rawLoads,
+      units: {
+        force: unit.forceShort,
+        moment: unit.momentShort,
+        length: 'm'
+      },
+      combinations: {
+        uls: ulsNote,
+        sls: lc.sls.note
+      }
+    },
     actions: {
       ulsNote,
       slsNote: lc.sls.note,
@@ -1031,6 +1431,7 @@ function calculateBeam(input) {
       peakShear: { value: round(unit.fromBaseForce(uls.peakV.val), 5), x: round(uls.peakV.x, 5), signed: round(unit.fromBaseForce(uls.peakV.signed), 5) }
     },
     sectionProperties: {
+      ...fullSectionProperties,
       area: round(check.areas.A || 0, 3),
       inertiaY: round(I, 3),
       modulus: round(check.Wsel.W || 0, 3),
@@ -1038,6 +1439,7 @@ function calculateBeam(input) {
       source: check.Wsel.source,
       sourceReference: getSectionSourceInfo(section)
     },
+    calculationPackage,
     diagrams: {
       series: sampleSeries(uls)
     }

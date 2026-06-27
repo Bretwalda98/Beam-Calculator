@@ -31,10 +31,21 @@
         <fieldset>
           <legend>Project</legend>
           <label>Project name <input name="projectName" maxlength="140" value="Untitled beam project"></label>
+          <label>Client <input name="clientName" maxlength="140"></label>
+          <label>Company <input name="companyName" maxlength="140"></label>
+          <label>Calculation title <input name="calculationTitle" maxlength="140" value="Beam section check"></label>
+          <label>Beam/member mark <input name="beamMark" maxlength="80"></label>
           <label>Job/reference <input name="jobReference" maxlength="80"></label>
           <label>Revision <input name="revision" maxlength="30"></label>
+          <label>Revision description <input name="revisionDescription" maxlength="180" value="Current calculation issue"></label>
           <label>Engineer <input name="engineerName" maxlength="120"></label>
           <label>Checked by <input name="checkedBy" maxlength="120"></label>
+          <label>Approved by <input name="approvedBy" maxlength="120"></label>
+          <label>Date <input name="date" type="date"></label>
+          <label>Design code <input name="designCode" maxlength="80" value="EN 1993-1-1"></label>
+          <label>National Annex <input name="nationalAnnex" maxlength="120" value="UK National Annex / project default"></label>
+          <label>Logo URL <input name="companyLogoUrl" maxlength="300" placeholder="https://..."></label>
+          <label class="wide">Notes/comments <textarea name="notes" maxlength="1200" rows="3"></textarea></label>
         </fieldset>
 
         <fieldset>
@@ -127,7 +138,9 @@
         <div class="button-row">
           <button class="primary" type="submit">Calculate on server</button>
           <button id="saveProject" type="button">Save project</button>
-          <button id="downloadPdf" type="button">Server PDF</button>
+          <button id="openReport" type="button">Print report</button>
+          <button id="downloadLatex" type="button">LaTeX</button>
+          <button id="downloadPdf" type="button">PDF fallback</button>
         </div>
       </form>
     </aside>

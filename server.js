@@ -17,7 +17,7 @@ const { calculateBeam } = require('./backend/services/calculation-service');
 const { listSectionFamilies, listSectionNames, buildSectionSourceIndex } = require('./backend/services/sections-service');
 const { providers, oauthStart, unauthenticatedSession } = require('./backend/auth/auth-service');
 const { listProjects, readProject, saveProject, archiveProject } = require('./backend/services/project-service');
-const { resultToPdf } = require('./backend/services/pdf-service');
+const { resultToPdf, buildReportHtml, buildLatexReport } = require('./backend/services/report-service');
 
 requireProductionSecret();
 
@@ -111,14 +111,39 @@ async function routeApi(req, res, url) {
     }
     if (req.method === 'POST' && pathname === '/api/pdf') {
       const body = await parseJsonBody(req);
-      const result = body.result || calculateBeam(body.input || {});
-      const pdf = resultToPdf(result, body.metadata || {});
+      const input = body.input || {};
+      const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
+      const pdf = resultToPdf(result, body.metadata || input.metadata || {}, input);
       res.writeHead(200, {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="beam-calculation.pdf"',
         'Content-Length': pdf.length
       });
       return res.end(pdf);
+    }
+    if (req.method === 'POST' && pathname === '/api/report/html') {
+      const body = await parseJsonBody(req);
+      const input = body.input || {};
+      const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
+      const html = buildReportHtml(input, result, body.metadata || input.metadata || {});
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Disposition': 'inline; filename="beam-calculation-report.html"',
+        'Content-Length': Buffer.byteLength(html)
+      });
+      return res.end(html);
+    }
+    if (req.method === 'POST' && pathname === '/api/report/latex') {
+      const body = await parseJsonBody(req);
+      const input = body.input || {};
+      const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
+      const latex = buildLatexReport(input, result, body.metadata || input.metadata || {});
+      res.writeHead(200, {
+        'Content-Type': 'application/x-tex; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="beam-calculation-report.tex"',
+        'Content-Length': Buffer.byteLength(latex)
+      });
+      return res.end(latex);
     }
     if (pathname === '/api/projects' && req.method === 'GET') {
       const session = requireAuth(req, res);
@@ -146,7 +171,8 @@ async function routeApi(req, res, url) {
       const session = requireAuth(req, res);
       if (!session) return;
       const project = await readProject(session.userId, projectMatch[1]);
-      const pdf = resultToPdf(project.latestResult, project.metadata);
+      const result = project.latestInput ? calculateBeam(project.latestInput) : project.latestResult;
+      const pdf = resultToPdf(result, project.metadata, project.latestInput || {});
       res.writeHead(200, {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${project.id}.pdf"`,

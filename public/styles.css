@@ -116,7 +116,9 @@ legend { padding: 0 6px; color: var(--muted); font-weight: 800; }
 label { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
 label.check { display: flex; align-items: center; gap: 8px; color: var(--text); }
 input, select { width: 100%; padding: 0 10px; }
+textarea { width: 100%; padding: 10px; resize: vertical; }
 input[type="checkbox"] { width: auto; min-height: auto; accent-color: var(--accent); }
+label.wide { grid-column: 1 / -1; }
 
 .workspace { min-width: 0; }
 .status {

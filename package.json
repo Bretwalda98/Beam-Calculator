@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check backend/services/calculation-service.js && node --check public/app.js",
+    "check": "node --check server.js && node --check backend/services/calculation-service.js && node --check backend/services/report-service.js && node --check backend/services/pdf-service.js && node --check public/app.js",
     "smoke": "node backend/tests/smoke-calculate.js"
   },
   "engines": {
