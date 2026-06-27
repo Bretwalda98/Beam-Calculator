@@ -1896,8 +1896,17 @@ body.layout-mobile .load-entry-fields{grid-template-columns:1fr!important}
             <label>Job/reference number
               <input id="jobReference" type="text" maxlength="80" placeholder="Project ref">
             </label>
+            <label>Client
+              <input id="clientName" type="text" maxlength="120" placeholder="Client">
+            </label>
+            <label>Beam/member mark
+              <input id="memberMark" type="text" maxlength="80" placeholder="B1">
+            </label>
             <label>Revision
               <input id="projectRevision" type="text" maxlength="20" placeholder="P01">
+            </label>
+            <label>Revision description
+              <input id="revisionDescription" type="text" maxlength="160" placeholder="Issued for checking">
             </label>
             <label>Date
               <input id="projectDate" type="date">
@@ -1905,11 +1914,23 @@ body.layout-mobile .load-entry-fields{grid-template-columns:1fr!important}
             <label>Company name
               <input id="companyName" type="text" maxlength="120" placeholder="Company">
             </label>
+            <label>Company logo URL
+              <input id="companyLogo" type="url" maxlength="500" placeholder="https://...">
+            </label>
             <label>Engineer name
               <input id="engineerName" type="text" maxlength="120" placeholder="Engineer">
             </label>
             <label>Checked by
               <input id="checkedBy" type="text" maxlength="120" placeholder="Checker">
+            </label>
+            <label>Approved by
+              <input id="approvedBy" type="text" maxlength="120" placeholder="Approver">
+            </label>
+            <label>Design code
+              <input id="designCode" type="text" maxlength="120" placeholder="EN 1993-1-1">
+            </label>
+            <label>National Annex
+              <input id="nationalAnnex" type="text" maxlength="120" placeholder="UK NA">
             </label>
             <label class="full">Notes/comments
               <textarea id="projectNotes" maxlength="1200" placeholder="Notes for saved project and report header"></textarea>
@@ -3784,8 +3805,11 @@ function deleteSelectedLoadCasePackage(){
 const PROJECT_STORAGE_KEY='beam_calc_projects_v1';
 const PROJECT_FILE_FORMAT='beam-calculator-project';
 const ACCOUNT_STORAGE_KEY='beam_calc_account_v1';
-const APP_VERSION='34.3.0';
-const PROJECT_METADATA_IDS=['calculationTitle','jobReference','projectRevision','projectDate','companyName','engineerName','checkedBy','projectNotes'];
+const APP_VERSION='35.0.0';
+const PROJECT_METADATA_IDS=[
+  'calculationTitle','jobReference','clientName','memberMark','projectRevision','revisionDescription','projectDate',
+  'companyName','companyLogo','engineerName','checkedBy','approvedBy','designCode','nationalAnnex','projectNotes'
+];
 const PROJECT_FIELD_IDS=[
   'analysisMode','supportType','loadUnit','material','span','spanCount','multiLeftEnd','multiRightEnd',
   'load_combo','gammaM0','psi_q1','psi_q2','springLeftPct','springRightPct','sectionSourceMode',
@@ -3957,11 +3981,18 @@ function projectMetadataDefaults(settings=uiSettings){
     projectName:settings.defaultProjectName||'Untitled beam project',
     calculationTitle:settings.defaultCalculationTitle||'Beam section check',
     jobReference:settings.defaultJobReference||'',
+    clientName:'',
+    memberMark:'',
     projectRevision:'',
+    revisionDescription:'',
     projectDate:todayIsoDate(),
     companyName:settings.defaultCompanyName||'',
+    companyLogo:'',
     engineerName:settings.defaultEngineerName||'',
     checkedBy:settings.defaultCheckedBy||'',
+    approvedBy:'',
+    designCode:'EN 1993-1-1',
+    nationalAnnex:'UK National Annex',
     projectNotes:''
   };
 }
@@ -7195,36 +7226,195 @@ function buildReportLoadRows(rawLoads, unit){
       const key=`${load.loadCase}:${load.reportLabel||load.label}`;
       if(seenTrapLoads.has(key)) return;
       seenTrapLoads.add(key);
-      rows.push(`<tr><td>${escHtml(load.reportLabel||load.label||'T')}</td><td>${fmt2(load.reportX1 ?? load.x1)} to ${fmt2(load.reportX2 ?? load.x2)} m</td><td>Trapezoidal</td><td>${escHtml(load.loadCase||'G')}: q1=${fmt3(load.q1||0)}, q2=${fmt3(load.q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
+      rows.push(`<tr><td>${escHtml(load.reportLabel||load.label||'T')}</td><td>Trapezoidal</td><td>q1=${fmt3(load.q1||0)}, q2=${fmt3(load.q2||0)} ${escHtml(unit.udlShort)}</td><td>${fmt2(load.reportX1 ?? load.x1)}</td><td>${fmt2(load.reportX2 ?? load.x2)}</td><td>${escHtml(load.loadCase||'G')}</td><td>Linear distributed action</td></tr>`);
       return;
     }
-    rows.push(`<tr><td>${escHtml(load.label||'UDL')}</td><td>${fmt2(load.x1)} to ${fmt2(load.x2)} m</td><td>${load.sourceType==='uniform'?'Uniform':'UDL'}</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
+    ['G','Q1','Q2'].forEach(loadCase=>{
+      const q=load[loadCase]||0;
+      if(!q) return;
+      rows.push(`<tr><td>${escHtml(load.label||'UDL')}</td><td>${load.isSelf?'Self-weight':'Uniform'}</td><td>${fmt3(q)} ${escHtml(unit.udlShort)}</td><td>${fmt2(load.x1)}</td><td>${fmt2(load.x2)}</td><td>${loadCase}</td><td>${load.isSelf?'Section mass converted to line load':'Constant distributed action'}</td></tr>`);
+    });
   });
   (rawLoads?.points||[]).forEach(load=>{
     if(Math.abs(load.M||0)>1e-12){
-      rows.push(`<tr><td>${escHtml(load.label||'Moment')}</td><td>x=${fmt2(load.x)} m</td><td>Moment</td><td>${fmt3(load.M)} ${escHtml(unit.momentShort)} in ${escHtml(load.momentCase||'G')}</td></tr>`);
-    }else if((load.G||0)||(load.Q1||0)||(load.Q2||0)){
-      rows.push(`<tr><td>${escHtml(load.label||'Point')}</td><td>x=${fmt2(load.x)} m</td><td>Point</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.forceLong)}</td></tr>`);
+      rows.push(`<tr><td>${escHtml(load.label||'Moment')}</td><td>Moment</td><td>${fmt3(load.M)} ${escHtml(unit.momentShort)}</td><td>${fmt2(load.x)}</td><td>-</td><td>${escHtml(load.momentCase||'G')}</td><td>Applied concentrated moment</td></tr>`);
+    }else{
+      ['G','Q1','Q2'].forEach(loadCase=>{
+        const P=load[loadCase]||0;
+        if(!P) return;
+        rows.push(`<tr><td>${escHtml(load.label||'Point')}</td><td>Point</td><td>${fmt3(P)} ${escHtml(unit.forceLong)}</td><td>${fmt2(load.x)}</td><td>-</td><td>${loadCase}</td><td>Concentrated vertical action</td></tr>`);
+      });
     }
   });
-  return rows.length ? rows.join('') : '<tr><td colspan="4">No non-zero user-entered loads.</td></tr>';
+  return rows.length ? rows.join('') : '<tr><td colspan="7">No active non-zero loads.</td></tr>';
+}
+function embeddedPreviewThemeCss(){
+  return '';
 }
 
-function embeddedPreviewThemeCss(){
-  if(document.documentElement.getAttribute('data-theme')!=='dark') return '';
-  return `
-    :root{color-scheme:dark;--embed-bg:#10151d;--embed-panel:#171e28;--embed-panel-2:#1b2430;--embed-text:#f8fafc;--embed-muted:#cbd5e1;--embed-border:#344154}
-    html,body{background:var(--embed-bg)!important;color:var(--embed-text)!important}
-    body,h1,h2,h3,p,li,td,strong,.card .v{color:var(--embed-text)!important}
-    .muted,.small,.card .k{color:var(--embed-muted)!important}
-    .card,.section,.head{background:var(--embed-panel)!important;border-color:var(--embed-border)!important}
-    table,th,td{border-color:var(--embed-border)!important}
-    th,code{background:var(--embed-panel-2)!important;color:var(--embed-text)!important}
-    a{color:#8db5ff!important}
-    @media print{html,body{background:#fff!important;color:#111827!important}body,h1,h2,h3,p,li,td,strong,.card .v{color:#111827!important}.muted,.small,.card .k{color:#475569!important}.card,.section,.head{background:#fff!important;border-color:#cbd5e1!important}th,code{background:#eff6ff!important;color:#111827!important}}
-  `;
+function reportRows(rows){
+  return rows.map(([k,v,cls=''])=>`<tr${cls?` class="${cls}"`:''}><th>${escHtml(k)}</th><td>${v==null||v===''?'-':String(v)}</td></tr>`).join('');
 }
-function buildReportHTML(data){
+function reportClass(ok){ return ok ? 'status-pass' : 'status-fail'; }
+function reportStatus(ok){ return `<span class="${reportClass(ok)}">${ok?'PASS':'FAIL'}</span>`; }
+function safeReportImageSrc(value){
+  const src=String(value||'').trim();
+  if(/^https?:\/\//i.test(src) || /^data:image\//i.test(src)) return src;
+  return '';
+}
+function reportLogo(meta){
+  const src=safeReportImageSrc(meta.companyLogo);
+  if(src) return `<img class="company-logo" src="${escHtml(src)}" alt="${escHtml(meta.companyName||'Company logo')}">`;
+  const initials=String(meta.companyName||'BC').trim().split(/\s+/).slice(0,2).map(s=>s[0]||'').join('').toUpperCase()||'BC';
+  return `<div class="logo-mark">${escHtml(initials)}</div>`;
+}
+function reportSourceWarning(sec, srcInfo){
+  const warnings=[];
+  if(!srcInfo?.title || /source to be confirmed/i.test(srcInfo.title) || /source to be confirmed/i.test(srcInfo.url||'')) warnings.push('Section source to be confirmed.');
+  const fam=getFamilyKey(sec);
+  const isI=['IPE','IPN','HEA','HEB','HEM','HEAA','UB','UC','UBP','J','CUSTOM_I','CUSTOM_PLATE_GIRDER'].includes(fam);
+  const needsI=isI && !(sectionDim(sec,['tw_mm']) && sectionDim(sec,['tf_mm']));
+  if(needsI) warnings.push('Missing web/flange thickness for true I/H profile.');
+  if(!sectionDim(sec,['r_mm','root_radius_mm','r1_mm'])) warnings.push('Radius not available.');
+  return warnings;
+}
+function sectionGeometryModel(sec){
+  const fam=getFamilyKey(sec);
+  const h=sectionDim(sec,['h_mm','D_mm','a_mm']);
+  const b=sectionDim(sec,['b_mm','D_mm']);
+  const tw=sectionDim(sec,['tw_mm','web_thickness_mm']);
+  const tf=sectionDim(sec,['tf_mm','flange_thickness_mm']);
+  const t=sectionDim(sec,['t_mm','thickness_mm']);
+  const r=sectionDim(sec,['r_mm','root_radius_mm','r1_mm']);
+  const isI=['IPE','IPN','HEA','HEB','HEM','HEAA','UB','UC','UBP','J','CUSTOM_I','CUSTOM_PLATE_GIRDER'].includes(fam);
+  const isBox=['RHS','SHS','CFRHS','CUSTOM_BOX'].includes(fam);
+  const isChs=['CHS','CUSTOM_CHS'].includes(fam) || (!!sec.D_mm && !isBox);
+  const isChannel=['UPE','UPN','PFC','CH','CUSTOM_CHANNEL'].includes(fam);
+  const isTee=['CUSTOM_TEE','TEE','T'].includes(fam);
+  const isAngle=['CUSTOM_ANGLE','RSA','ANGLE','L'].includes(fam);
+  const shape=isI?'i':isBox?'box':isChs?'chs':isChannel?'channel':isTee?'tee':isAngle?'angle':'fallback';
+  const missing=[];
+  if(shape==='i'){ if(!h) missing.push('h'); if(!b) missing.push('b'); if(!tw) missing.push('tw'); if(!tf) missing.push('tf'); }
+  if(shape==='box'){ if(!h) missing.push('h'); if(!b) missing.push('b'); if(!t) missing.push('t'); }
+  if(shape==='chs'){ if(!(sec.D_mm||h)) missing.push('D'); if(!t) missing.push('t'); }
+  if(shape==='channel'||shape==='tee'){ if(!h) missing.push('h'); if(!b) missing.push('b'); if(!tw) missing.push('tw'); if(!tf) missing.push('tf'); }
+  if(shape==='angle'){ if(!h) missing.push('a'); if(!b) missing.push('b'); if(!t) missing.push('t'); }
+  if(!r) missing.push('r');
+  return {fam,shape,h,b,tw,tf,t,r,missing,hasDetailed:missing.filter(x=>x!=='r').length===0};
+}
+function reportSectionSvg(sec, opts={}){
+  const g=sectionGeometryModel(sec);
+  const W=opts.width||420, H=opts.height||250;
+  const padX=70, padY=34;
+  const overallH=Math.max(1,g.h||1), overallB=Math.max(1,g.b||1);
+  const scale=Math.min((W-2*padX)/overallB,(H-2*padY)/overallH);
+  const dw=overallB*scale, dh=overallH*scale;
+  const x0=(W-dw)/2, y0=(H-dh)/2+2;
+  const sx=x=>x0+x*scale;
+  const sy=y=>y0+dh-y*scale;
+  const rect=(x,y,w,h,cls='steel')=>`<rect class="${cls}" x="${sx(x).toFixed(2)}" y="${sy(y+h).toFixed(2)}" width="${(w*scale).toFixed(2)}" height="${(h*scale).toFixed(2)}"/>`;
+  const dim=(x1,y1,x2,y2,label)=>`<line class="dim" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/><text class="dimtext" x="${((x1+x2)/2).toFixed(2)}" y="${((y1+y2)/2-4).toFixed(2)}">${escHtml(label)}</text>`;
+  const axis=`<line class="axis" x1="${(x0-18).toFixed(2)}" y1="${(y0+dh/2).toFixed(2)}" x2="${(x0+dw+18).toFixed(2)}" y2="${(y0+dh/2).toFixed(2)}"/><line class="axis" x1="${(x0+dw/2).toFixed(2)}" y1="${(y0-18).toFixed(2)}" x2="${(x0+dw/2).toFixed(2)}" y2="${(y0+dh+18).toFixed(2)}"/><circle class="centroid" cx="${(x0+dw/2).toFixed(2)}" cy="${(y0+dh/2).toFixed(2)}" r="3"/><text class="axislabel" x="${(x0+dw-18).toFixed(2)}" y="${(y0+dh/2-6).toFixed(2)}">y-y</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+16).toFixed(2)}">z-z / ENA</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+dh/2+14).toFixed(2)}">PNA</text>`;
+  let body='';
+  if(g.shape==='i' && g.hasDetailed){
+    const webX=(g.b-g.tw)/2;
+    body=rect(0,0,g.b,g.tf)+rect(webX,g.tf,g.tw,g.h-2*g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
+    if(g.r) body+=`<text class="note" x="${(x0+dw-62).toFixed(2)}" y="${(y0+18).toFixed(2)}">r=${fmt2(g.r)} mm</text>`;
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`);
+    body+=dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
+    body+=dim(sx(webX),y0+dh/2+18,sx(webX+g.tw),y0+dh/2+18,`tw=${fmt2(g.tw)}`);
+    body+=dim(x0+dw+18,y0,x0+dw+18,y0+g.tf*scale,`tf=${fmt2(g.tf)}`);
+  }else if(g.shape==='box' && g.hasDetailed){
+    const rr=(g.r||0)*scale;
+    body=`<rect class="steel" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${dw.toFixed(2)}" height="${dh.toFixed(2)}" rx="${rr.toFixed(2)}"/><rect class="void" x="${(x0+g.t*scale).toFixed(2)}" y="${(y0+g.t*scale).toFixed(2)}" width="${Math.max(0,dw-2*g.t*scale).toFixed(2)}" height="${Math.max(0,dh-2*g.t*scale).toFixed(2)}" rx="${Math.max(0,rr-g.t*scale).toFixed(2)}"/>`;
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.t*scale,`t=${fmt2(g.t)}`);
+  }else if(g.shape==='chs' && g.hasDetailed){
+    const D=sectionDim(sec,['D_mm','h_mm','b_mm']);
+    const rad=D*scale/2, cx=x0+dw/2, cy=y0+dh/2;
+    body=`<circle class="steel" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${rad.toFixed(2)}"/><circle class="void" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${Math.max(0,rad-g.t*scale).toFixed(2)}"/>`;
+    body+=dim(cx-rad,y0+dh+24,cx+rad,y0+dh+24,`D=${fmt2(D)} mm`)+dim(cx+rad+18,cy-rad,cx+rad+18,cy-rad+g.t*scale,`t=${fmt2(g.t)}`);
+  }else if(g.shape==='channel' && g.hasDetailed){
+    body=rect(0,0,g.tw,g.h)+rect(0,0,g.b,g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.tf*scale,`tf=${fmt2(g.tf)}`)+dim(x0,y0+dh/2+18,x0+g.tw*scale,y0+dh/2+18,`tw=${fmt2(g.tw)}`);
+  }else if(g.shape==='tee' && g.hasDetailed){
+    body=rect((g.b-g.tw)/2,0,g.tw,g.h-g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
+  }else if(g.shape==='angle' && g.hasDetailed){
+    body=rect(0,0,g.t,g.h)+rect(0,0,g.b,g.t);
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`a=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0+dh-g.t*scale,x0+dw+18,y0+dh,`t=${fmt2(g.t)}`);
+  }else{
+    body=rect(0,0,overallB,overallH,'steel fallback');
+    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(overallB)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(overallH)} mm`);
+  }
+  const note=!g.hasDetailed ? `Missing geometry data for true profile: ${g.missing.filter(x=>x!=='r').join(', ') || 'profile detail'}` : (!g.r ? 'radius not available' : '');
+  return `<svg class="section-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Section drawing ${escHtml(sec.name||'section')}"><defs><marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker></defs><style>.steel{fill:#e5e7eb;stroke:#111827;stroke-width:1.4}.fallback{fill:#f3f4f6;stroke-dasharray:5 3}.void{fill:#fff;stroke:#111827;stroke-width:1}.dim{stroke:#334155;stroke-width:1;marker-start:url(#arrow);marker-end:url(#arrow)}.axis{stroke:#2563eb;stroke-width:1;stroke-dasharray:5 4}.centroid{fill:#dc2626}.dimtext,.axislabel,.note{font:700 10px Segoe UI,Arial,sans-serif;fill:#111827}.note{fill:#b45309}</style>${body}${axis}${note?`<text class="note" x="12" y="${H-10}">${escHtml(note)}</text>`:''}</svg>`;
+}
+function buildReportLoadObjects(rawLoads, unit){
+  const out=[];
+  const seenTrap=new Set();
+  (rawLoads?.udls||[]).forEach(load=>{
+    if(!((load.G||0)||(load.Q1||0)||(load.Q2||0))) return;
+    if(load.sourceType==='trap'){
+      const key=`${load.loadCase}:${load.reportLabel||load.label}`;
+      if(seenTrap.has(key)) return;
+      seenTrap.add(key);
+      out.push({id:load.reportLabel||load.label||'T',type:'trap',x1:load.reportX1??load.x1,x2:load.reportX2??load.x2,q1:load.q1||0,q2:load.q2||0,case:load.loadCase||'G'});
+      return;
+    }
+    ['G','Q1','Q2'].forEach(loadCase=>{ const q=load[loadCase]||0; if(q) out.push({id:load.label||'UDL',type:load.isSelf?'self':'uniform',x1:load.x1,x2:load.x2,q1:q,q2:q,case:loadCase}); });
+  });
+  (rawLoads?.points||[]).forEach(load=>{
+    if(Math.abs(load.M||0)>1e-12) out.push({id:load.label||'M',type:'moment',x:load.x,M:load.M,case:load.momentCase||'G'});
+    else ['G','Q1','Q2'].forEach(loadCase=>{ const P=load[loadCase]||0; if(P) out.push({id:load.label||'P',type:'point',x:load.x,P,case:loadCase}); });
+  });
+  return out;
+}
+function reportBeamSvg(data){
+  const {L, supportType, rawLoads, uls, forceUnit} = data;
+  const unit=currentUnit();
+  const W=780,H=250,x0=52,x1=728,y=126;
+  const map=x=>x0+(x/Math.max(L,1e-9))*(x1-x0);
+  const supportXs=(rawLoads?.supportXs?.length?rawLoads.supportXs:[0,L]);
+  const loads=buildReportLoadObjects(rawLoads,unit);
+  const supports=supportXs.map((sx,i)=>`<g transform="translate(${map(sx).toFixed(1)} ${y})"><path d="M-13 18 L0 0 L13 18 Z" fill="none" stroke="#111827" stroke-width="1.5"/><line x1="-18" y1="23" x2="18" y2="23" stroke="#111827" stroke-width="1.2"/><text x="-10" y="42">S${i+1}</text></g>`).join('');
+  const reactionLines=(uls?.reactions?.supportActions||[]).map((r,i)=>{
+    const xx=map(r.x??supportXs[i]??0), val=fmtForceFromkN(r.V||0);
+    return `<g><line class="reaction" x1="${xx}" y1="${y+50}" x2="${xx}" y2="${y+22}"/><text class="small" x="${xx-20}" y="${y+64}">R${i+1}=${escHtml(val)} ${escHtml(forceUnit)}</text></g>`;
+  }).join('');
+  const loadEls=loads.map(load=>{
+    if(load.type==='point'){
+      const xx=map(load.x);
+      return `<g><line class="pload" x1="${xx}" y1="${y-72}" x2="${xx}" y2="${y-6}"/><text class="loadlabel" x="${xx-20}" y="${y-80}">${escHtml(load.id)} ${fmt3(load.P)} ${escHtml(unit.forceLong)}</text><text class="small" x="${xx-14}" y="${y+18}">x=${fmt2(load.x)}</text></g>`;
+    }
+    if(load.type==='moment'){
+      const xx=map(load.x);
+      return `<g><path class="moment" d="M${xx-18} ${y-38} A18 18 0 1 1 ${xx+17} ${y-35}"/><text class="loadlabel" x="${xx-34}" y="${y-62}">${escHtml(load.id)} ${fmt3(load.M)} ${escHtml(unit.momentShort)}</text><text class="small" x="${xx-14}" y="${y+18}">x=${fmt2(load.x)}</text></g>`;
+    }
+    const xa=map(load.x1), xb=map(load.x2), top=y-62;
+    const h2=load.type==='trap' ? 28 : 44;
+    const poly=load.type==='trap' ? `${xa},${top+h2} ${xa},${top+44} ${xb},${top+18} ${xb},${top+h2}` : `${xa},${top} ${xb},${top} ${xb},${top+44} ${xa},${top+44}`;
+    return `<g><polygon class="udlfill" points="${poly}"/><line class="udlline" x1="${xa}" y1="${top}" x2="${xb}" y2="${top}"/>${Array.from({length:Math.max(3,Math.min(9,Math.round((xb-xa)/70)))+1},(_,i)=>{const n=Math.max(3,Math.min(9,Math.round((xb-xa)/70)));const xx=xa+(xb-xa)*i/n;return `<line class="udlarr" x1="${xx}" y1="${top+4}" x2="${xx}" y2="${y-5}"/>`;}).join('')}<text class="loadlabel" x="${xa+4}" y="${top-7}">${escHtml(load.id)} ${load.type==='trap'?`q1=${fmt3(load.q1)}, q2=${fmt3(load.q2)}`:fmt3(load.q1)} ${escHtml(unit.udlShort)}</text><text class="small" x="${xa}" y="${y+18}">x1=${fmt2(load.x1)}</text><text class="small" x="${xb-36}" y="${y+18}">x2=${fmt2(load.x2)}</text></g>`;
+  }).join('');
+  const dims=`<line class="dim" x1="${x0}" y1="${y+78}" x2="${x1}" y2="${y+78}"/><text class="dimtext" x="${W/2-28}" y="${y+95}">L=${fmt2(L)} m</text>`;
+  return `<svg class="beam-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Beam loading diagram"><defs><marker id="arrDown" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto"><path d="M0,0 L6,0 L3,6 Z" fill="#991b1b"/></marker><marker id="arrUp" markerWidth="6" markerHeight="6" refX="3" refY="1" orient="auto"><path d="M0,6 L6,6 L3,0 Z" fill="#166534"/></marker><marker id="dimArr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker></defs><style>.beam{stroke:#111827;stroke-width:3}.small,.dimtext{font:700 10px Segoe UI,Arial,sans-serif;fill:#334155}.loadlabel{font:800 10px Segoe UI,Arial,sans-serif;fill:#7f1d1d}.udlfill{fill:#fee2e2;stroke:#991b1b;stroke-width:1}.udlline,.udlarr,.pload{stroke:#991b1b;stroke-width:1.5;marker-end:url(#arrDown)}.moment{fill:none;stroke:#7c3aed;stroke-width:2;marker-end:url(#arrDown)}.reaction{stroke:#166534;stroke-width:1.6;marker-end:url(#arrUp)}.dim{stroke:#334155;stroke-width:1;marker-start:url(#dimArr);marker-end:url(#dimArr)}</style><line class="beam" x1="${x0}" y1="${y}" x2="${x1}" y2="${y}"/>${supports}${loadEls}${reactionLines}${dims}<text class="small" x="10" y="18">Positions measured from left end. Characteristic load values shown in current input units.</text></svg>`;
+}
+function reportGraphSvg(title,xs,ys,yLabel){
+  const W=760,H=215,pL=54,pR=18,pT=28,pB=36;
+  if(!xs?.length||!ys?.length) return '';
+  let xmin=Math.min(...xs), xmax=Math.max(...xs), ymin=Math.min(...ys), ymax=Math.max(...ys);
+  if(!Number.isFinite(ymin)||!Number.isFinite(ymax)){ymin=-1;ymax=1;}
+  if(Math.abs(ymax-ymin)<1e-9){ymin-=1;ymax+=1;}
+  const pad=.12*(ymax-ymin); ymin-=pad; ymax+=pad;
+  const X=x=>pL+(x-xmin)/(xmax-xmin||1)*(W-pL-pR), Y=y=>pT+(1-(y-ymin)/(ymax-ymin||1))*(H-pT-pB);
+  const pts=xs.map((x,i)=>`${X(x).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join(' ');
+  let max={i:0,val:ys[0]}, min={i:0,val:ys[0]};
+  ys.forEach((v,i)=>{if(v>max.val)max={i,val:v};if(v<min.val)min={i,val:v};});
+  const zero=(ymin<=0&&ymax>=0)?`<line class="zero" x1="${pL}" y1="${Y(0)}" x2="${W-pR}" y2="${Y(0)}"/>`:'';
+  const grid=Array.from({length:5},(_,i)=>{const yy=pT+i*(H-pT-pB)/4;return `<line class="grid" x1="${pL}" y1="${yy}" x2="${W-pR}" y2="${yy}"/>`;}).join('');
+  const labelPoint=p=>`<circle class="pt" cx="${X(xs[p.i])}" cy="${Y(p.val)}" r="3"/><text class="ann" x="${Math.min(W-160,X(xs[p.i])+6)}" y="${Math.max(16,Y(p.val)-6)}">${fmt3(p.val)} at x=${fmt2(xs[p.i])} m</text>`;
+  return `<svg class="graph-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escHtml(title)}"><style>.title{font:800 12px Segoe UI,Arial,sans-serif;fill:#111827}.axislabel,.tick{font:700 10px Segoe UI,Arial,sans-serif;fill:#334155}.grid{stroke:#cbd5e1;stroke-width:1}.zero{stroke:#111827;stroke-width:1.2}.curve{fill:none;stroke:#1d4ed8;stroke-width:2}.pt{fill:#dc2626}.ann{font:800 10px Segoe UI,Arial,sans-serif;fill:#991b1b}</style><text class="title" x="${pL}" y="16">${escHtml(title)}</text>${grid}${zero}<line class="zero" x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}"/><line class="zero" x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}"/><polyline class="curve" points="${pts}"/>${labelPoint(max)}${labelPoint(min)}<text class="axislabel" x="${W-64}" y="${H-8}">x [m]</text><text class="axislabel" x="8" y="18">${escHtml(yLabel)}</text></svg>`;
+}
+function buildLegacyReportHTML(data){
   const {sec, mat, L, supportType, spanCfg, lc, rawLoads, check, ltb, endSupport, memberBuckling, uls, sls, ulsNote, deflAllow_mm, deflPeak, passAll, governingIR, maxReaction, forceUnit, momentUnit, deflIR, supportIR, IR_NM, passNM, passDefl} = data;
   const srcInfo = getSectionSourceInfo(sec);
   const calcRefs = getCalculationReferences();
@@ -7654,6 +7844,456 @@ ${reportImages.length ? `<div class="section full"><h2>Diagrams and graphs</h2><
   This report is generated from the current app state and mirrors the implemented checks in Beam Calculator Studio, including bending, shear, axial, member buckling, LTB, support shear and deflection where enabled. Where It / Iz / Iw are not present in the stored row, the app derives LTB properties from section geometry to avoid an unavailable result.
 </div>
 </body></html>`;
+}
+function buildReportHTML(data){
+  const {sec, mat, L, supportType, spanCfg, lc, rawLoads, check, ltb, endSupport, memberBuckling, uls, sls, ulsNote, deflAllow_mm, deflPeak, passAll, governingIR, maxReaction, forceUnit, momentUnit, deflIR, supportIR, IR_NM, passNM, passDefl} = data;
+  const meta = {...projectMetadataDefaults(), ...(data.projectMetadata||{})};
+  const srcInfo = getSectionSourceInfo(sec);
+  const sourceSnapshot = meta.sectionSource || getCurrentSectionSourceSnapshot();
+  const calcRefs = getCalculationReferences();
+  const unit = currentUnit();
+  const now = new Date();
+  const supportText = supportLabelValue(supportType);
+  const ltbProps = getSectionLTBProps(sec);
+  const sectionModuli = getSectionModuli(sec);
+  const sectionAreas = getSectionAreas(sec);
+  const sourceWarnings = reportSourceWarning(sec, srcInfo);
+  const geometry = sectionGeometryModel(sec);
+  const warningItems = [
+    ...sourceWarnings,
+    ...(check?.Wsel?.fallback ? [`${check.Wsel.missing || 'Class-specific section modulus'} missing; ${check.Wsel.label} used for resistance.`] : []),
+    ...(ltb.enabled && !ltb.available ? [`LTB check unavailable: ${ltb.message || ltb.unavailableReason || 'missing data'}`] : []),
+    ...(memberBuckling.active && !memberBuckling.available ? [`Member buckling unavailable: ${memberBuckling.message || 'missing data'}`] : [])
+  ];
+  const statusWord = passAll ? 'PASS' : 'FAIL';
+  const fmtInt = v => Number.isFinite(+v) ? Math.round(+v).toLocaleString('en-GB') : '-';
+  const fmtVal = (v, suffix='') => Number.isFinite(+v) ? `${fmt2(+v)}${suffix}` : '-';
+  const td = v => escHtml(v==null || v==='' ? '-' : String(v));
+  const rows = list => reportRows(list.map(([k,v,cls])=>[k,td(v),cls]));
+  const safe = v => escHtml(v || '-');
+  const geometryText = v => Number.isFinite(+v) && +v>0 ? `${fmt2(+v)} mm` : 'Not stored';
+  const sectionSvg = reportSectionSvg(sec,{width:420,height:260});
+  const beamSvg = reportBeamSvg(data);
+  const loadRows = buildReportLoadRows(rawLoads, unit);
+  const loadObjects = buildReportLoadObjects(rawLoads, unit);
+  const graphV = reportGraphSvg(`Shear force diagram - ULS`, uls.xs, uls.V.map(forceDisplayFromkN), `V [${forceUnit}]`);
+  const graphM = reportGraphSvg(`Bending moment diagram - ULS`, uls.xs, uls.M.map(momentDisplayFromkNm), `M [${momentUnit}]`);
+  const graphY = reportGraphSvg('Deflection diagram - SLS', sls.defl.xs, sls.defl.Y, 'y [mm]');
+  const graphN = Math.abs(check.axialEd||0)>1e-9 ? reportGraphSvg('Axial force diagram - ULS',[0,L],[check.axialEd,check.axialEd],'N [kN]') : '';
+  const checks = [
+    {id:'Moment', clause:'EN 1993-1-1 6.2.5', ir:check.IR_M, ok:check.passM, detail:`${check.momentLabelForCheck}`},
+    {id:'Shear', clause:'EN 1993-1-1 6.2.6', ir:check.IR_V, ok:check.passV, detail:'Vz,Rd'},
+    {id:'Axial', clause:'EN 1993-1-1 6.2.3/6.2.4', ir:check.IR_N, ok:check.passN, detail:check.axialEd>=0?'Compression':'Tension'},
+    {id:'Deflection', clause:'Serviceability limit', ir:deflIR, ok:passDefl, detail:`L/${Math.round(L*1000/Math.max(deflAllow_mm,1e-9))}`},
+    {id:'Support shear', clause:'EN 1993-1-5 style support screening', ir:supportIR, ok:endSupport.pass, detail:'End support/web check'},
+    {id:'N+M interaction', clause:'EN 1993-1-1 6.2.9', ir:Math.abs(check.axialEd)>1e-9?IR_NM:0, ok:Math.abs(check.axialEd)>1e-9?passNM:true, detail:Math.abs(check.axialEd)>1e-9?'Active':'Not required'},
+    {id:'LTB', clause:'EN 1993-1-1 6.3.2', ir:ltb.enabled && ltb.available ? ltb.IR_LT : 0, ok:!ltb.enabled || (ltb.available && ltb.pass), detail:ltb.enabled ? (ltb.available?'Active':'Unavailable') : 'Off'},
+    {id:'Member buckling', clause:'EN 1993-1-1 6.3.3', ir:memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0, ok:!memberBuckling.active || (memberBuckling.available && memberBuckling.pass), detail:memberBuckling.active ? (memberBuckling.available?'Active':'Unavailable') : 'Off'}
+  ];
+  const governingCheck = checks.filter(c=>Number.isFinite(c.ir)).sort((a,b)=>Math.abs(b.ir)-Math.abs(a.ir))[0] || {id:'-',ir:governingIR,detail:'-'};
+  const utilisationSvg = (() => {
+    const W=760,H=210,pL=150,pT=24,rowH=20;
+    const active=checks.filter(c=>Number.isFinite(c.ir)).slice(0,8);
+    const max=Math.max(1.05,...active.map(c=>Math.abs(c.ir||0)));
+    const bars=active.map((c,i)=>{
+      const y=pT+i*rowH;
+      const w=(Math.min(Math.abs(c.ir||0),max)/max)*(W-pL-40);
+      const fill=c.ok?'#166534':'#b91c1c';
+      return `<text class="bar-label" x="8" y="${y+13}">${escHtml(c.id)}</text><rect class="bar-bg" x="${pL}" y="${y+3}" width="${W-pL-45}" height="12"/><rect x="${pL}" y="${y+3}" width="${w.toFixed(1)}" height="12" fill="${fill}"/><text class="bar-val" x="${pL+w+6}" y="${y+13}">${fmt3(c.ir||0)}</text>`;
+    }).join('');
+    const limitX=pL+(1/max)*(W-pL-40);
+    return `<svg class="util-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Utilisation summary"><style>.title{font:800 12px Segoe UI,Arial,sans-serif;fill:#111827}.bar-label,.bar-val{font:700 10px Segoe UI,Arial,sans-serif;fill:#111827}.bar-bg{fill:#e5e7eb}.limit{stroke:#111827;stroke-width:1.2;stroke-dasharray:4 3}</style><text class="title" x="8" y="14">Utilisation ratios</text><line class="limit" x1="${limitX}" y1="20" x2="${limitX}" y2="${pT+active.length*rowH}"/><text class="bar-val" x="${limitX+4}" y="20">IR=1.0</text>${bars}</svg>`;
+  })();
+  const status = ok => reportStatus(!!ok);
+  const checkTableRows = checks.map(c=>`<tr><td>${escHtml(c.id)}</td><td>${escHtml(c.clause)}</td><td>${escHtml(c.detail)}</td><td>${fmt3(c.ir||0)}</td><td>${status(c.ok)}</td></tr>`).join('');
+  const reactionRows = (uls.reactions.supportActions||[]).map((r,idx)=>`<tr><td>S${idx+1}</td><td>${fmt2(r.x||0)}</td><td>${fmtForceFromkN(r.V||0)} ${escHtml(forceUnit)}</td><td>${fmtMomentFromkNm(r.M||0)} ${escHtml(momentUnit)}</td></tr>`).join('') || '<tr><td colspan="4">No support reactions reported.</td></tr>';
+  const spanRows = computeContinuousSpanChecks(data);
+  const spanTable = spanRows?.length ? spanRows.map(r=>`<tr><td>${escHtml(r.name||'-')}</td><td>${fmt2(r.L||0)} m</td><td>${fmtMomentFromkNm(r.peakM||0)} ${escHtml(momentUnit)}</td><td>${fmtForceFromkN(r.peakV||0)} ${escHtml(forceUnit)}</td><td>${fmt2(r.peakDefl||0)} mm</td></tr>`).join('') : `<tr><td>Span 1</td><td>${fmt2(L)} m</td><td>${fmtMomentFromkNm(uls.peakM.val)} ${escHtml(momentUnit)}</td><td>${fmtForceFromkN(uls.peakV.val)} ${escHtml(forceUnit)}</td><td>${fmt2(deflPeak)} mm</td></tr>`;
+  const comboRows = [
+    `<tr><td>ULS controlling</td><td>${safe(ulsNote)}</td></tr>`,
+    lc?.uls?.alt ? `<tr><td>ULS alternate</td><td>${safe(lc.uls.alt.note)}</td></tr>` : '',
+    `<tr><td>SLS</td><td>${safe(lc.sls.note)}</td></tr>`
+  ].join('');
+  const warningsHtml = warningItems.length ? `<ul>${warningItems.map(w=>`<li>${safe(w)}</li>`).join('')}</ul>` : '<p>No critical warnings recorded for this calculation state.</p>';
+  const sectionPropRows = rows([
+    ['Designation', sec.name],
+    ['Family', geometry.fam || '-'],
+    ['Source/library', srcInfo.title],
+    ['Standard/reference', sourceSnapshot.reference || srcInfo.url || 'Source to be confirmed'],
+    ['Steel grade', mat.grade],
+    ['Mass [kg/m]', sec.mass_kg_m ?? '-'],
+    ['A [mm2]', fmtInt(sectionAreas.A)],
+    ['Iy [mm4]', fmtInt(calcI_mm4(sec))],
+    ['Iz [mm4]', fmtInt(ltbProps.Iz)],
+    ['Wel,y [mm3]', fmtInt(sectionModuli.Wel)],
+    ['Wel,z [mm3]', fmtInt(sec.Wel_z_mm3 || sec.Welz_mm3)],
+    ['Wpl,y [mm3]', fmtInt(sectionModuli.Wpl)],
+    ['Wpl,z [mm3]', fmtInt(sec.Wpl_z_mm3 || sec.Wplz_mm3)],
+    ['Av,z [mm2]', fmtInt(sec.Avz_mm2)],
+    ['It [mm4]', fmtInt(ltbProps.It)],
+    ['Iw [mm6]', fmtInt(ltbProps.Iw)],
+    ['Class', check.cls <= 2 ? 'Class 1-2' : `Class ${check.cls}`]
+  ]);
+  const sectionDimRows = rows([
+    ['Overall depth h', geometryText(geometry.h)],
+    ['Flange/outer width b', geometryText(geometry.b)],
+    ['Web thickness tw', geometryText(geometry.tw)],
+    ['Flange thickness tf', geometryText(geometry.tf)],
+    ['Wall/leg thickness t', geometryText(geometry.t)],
+    ['Root/corner radius r', geometryText(geometry.r)]
+  ]);
+  const calcBlock = ({title,clause,basis,formula,variables,substitution,conversion,result,resistance,ir,ok,warnings=[]}) => `
+    <article class="calc-block">
+      <h3>${escHtml(title)} <span>${escHtml(clause||'')}</span></h3>
+      <table class="calc-table"><tbody>
+        ${rows([
+          ['Design basis', basis],
+          ['Formula', formula],
+          ['Variables', variables],
+          ['Numerical substitution', substitution],
+          ['Unit conversion', conversion],
+          ['Result', result],
+          ['Resistance / limit', resistance],
+          ['Utilisation', ir],
+          ['Status', ok]
+        ])}
+      </tbody></table>
+      ${warnings.length?`<div class="calc-warn">${warnings.map(w=>safe(w)).join('<br>')}</div>`:''}
+    </article>`;
+  const bendingNmm = (check.Wsel.W||0) * mat.fy / (check.gammaM0||1);
+  const shearN = (sec.Avz_mm2||0) * mat.fy / (Math.sqrt(3)*(check.gammaM0||1));
+  const axialArea = check.axialEd>=0 ? (check.cls===4 ? sectionAreas.Aeff : sectionAreas.A) : sectionAreas.A;
+  const axialRd = check.axialEd>=0 ? check.NcRd : check.NtRd;
+  const axialLabel = check.axialEd>=0 ? 'N_c,Rd' : 'N_t,Rd';
+  const calcBlocks = [
+    calcBlock({
+      title:'Support reactions and analysis actions',
+      clause:'Equilibrium / stiffness analysis',
+      basis:'Loads are positioned by x, x1 and x2 along the member span. The solver returns support actions and internal envelopes used by the design checks.',
+      formula:'sum V = 0, sum M = 0 with beam stiffness compatibility for the selected support condition.',
+      variables:`L=${fmt2(L)} m; support condition=${supportText}; active loads=${loadObjects.length}.`,
+      substitution:`Peak V_Ed=${fmtForceFromkN(uls.peakV.val)} ${forceUnit} at x=${fmt2(uls.peakV.x)} m; peak M_Ed=${fmtMomentFromkNm(uls.peakM.val)} ${momentUnit} at x=${fmt2(uls.peakM.x)} m.`,
+      conversion:'Internal solver works in kN, kN/m, kNm and mm stiffness units; report values are converted to the selected display units.',
+      result:`Maximum reaction=${fmtForceFromkN(maxReaction)} ${forceUnit}.`,
+      resistance:'Actions are passed to the resistance checks below.',
+      ir:`Governing design IR=${fmt3(governingIR)}.`,
+      ok:status(passAll)
+    }),
+    calcBlock({
+      title:'Major-axis bending resistance',
+      clause:'EN 1993-1-1 Clause 6.2.5',
+      basis:`Section class ${check.cls<=2?'1-2':check.cls}; modulus used: ${check.Wsel.label}.`,
+      formula:'M_y,Rd = W_y f_y / gamma_M0',
+      variables:`W_y=${fmtInt(check.Wsel.W)} mm3; f_y=${fmt2(mat.fy)} N/mm2; gamma_M0=${fmt2(check.gammaM0)}.`,
+      substitution:`M_y,Rd = ${fmtInt(check.Wsel.W)} x ${fmt2(mat.fy)} / ${fmt2(check.gammaM0)} = ${fmtInt(bendingNmm)} Nmm.`,
+      conversion:`${fmtInt(bendingNmm)} Nmm = ${fmtMomentFromkNm(check.MyRd)} ${momentUnit}.`,
+      result:`M_y,Ed = ${fmtMomentFromkNm(check.MyEd)} ${momentUnit}.`,
+      resistance:`${check.momentLabelForCheck} = ${fmtMomentFromkNm(check.momentRdForCheck)} ${momentUnit}.`,
+      ir:`IR = M_y,Ed / ${check.momentLabelForCheck} = ${fmt3(check.IR_M)}.`,
+      ok:status(check.passM),
+      warnings:check.mv.trigger ? [check.mv.note] : []
+    }),
+    calcBlock({
+      title:'Shear resistance',
+      clause:'EN 1993-1-1 Clause 6.2.6',
+      basis:'Major vertical shear is checked using the stored Av,z value.',
+      formula:'V_z,Rd = A_v,z f_y / (sqrt(3) gamma_M0)',
+      variables:`A_v,z=${fmtInt(sec.Avz_mm2)} mm2; f_y=${fmt2(mat.fy)} N/mm2; gamma_M0=${fmt2(check.gammaM0)}.`,
+      substitution:`V_z,Rd = ${fmtInt(sec.Avz_mm2)} x ${fmt2(mat.fy)} / (sqrt(3) x ${fmt2(check.gammaM0)}) = ${fmtInt(shearN)} N.`,
+      conversion:`${fmtInt(shearN)} N = ${fmtForceFromkN(check.VzRd)} ${forceUnit}.`,
+      result:`V_z,Ed = ${fmtForceFromkN(check.VzEd)} ${forceUnit}.`,
+      resistance:`V_z,Rd = ${fmtForceFromkN(check.VzRd)} ${forceUnit}.`,
+      ir:`IR = V_z,Ed / V_z,Rd = ${fmt3(check.IR_V)}.`,
+      ok:status(check.passV)
+    }),
+    calcBlock({
+      title:'Axial resistance',
+      clause:'EN 1993-1-1 Clause 6.2.3 / 6.2.4',
+      basis:check.axialEd>=0 ? 'Compression resistance uses gross area or effective area for Class 4.' : 'Tension resistance uses gross area.',
+      formula:`${axialLabel} = A f_y / gamma_M0`,
+      variables:`A=${fmtInt(axialArea)} mm2; f_y=${fmt2(mat.fy)} N/mm2; gamma_M0=${fmt2(check.gammaM0)}.`,
+      substitution:`${axialLabel} = ${fmtInt(axialArea)} x ${fmt2(mat.fy)} / ${fmt2(check.gammaM0)}.`,
+      conversion:`${axialLabel} = ${fmtForceFromkN(axialRd)} ${forceUnit}.`,
+      result:`N_Ed = ${fmtForceFromkN(check.axialEd)} ${forceUnit}.`,
+      resistance:`${axialLabel} = ${fmtForceFromkN(axialRd)} ${forceUnit}.`,
+      ir:`IR = |N_Ed| / ${axialLabel} = ${fmt3(check.IR_N)}.`,
+      ok:status(check.passN)
+    }),
+    calcBlock({
+      title:'Serviceability deflection',
+      clause:'Serviceability limit state',
+      basis:'Deflection is calculated from the SLS load combination and the selected elastic stiffness.',
+      formula:'delta_max = max |y(x)|; limit = L / deflection ratio',
+      variables:`L=${fmt2(L)} m; E=${fmtInt(mat.E)} N/mm2; I_y=${fmtInt(calcI_mm4(sec))} mm4.`,
+      substitution:`limit = ${fmt2(L*1000)} mm / ${fmt2((L*1000)/Math.max(deflAllow_mm,1e-9))}.`,
+      conversion:'SLS displacement is reported directly in mm.',
+      result:`delta_max = ${fmt2(deflPeak)} mm at x=${fmt2(sls.defl.peakY.x)} m.`,
+      resistance:`delta_allow = ${fmt2(deflAllow_mm)} mm.`,
+      ir:`IR = delta_max / delta_allow = ${fmt3(deflIR)}.`,
+      ok:status(passDefl)
+    }),
+    calcBlock({
+      title:'Section classification',
+      clause:'EN 1993-1-1 Clause 5.5',
+      basis:'The current app keeps the section class as an input/design setting and applies the corresponding modulus in resistance checks.',
+      formula:'Class 1-2 -> Wpl,y; Class 3 -> Wel,y; Class 4 -> Weff,y where available.',
+      variables:`Selected class=${check.cls<=2?'1-2':check.cls}; stored family=${geometry.fam||'-'}.`,
+      substitution:`Resistance modulus selected = ${check.Wsel.label} = ${fmtInt(check.Wsel.W)} mm3.`,
+      conversion:'No unit conversion required.',
+      result:`Classification used in this report: ${check.cls<=2?'Class 1-2':`Class ${check.cls}`}.`,
+      resistance:'The selected class controls bending and compression area selection.',
+      ir:'Not a utilisation check.',
+      ok:status(true),
+      warnings:['Automatic plate slenderness classification is not expanded in this report; the selected class is documented.']
+    }),
+    calcBlock({
+      title:'Lateral torsional buckling',
+      clause:'EN 1993-1-1 Clause 6.3.2',
+      basis:ltb.enabled ? (ltb.available ? 'LTB is enabled and available from stored or derived LTB properties.' : 'LTB is enabled but cannot be completed with the current data.') : 'LTB check is switched off.',
+      formula:'M_b,Rd = chi_LT W_y f_y / gamma_M1',
+      variables:ltb.available ? `Mcr=${fmtMomentFromkNm(ltb.Mcr)} ${momentUnit}; lambda_LT=${fmt3(ltb.lambdaLT)}; chi_LT=${fmt3(ltb.chiLT)}.` : (ltb.message || 'No LTB variables available.'),
+      substitution:ltb.available ? `M_b,Rd = ${fmt3(ltb.chiLT)} x ${fmtInt(check.Wsel.W)} x ${fmt2(mat.fy)} / gamma_M1.` : 'Not evaluated.',
+      conversion:ltb.available ? `M_b,Rd = ${fmtMomentFromkNm(ltb.MbRd)} ${momentUnit}.` : 'Not evaluated.',
+      result:`M_y,Ed = ${fmtMomentFromkNm(check.MyEd)} ${momentUnit}.`,
+      resistance:ltb.available ? `M_b,Rd = ${fmtMomentFromkNm(ltb.MbRd)} ${momentUnit}.` : (ltb.enabled?'Unavailable':'Off'),
+      ir:ltb.available ? `IR_LT = ${fmt3(ltb.IR_LT)}.` : 'Not applicable.',
+      ok:status(!ltb.enabled || (ltb.available && ltb.pass)),
+      warnings:ltb.enabled && !ltb.available ? [ltb.message || 'LTB unavailable.'] : []
+    }),
+    calcBlock({
+      title:'Combined axial force and bending',
+      clause:'EN 1993-1-1 Clause 6.2.9',
+      basis:Math.abs(check.axialEd)>1e-9 ? 'Combined section interaction is checked because axial force is present.' : 'No axial force present; combined section interaction is not governing.',
+      formula:'IR = N_Ed / N_Rd + M_y,Ed / M_y,Rd',
+      variables:`N_Ed=${fmtForceFromkN(check.axialEd)} ${forceUnit}; M_y,Ed=${fmtMomentFromkNm(check.MyEd)} ${momentUnit}.`,
+      substitution:Math.abs(check.axialEd)>1e-9 ? `IR = ${fmt3(check.IR_N)} + ${fmt3(check.MyEd / Math.max(check.momentRdForCheck,1e-9))}.` : 'Not required.',
+      conversion:'Dimensionless utilisation ratio.',
+      result:Math.abs(check.axialEd)>1e-9 ? `IR_NM = ${fmt3(IR_NM)}.` : 'No combined action.',
+      resistance:'Limit IR <= 1.000.',
+      ir:Math.abs(check.axialEd)>1e-9 ? `IR = ${fmt3(IR_NM)}.` : '0.000.',
+      ok:status(Math.abs(check.axialEd)>1e-9 ? passNM : true)
+    }),
+    calcBlock({
+      title:'Member compression buckling',
+      clause:'EN 1993-1-1 Clause 6.3.1 / 6.3.3',
+      basis:memberBuckling.active ? (memberBuckling.available ? 'Compression member buckling is active and available.' : 'Compression member buckling is active but unavailable.') : 'Member buckling is not required for the current axial state.',
+      formula:'N_b,Rd = chi A f_y / gamma_M1; interaction uses y-y and z-z buckling axes.',
+      variables:memberBuckling.available ? `chi_y=${fmt3(memberBuckling.chiY)}; chi_z=${fmt3(memberBuckling.chiZ)}; kyy=${fmt3(memberBuckling.kyy)}; kzy=${fmt3(memberBuckling.kzy)}.` : (memberBuckling.message || 'No buckling variables available.'),
+      substitution:memberBuckling.available ? `Nb,y,Rd=${fmtForceFromkN(memberBuckling.NbYRd)} ${forceUnit}; Nb,z,Rd=${fmtForceFromkN(memberBuckling.NbZRd)} ${forceUnit}.` : 'Not evaluated.',
+      conversion:'Buckling resistances are reported in the selected force unit.',
+      result:memberBuckling.available ? `IR_y=${fmt3(memberBuckling.IRy)}; IR_z=${fmt3(memberBuckling.IRz)}.` : 'Not evaluated.',
+      resistance:'Limit IR <= 1.000.',
+      ir:memberBuckling.available ? `Governing IR=${fmt3(memberBuckling.governing)}.` : 'Not applicable.',
+      ok:status(!memberBuckling.active || (memberBuckling.available && memberBuckling.pass)),
+      warnings:memberBuckling.active && !memberBuckling.available ? [memberBuckling.message || 'Member buckling unavailable.'] : []
+    }),
+    calcBlock({
+      title:'Support/web bearing screening',
+      clause:'EN 1993-1-5 style support check',
+      basis:'The app compares the maximum support reaction with the implemented end support/web screening resistance.',
+      formula:'IR = V_Ed / V_b,Rd',
+      variables:`V_Ed=${fmtForceFromkN(endSupport.Ved||maxReaction)} ${forceUnit}; support setting=${$('endPostType')?.value || '-'}.`,
+      substitution:`IR = ${fmtForceFromkN(endSupport.Ved||maxReaction)} / ${fmtForceFromkN(endSupport.VbRd||0)}.`,
+      conversion:'Reaction and resistance are reported in the selected force unit.',
+      result:`IR_support = ${fmt3(supportIR)}.`,
+      resistance:`V_b,Rd = ${fmtForceFromkN(endSupport.VbRd||0)} ${forceUnit}.`,
+      ir:`IR = ${fmt3(supportIR)}.`,
+      ok:status(endSupport.pass)
+    })
+  ].join('');
+  const referencesRows = reportRows([
+    ['Section data source', safe(srcInfo.title)],
+    ['Section data note', safe(srcInfo.detail)],
+    ['Section data reference', safe(srcInfo.url)],
+    ['Saved section source', `${safe(sourceSnapshot.sourceName || 'Source to be confirmed')}<br>${safe(sourceSnapshot.reference || 'Source to be confirmed')}`],
+    ['Material source', 'Material values are selected from the in-app material library/settings. Source to be confirmed where row metadata is not present.'],
+    ['Design code', safe(meta.designCode || 'EN 1993-1-1')],
+    ['National Annex', safe(meta.nationalAnnex || 'UK National Annex')],
+    ['Load combination basis', safe(lc?.name || lc?.key || 'Current app load-combination selector')],
+    ['Calculation references', calcRefs.map(r=>`${safe(r.title)}: ${safe(r.detail)}`).join('<br>')]
+  ]);
+  const revisionRows = `<tr><td>${safe(meta.projectRevision || 'P01')}</td><td>${safe(meta.projectDate || now.toLocaleDateString())}</td><td>${safe(meta.revisionDescription || 'Current calculation issue')}</td><td>${safe(meta.engineerName)}</td><td>${safe(meta.checkedBy)}</td><td>${safe(meta.approvedBy)}</td></tr>`;
+  const signOffRows = ['Prepared by','Checked by','Approved by'].map(label=>`<tr><th>${label}</th><td></td><th>Date</th><td></td><th>Comments</th><td></td></tr>`).join('');
+  const paperCss = `
+    @page{size:A4 portrait;margin:10mm 10mm 12mm}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:#111827;font:10.5px/1.34 "Segoe UI",Arial,sans-serif}
+    .report-page{width:100%;min-height:276mm;page-break-after:always;position:relative;padding-bottom:12mm}
+    .report-page:last-child{page-break-after:auto}
+    .page-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #111827;padding-bottom:4px;margin-bottom:6px}
+    .page-title{font-size:14px;font-weight:900;color:#111827}
+    .page-sub{font-size:9px;color:#475569}
+    .page-footer{position:absolute;left:0;right:0;bottom:0;border-top:1px solid #94a3b8;padding-top:3px;color:#475569;font-size:8.5px;display:flex;justify-content:space-between}
+    .page-footer .page-no::after{content:"Page " counter(page)}
+    h1,h2,h3{margin:0;color:#111827;break-after:avoid}
+    h2{font-size:12px;border-bottom:1px solid #94a3b8;margin:8px 0 5px;padding-bottom:2px}
+    h3{font-size:10.5px;margin-bottom:4px}
+    h3 span{font-weight:600;color:#475569}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    th,td{border:1px solid #cbd5e1;padding:3px 4px;vertical-align:top;overflow-wrap:anywhere}
+    th{background:#f1f5f9;text-align:left;font-weight:800;color:#111827}
+    thead{display:table-header-group}
+    tr,.block,.calc-block,.diagram-wrap,.summary-unit{break-inside:avoid}
+    .title-table{border:1.5px solid #111827;margin-bottom:6px}
+    .title-table th,.title-table td{border-color:#94a3b8;padding:3px 5px}
+    .brand-cell{width:26%;vertical-align:middle}
+    .brand-flex{display:flex;align-items:center;gap:8px}
+    .company-logo{max-width:58px;max-height:42px;object-fit:contain}
+    .logo-mark{width:46px;height:34px;border:1.5px solid #111827;display:grid;place-items:center;font-weight:900;background:#f8fafc}
+    .company-name{font-size:13px;font-weight:900}
+    .status-band{display:grid;grid-template-columns:110px 1fr 1fr;align-items:center;border:1.5px solid #111827;margin:5px 0 6px}
+    .status-label{font-size:18px;font-weight:950;text-align:center;color:#fff;padding:7px;background:${passAll?'#166534':'#b91c1c'}}
+    .status-detail{padding:5px 8px;border-left:1px solid #94a3b8}
+    .status-detail strong{display:block;font-size:12px}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:5px 0}
+    .metric{border:1px solid #cbd5e1;padding:4px;background:#fff}
+    .metric .k{font-size:8px;color:#475569;text-transform:uppercase;font-weight:800}
+    .metric .v{font-size:11px;font-weight:900;margin-top:1px}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:7px;align-items:start}
+    .three-col{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:7px;align-items:start}
+    .wide-section{margin-top:5px}
+    .block{border:1px solid #cbd5e1;padding:5px;background:#fff}
+    .diagram-wrap{border:1px solid #94a3b8;padding:4px;margin-top:5px}
+    .beam-svg,.graph-svg,.section-svg,.util-svg{width:100%;height:auto;display:block;background:#fff}
+    .status-pass{font-weight:900;color:#166534}
+    .status-fail{font-weight:900;color:#b91c1c}
+    .warn-box{border:1px solid #f59e0b;background:#fffbeb;color:#78350f;padding:5px;margin:5px 0}
+    .warn-box ul{margin:2px 0 0 17px;padding:0}
+    .calc-block{border:1px solid #94a3b8;margin:0 0 7px;padding:5px;background:#fff}
+    .calc-table th{width:23%}
+    .calc-warn{margin-top:4px;padding:4px;border-left:3px solid #f59e0b;background:#fffbeb;color:#78350f}
+    .notes{white-space:pre-wrap}
+    .signoff th{width:12%}
+    @media screen{body{background:#e5e7eb;padding:12px;overflow-x:hidden}.report-page{background:#fff;width:min(210mm,calc(100vw - 24px));margin:0 auto 12px;padding:8mm min(10mm,3vw) 10mm;box-shadow:0 12px 34px rgba(15,23,42,.18)}}
+    @media screen and (max-width:640px){body{padding:6px}.report-page{width:calc(100vw - 12px);padding:7mm 5mm 9mm}.metric-grid{grid-template-columns:repeat(2,1fr)}.two-col,.three-col{grid-template-columns:1fr}.status-band{grid-template-columns:70px 1fr}.status-band .status-detail:nth-child(3){grid-column:1/-1;border-left:0;border-top:1px solid #94a3b8}.status-label{font-size:13px}.title-table{font-size:8.5px}}
+    @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-page{min-height:auto}}
+  `;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${safe(meta.calculationTitle || 'Beam calculation report')}</title><style>${paperCss}</style></head><body>
+  <section class="report-page">
+    <table class="title-table">
+      <tr>
+        <td class="brand-cell" rowspan="4"><div class="brand-flex">${reportLogo(meta)}<div><div class="company-name">${safe(meta.companyName || 'Company')}</div><div>${safe(meta.clientName || 'Client not stated')}</div></div></div></td>
+        <th>Project</th><td>${safe(meta.projectName || 'Untitled beam project')}</td><th>Job/ref</th><td>${safe(meta.jobReference)}</td>
+      </tr>
+      <tr><th>Calculation title</th><td>${safe(meta.calculationTitle || 'Beam calculation')}</td><th>Member mark</th><td>${safe(meta.memberMark || sec.name)}</td></tr>
+      <tr><th>Revision</th><td>${safe(meta.projectRevision || 'P01')} - ${safe(meta.revisionDescription || 'Current issue')}</td><th>Date</th><td>${safe(meta.projectDate || now.toLocaleDateString())}</td></tr>
+      <tr><th>Prepared / checked / approved</th><td>${safe(meta.engineerName)} / ${safe(meta.checkedBy)} / ${safe(meta.approvedBy)}</td><th>Software / code</th><td>Beam Calculator Studio ${safe(data.appVersion || APP_VERSION)}<br>${safe(meta.designCode || 'EN 1993-1-1')} / ${safe(meta.nationalAnnex || 'UK National Annex')}</td></tr>
+    </table>
+    <div class="status-band">
+      <div class="status-label">${statusWord}</div>
+      <div class="status-detail"><strong>Governing utilisation: ${fmt3(governingIR)}</strong>${safe(governingCheck.id)} - ${safe(governingCheck.detail)}</div>
+      <div class="status-detail"><strong>Critical warnings</strong>${warningItems.length ? safe(warningItems[0]) : 'None recorded'}</div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="k">Span</div><div class="v">${fmt2(L)} m</div></div>
+      <div class="metric"><div class="k">Section</div><div class="v">${safe(sec.name)}</div></div>
+      <div class="metric"><div class="k">Steel grade</div><div class="v">${safe(mat.grade)}</div></div>
+      <div class="metric"><div class="k">Support</div><div class="v">${safe(supportText)}</div></div>
+      <div class="metric"><div class="k">Max moment</div><div class="v">${fmtMomentFromkNm(uls.peakM.val)} ${safe(momentUnit)}</div></div>
+      <div class="metric"><div class="k">Max shear</div><div class="v">${fmtForceFromkN(uls.peakV.val)} ${safe(forceUnit)}</div></div>
+      <div class="metric"><div class="k">Max axial</div><div class="v">${fmtForceFromkN(check.axialEd)} ${safe(forceUnit)}</div></div>
+      <div class="metric"><div class="k">Max deflection</div><div class="v">${fmt2(deflPeak)} mm</div></div>
+      <div class="metric"><div class="k">Deflection limit</div><div class="v">${fmt2(deflAllow_mm)} mm</div></div>
+      <div class="metric"><div class="k">Max reaction</div><div class="v">${fmtForceFromkN(maxReaction)} ${safe(forceUnit)}</div></div>
+      <div class="metric"><div class="k">Governing check</div><div class="v">${safe(governingCheck.id)}</div></div>
+      <div class="metric"><div class="k">Load cases</div><div class="v">${loadObjects.length}</div></div>
+    </div>
+    <div class="diagram-wrap">${beamSvg}</div>
+    <div class="two-col wide-section">
+      <div class="block">${sectionSvg}</div>
+      <div class="block"><h2>Section Summary</h2><table><tbody>${rows([
+        ['Section', sec.name],
+        ['Source', srcInfo.title],
+        ['h x b', `${geometryText(geometry.h)} x ${geometryText(geometry.b)}`],
+        ['A', `${fmtInt(sectionAreas.A)} mm2`],
+        ['Mass', `${td(sec.mass_kg_m)} kg/m`],
+        ['Wel,y / Wpl,y', `${fmtInt(sectionModuli.Wel)} / ${fmtInt(sectionModuli.Wpl)} mm3`],
+        ['Iy / Iz', `${fmtInt(calcI_mm4(sec))} / ${fmtInt(ltbProps.Iz)} mm4`]
+      ])}</tbody></table></div>
+    </div>
+    ${warningItems.length?`<div class="warn-box"><strong>Warnings and assumptions</strong>${warningsHtml}</div>`:''}
+    <div class="page-footer"><span>${safe(meta.projectName || 'Untitled project')} - ${safe(meta.calculationTitle || 'Beam calculation')}</span><span class="page-no"></span></div>
+  </section>
+
+  <section class="report-page">
+    <div class="page-head"><div><div class="page-title">Section Geometry and Properties</div><div class="page-sub">${safe(sec.name)} - ${safe(srcInfo.title)}</div></div><div>${safe(meta.jobReference)}</div></div>
+    <div class="two-col">
+      <div class="block">${sectionSvg}<table><tbody>${sectionDimRows}</tbody></table></div>
+      <div class="block"><h2>Stored / Derived Properties</h2><table><tbody>${sectionPropRows}</tbody></table></div>
+    </div>
+    <h2>Section Data Notes</h2>
+    <table><tbody>${rows([
+      ['Data source', srcInfo.title],
+      ['Source detail', srcInfo.detail],
+      ['Reference', srcInfo.url],
+      ['Geometry warning', geometry.hasDetailed ? (geometry.r ? 'Detailed geometry available.' : 'Detailed geometry available; radius not stored.') : `Missing geometry data for true profile: ${geometry.missing.filter(x=>x!=='r').join(', ') || 'profile detail'}`]
+    ])}</tbody></table>
+    <div class="page-footer"><span>Section geometry and properties</span><span class="page-no"></span></div>
+  </section>
+
+  <section class="report-page">
+    <div class="page-head"><div><div class="page-title">Loads, Combinations and Reactions</div><div class="page-sub">Only active loads are printed. Positions are measured from the left end of the full span.</div></div><div>${safe(meta.jobReference)}</div></div>
+    <h2>Active Loads</h2>
+    <table><thead><tr><th>Load ID</th><th>Type</th><th>Value</th><th>Start x [m]</th><th>End x [m]</th><th>Load case</th><th>Notes</th></tr></thead><tbody>${loadRows}</tbody></table>
+    <div class="two-col wide-section">
+      <div><h2>Load Combinations</h2><table><thead><tr><th>Combination</th><th>Expression</th></tr></thead><tbody>${comboRows}</tbody></table></div>
+      <div><h2>Support Reactions - ULS</h2><table><thead><tr><th>Support</th><th>x [m]</th><th>Vertical</th><th>Moment</th></tr></thead><tbody>${reactionRows}</tbody></table></div>
+    </div>
+    <h2>Span Results</h2>
+    <table><thead><tr><th>Span</th><th>Length</th><th>Peak moment</th><th>Peak shear</th><th>Peak deflection</th></tr></thead><tbody>${spanTable}</tbody></table>
+    <div class="diagram-wrap">${beamSvg}</div>
+    <div class="page-footer"><span>Loads, combinations and reactions</span><span class="page-no"></span></div>
+  </section>
+
+  <section class="report-page">
+    <div class="page-head"><div><div class="page-title">Diagrams and Analysis Results</div><div class="page-sub">Print style diagrams generated directly from the solved result arrays.</div></div><div>${safe(meta.jobReference)}</div></div>
+    <div class="diagram-wrap">${graphV}</div>
+    <div class="diagram-wrap">${graphM}</div>
+    <div class="diagram-wrap">${graphY}</div>
+    ${graphN?`<div class="diagram-wrap">${graphN}</div>`:''}
+    <div class="diagram-wrap">${utilisationSvg}</div>
+    <h2>Check Summary</h2>
+    <table><thead><tr><th>Check</th><th>Clause/reference</th><th>Basis</th><th>IR</th><th>Status</th></tr></thead><tbody>${checkTableRows}</tbody></table>
+    <div class="page-footer"><span>Diagrams and analysis results</span><span class="page-no"></span></div>
+  </section>
+
+  <section class="report-page">
+    <div class="page-head"><div><div class="page-title">Detailed Hand Calculations</div><div class="page-sub">Calculation objects are generated from the same solved data used by the app UI.</div></div><div>${safe(meta.jobReference)}</div></div>
+    ${calcBlocks}
+    <div class="page-footer"><span>Detailed hand calculations</span><span class="page-no"></span></div>
+  </section>
+
+  <section class="report-page">
+    <div class="page-head"><div><div class="page-title">References, Assumptions, Revision and Sign-off</div><div class="page-sub">Source metadata is not invented. Unknown values are marked for confirmation.</div></div><div>${safe(meta.jobReference)}</div></div>
+    <div class="two-col">
+      <div><h2>References and Sources</h2><table><tbody>${referencesRows}</tbody></table></div>
+      <div><h2>Assumptions and Notes</h2><table><tbody>${rows([
+        ['Effective length assumptions', `Buckling ky/kz = ${fmt2(parseNum($('bucklingKy')?.value)||1)} / ${fmt2(parseNum($('bucklingKz')?.value)||1)}`],
+        ['Support assumptions', supportText],
+        ['LTB assumptions', ltb.enabled ? (ltb.available ? `Curve ${ltb.curveLT}; C1=${fmt3(ltb.C1)}; C2=${fmt3(ltb.C2)}` : (ltb.message || 'Unavailable')) : 'LTB switched off'],
+        ['Section source', srcInfo.title],
+        ['Material source', 'Source to be confirmed unless material library metadata is supplied.'],
+        ['Safety factors', `gamma_M0=${fmt2(check.gammaM0)}; gamma_M1=${fmt2(parseNum($('gammaM1').value)||1)}`],
+        ['National Annex', meta.nationalAnnex || 'UK National Annex'],
+        ['Engineer notes', meta.projectNotes || '-']
+      ])}</tbody></table></div>
+    </div>
+    ${warningItems.length?`<div class="warn-box"><strong>Warnings</strong>${warningsHtml}</div>`:''}
+    <h2>Revision History</h2>
+    <table><thead><tr><th>Rev</th><th>Date</th><th>Description</th><th>Prepared by</th><th>Checked by</th><th>Approved by</th></tr></thead><tbody>${revisionRows}</tbody></table>
+    <h2>Sign-off</h2>
+    <table class="signoff"><tbody>${signOffRows}</tbody></table>
+    <h2>Final Summary</h2>
+    <table><tbody>${rows([
+      ['Overall status', statusWord],
+      ['Governing utilisation', fmt3(governingIR)],
+      ['Critical design check', `${governingCheck.id} - ${governingCheck.detail}`],
+      ['Engineer comments', meta.projectNotes || '-'],
+      ['Checker comments', '-']
+    ])}</tbody></table>
+    <div class="page-footer"><span>References, revision and sign-off</span><span class="page-no"></span></div>
+  </section>
+  </body></html>`;
 }
 function reportFileBaseName(data){
   const meta=data?.projectMetadata||{};
