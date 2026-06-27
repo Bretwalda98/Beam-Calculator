@@ -20,7 +20,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.2,
+      "tf_mm": 4.2,
+      "r_mm": 5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 80",
@@ -42,7 +51,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.3,
+      "tf_mm": 4.2,
+      "r_mm": 5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 80",
@@ -64,7 +82,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.8,
+      "tf_mm": 5.2,
+      "r_mm": 5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 100",
@@ -86,7 +113,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.6,
+      "tf_mm": 4.5,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 100",
@@ -108,7 +144,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.6,
+      "tf_mm": 4.7,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE100",
@@ -141,7 +186,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 120",
@@ -163,7 +214,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.8,
+      "tf_mm": 4.8,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 120",
@@ -185,7 +245,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.8,
+      "tf_mm": 5.1,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 120",
@@ -207,7 +276,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.4,
+      "tf_mm": 6.3,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 140",
@@ -229,7 +307,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.8,
+      "tf_mm": 5.2,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 140",
@@ -251,7 +338,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 3.8,
+      "tf_mm": 5.6,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 140",
@@ -273,7 +369,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.7,
+      "tf_mm": 6.9,
+      "r_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 160",
@@ -295,7 +400,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4,
+      "tf_mm": 5.6,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 160",
@@ -317,7 +431,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4,
+      "tf_mm": 5.9,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 160",
@@ -339,7 +462,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 7.4,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 180",
@@ -361,7 +493,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.3,
+      "tf_mm": 6.2,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 180",
@@ -383,7 +524,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.3,
+      "tf_mm": 6.5,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 180",
@@ -405,7 +555,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.3,
+      "tf_mm": 8,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 180",
@@ -427,7 +586,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 9,
+      "r_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 200",
@@ -449,7 +617,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.5,
+      "tf_mm": 6.7,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 200",
@@ -471,7 +648,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.5,
+      "tf_mm": 7,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 200",
@@ -493,7 +679,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.6,
+      "tf_mm": 8.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 200",
@@ -515,7 +710,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.2,
+      "tf_mm": 9.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 220",
@@ -537,7 +741,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.7,
+      "tf_mm": 7.4,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 220",
@@ -559,7 +772,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 7.7,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 220",
@@ -581,7 +803,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.9,
+      "tf_mm": 9.2,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 220",
@@ -603,7 +834,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.6,
+      "tf_mm": 10.2,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 240",
@@ -625,7 +865,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.8,
+      "tf_mm": 8,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 240",
@@ -647,7 +896,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.2,
+      "tf_mm": 8.3,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 240",
@@ -669,7 +927,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.2,
+      "tf_mm": 9.8,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 240",
@@ -691,7 +958,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 10.8,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 270",
@@ -713,7 +989,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 8.7,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 270",
@@ -735,7 +1020,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.6,
+      "tf_mm": 10.2,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 270",
@@ -757,7 +1051,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 12.2,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 300",
@@ -779,7 +1082,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.1,
+      "tf_mm": 9.2,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 300",
@@ -801,7 +1113,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.1,
+      "tf_mm": 10.7,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 300",
@@ -823,7 +1144,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 12.7,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 330",
@@ -845,7 +1175,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 10,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 330",
@@ -867,7 +1206,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 11.5,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 330",
@@ -889,7 +1237,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.5,
+      "tf_mm": 13.5,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 360",
@@ -911,7 +1268,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values retained from the latest located ArcelorMittal edition containing this designation. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal V2024-2 PDF; the designation is omitted from V2026-1.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 10.9,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2024-2 PDF fallback",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections_MB_ArcelorMittal_FR_EN_DE_V2024-2.pdf",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2024-2 PDF because this IPE AA designation is omitted from the V2026-1 workbook.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 360",
@@ -933,7 +1299,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.6,
+      "tf_mm": 11.5,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 360",
@@ -955,7 +1330,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 12.7,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 360",
@@ -977,7 +1361,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.2,
+      "tf_mm": 14.7,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 400",
@@ -999,7 +1392,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values retained from the latest located ArcelorMittal edition containing this designation. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal V2024-2 PDF; the designation is omitted from V2026-1.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.3,
+      "tf_mm": 11.3,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2024-2 PDF fallback",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections_MB_ArcelorMittal_FR_EN_DE_V2024-2.pdf",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2024-2 PDF because this IPE AA designation is omitted from the V2026-1 workbook.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 400",
@@ -1021,7 +1423,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 12,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 400",
@@ -1043,7 +1454,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.6,
+      "tf_mm": 13.5,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 400",
@@ -1065,7 +1485,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.7,
+      "tf_mm": 15.5,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE V 400",
@@ -1087,7 +1516,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10.6,
+      "tf_mm": 17.5,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 450",
@@ -1109,7 +1547,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values retained from the latest located ArcelorMittal edition containing this designation. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal V2024-2 PDF; the designation is omitted from V2026-1.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.8,
+      "tf_mm": 12.3,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2024-2 PDF fallback",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections_MB_ArcelorMittal_FR_EN_DE_V2024-2.pdf",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2024-2 PDF because this IPE AA designation is omitted from the V2026-1 workbook.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 450",
@@ -1131,7 +1578,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.6,
+      "tf_mm": 13.1,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 450",
@@ -1153,7 +1609,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.4,
+      "tf_mm": 14.6,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 450",
@@ -1175,7 +1640,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11,
+      "tf_mm": 17.6,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE V 450",
@@ -1197,7 +1671,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12.4,
+      "tf_mm": 19.6,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 500",
@@ -1219,7 +1702,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values retained from the latest located ArcelorMittal edition containing this designation. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal V2024-2 PDF; the designation is omitted from V2026-1.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 13.6,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2024-2 PDF fallback",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections_MB_ArcelorMittal_FR_EN_DE_V2024-2.pdf",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2024-2 PDF because this IPE AA designation is omitted from the V2026-1 workbook.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 500",
@@ -1241,7 +1733,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.4,
+      "tf_mm": 14.5,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 500",
@@ -1263,7 +1764,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10.2,
+      "tf_mm": 16,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 500",
@@ -1285,7 +1795,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 19,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE V 500",
@@ -1307,7 +1826,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14.2,
+      "tf_mm": 23,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE AA 550",
@@ -1329,7 +1857,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.5,
+      "tf_mm": 12.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 550",
@@ -1351,7 +1888,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9,
+      "tf_mm": 15.7,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 550",
@@ -1373,7 +1919,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11.1,
+      "tf_mm": 17.2,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 550",
@@ -1395,7 +1950,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12.7,
+      "tf_mm": 20.2,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE A 600",
@@ -1417,7 +1981,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.8,
+      "tf_mm": 17.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 600",
@@ -1439,7 +2012,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 19,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE O 600",
@@ -1461,7 +2043,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15,
+      "tf_mm": 24,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE V 600",
@@ -1483,7 +2074,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 18,
+      "tf_mm": 28,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 750 x 134",
@@ -1505,7 +2105,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 15.5,
+      "r_mm": 20,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 750 x 147",
@@ -1527,7 +2136,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13.2,
+      "tf_mm": 17,
+      "r_mm": 20,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 750 x 173",
@@ -1549,7 +2167,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14.4,
+      "tf_mm": 21.6,
+      "r_mm": 20,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 750 x 196",
@@ -1571,7 +2198,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15.6,
+      "tf_mm": 25.4,
+      "r_mm": 20,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "IPE 750 x 220",
@@ -1593,7 +2229,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 16.5,
+      "tf_mm": 30,
+      "r_mm": 20,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "HEM": [
@@ -1617,7 +2262,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 20,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 120 M",
@@ -1639,7 +2293,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12.5,
+      "tf_mm": 21,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 140 M",
@@ -1661,7 +2324,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13,
+      "tf_mm": 22,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 160 M",
@@ -1683,7 +2355,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 23,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 180 M",
@@ -1705,7 +2386,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14.5,
+      "tf_mm": 24,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 200 M",
@@ -1727,7 +2417,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15,
+      "tf_mm": 25,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 220 M",
@@ -1749,7 +2448,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15.5,
+      "tf_mm": 26,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 240 M",
@@ -1771,7 +2479,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 18,
+      "tf_mm": 32,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 260 M",
@@ -1793,7 +2510,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 18,
+      "tf_mm": 32.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HEM280",
@@ -1826,7 +2552,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 300 M",
@@ -1848,7 +2580,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 39,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 320 M",
@@ -1870,7 +2611,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 340 M",
@@ -1892,7 +2642,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 360 M",
@@ -1914,7 +2673,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 400 M",
@@ -1936,7 +2704,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 450 M",
@@ -1958,7 +2735,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 500 M",
@@ -1980,7 +2766,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 550 M",
@@ -2002,7 +2797,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 600 M",
@@ -2024,7 +2828,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 650 M",
@@ -2046,7 +2859,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 700 M",
@@ -2068,7 +2890,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 800 M",
@@ -2090,7 +2921,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HEM900",
@@ -2123,7 +2963,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 1000 M",
@@ -2145,7 +2991,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 21,
+      "tf_mm": 40,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "HEB": [
@@ -2169,7 +3024,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 10,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 120 B",
@@ -2191,7 +3055,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 11,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 140 B",
@@ -2213,7 +3086,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 12,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 160 B",
@@ -2235,7 +3117,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 13,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 180 B",
@@ -2257,7 +3148,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.5,
+      "tf_mm": 14,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 200 B",
@@ -2279,7 +3179,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9,
+      "tf_mm": 15,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 220 B",
@@ -2301,7 +3210,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.5,
+      "tf_mm": 16,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 240 B",
@@ -2323,7 +3241,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 17,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 260 B",
@@ -2345,7 +3272,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 17.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 280 B",
@@ -2367,7 +3303,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10.5,
+      "tf_mm": 18,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 300 B",
@@ -2389,7 +3334,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11,
+      "tf_mm": 19,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 320 B",
@@ -2411,7 +3365,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11.5,
+      "tf_mm": 20.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 340 B",
@@ -2433,7 +3396,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 21.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 360 B",
@@ -2455,7 +3427,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12.5,
+      "tf_mm": 22.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 400 B",
@@ -2477,7 +3458,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13.5,
+      "tf_mm": 24,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 450 B",
@@ -2499,7 +3489,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 26,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 500 B",
@@ -2521,7 +3520,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14.5,
+      "tf_mm": 28,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 550 B",
@@ -2543,7 +3551,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15,
+      "tf_mm": 29,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 600 B",
@@ -2565,7 +3582,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15.5,
+      "tf_mm": 30,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 650 B",
@@ -2587,7 +3613,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 16,
+      "tf_mm": 31,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 700 B",
@@ -2609,7 +3644,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 17,
+      "tf_mm": 32,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 800 B",
@@ -2631,7 +3675,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 17.5,
+      "tf_mm": 33,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 900 B",
@@ -2653,7 +3706,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 18.5,
+      "tf_mm": 35,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 1000 B",
@@ -2675,7 +3737,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 19,
+      "tf_mm": 36,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "HEA": [
@@ -2699,7 +3770,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 8,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 120 A",
@@ -2721,7 +3801,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 8,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 140 A",
@@ -2743,7 +3832,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 8.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 160 A",
@@ -2765,7 +3863,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 9,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 180 A",
@@ -2787,7 +3894,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 9.5,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 200 A",
@@ -2809,7 +3925,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 10,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 220 A",
@@ -2831,7 +3956,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 11,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 240 A",
@@ -2853,7 +3987,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 12,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 260 A",
@@ -2875,7 +4018,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 12.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 280 A",
@@ -2897,7 +4049,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 13,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HEA300",
@@ -2930,7 +4091,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 320 A",
@@ -2952,7 +4119,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9,
+      "tf_mm": 15.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 340 A",
@@ -2974,7 +4150,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.5,
+      "tf_mm": 16.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 360 A",
@@ -2996,7 +4181,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 17.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 400 A",
@@ -3018,7 +4212,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11,
+      "tf_mm": 19,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 450 A",
@@ -3040,7 +4243,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11.5,
+      "tf_mm": 21,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 500 A",
@@ -3062,7 +4274,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 23,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HEA550",
@@ -3095,7 +4316,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 600 A",
@@ -3117,7 +4344,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13,
+      "tf_mm": 25,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 650 A",
@@ -3139,7 +4375,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13.5,
+      "tf_mm": 26,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 700 A",
@@ -3161,7 +4406,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14.5,
+      "tf_mm": 27,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 800 A",
@@ -3183,7 +4437,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15,
+      "tf_mm": 28,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 900 A",
@@ -3205,7 +4468,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 16,
+      "tf_mm": 30,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 1000 A",
@@ -3227,7 +4499,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 16.5,
+      "tf_mm": 31,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "HEAA": [
@@ -3251,7 +4532,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.2,
+      "tf_mm": 5.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 120 AA",
@@ -3273,7 +4563,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.2,
+      "tf_mm": 5.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 140 AA",
@@ -3295,7 +4594,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.3,
+      "tf_mm": 6,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 160 AA",
@@ -3317,7 +4625,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.5,
+      "tf_mm": 7,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 180 AA",
@@ -3339,7 +4656,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 7.5,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 200 AA",
@@ -3361,7 +4687,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 8,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 220 AA",
@@ -3383,7 +4718,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 8.5,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 240 AA",
@@ -3405,7 +4749,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 9,
+      "r_mm": 21,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 260 AA",
@@ -3427,7 +4780,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 9.5,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 280 AA",
@@ -3449,7 +4811,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 10,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 300 AA",
@@ -3471,7 +4842,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 10.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 320 AA",
@@ -3493,7 +4873,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 11,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 340 AA",
@@ -3515,7 +4904,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.5,
+      "tf_mm": 11.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 360 AA",
@@ -3537,7 +4935,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9,
+      "tf_mm": 12,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 400 AA",
@@ -3559,7 +4966,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.5,
+      "tf_mm": 13,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 450 AA",
@@ -3581,7 +4997,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 13.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 500 AA",
@@ -3603,7 +5028,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10.5,
+      "tf_mm": 14,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 550 AA",
@@ -3625,7 +5059,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11.5,
+      "tf_mm": 15,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 600 AA",
@@ -3647,7 +5090,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 15.5,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 650 AA",
@@ -3669,7 +5121,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12.5,
+      "tf_mm": 16,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 700 AA",
@@ -3691,7 +5152,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13,
+      "tf_mm": 17,
+      "r_mm": 27,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 800 AA",
@@ -3713,7 +5183,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 18,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 900 AA",
@@ -3735,7 +5214,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 15,
+      "tf_mm": 20,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "HE 1000 AA",
@@ -3757,7 +5245,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 16,
+      "tf_mm": 21,
+      "r_mm": 30,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf and r are stored in mm.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "UPE": [
@@ -3781,7 +5278,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4,
+      "tf_mm": 7,
+      "r_mm": 10,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 100",
@@ -3803,7 +5309,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 4.5,
+      "tf_mm": 7.5,
+      "r_mm": 10,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 120",
@@ -3825,7 +5340,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 8,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 140",
@@ -3847,7 +5371,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 9,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 160",
@@ -3869,7 +5402,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 9.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 180",
@@ -3891,7 +5433,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 10.5,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 200",
@@ -3913,7 +5464,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 11,
+      "r_mm": 13,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 220",
@@ -3935,7 +5495,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6.5,
+      "tf_mm": 12,
+      "r_mm": 13,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 240",
@@ -3957,7 +5526,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 12.5,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 270",
@@ -3979,7 +5557,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 13.5,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 300",
@@ -4001,7 +5588,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.5,
+      "tf_mm": 15,
+      "r_mm": 15,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 330",
@@ -4023,7 +5619,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 11,
+      "tf_mm": 16,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 360",
@@ -4045,7 +5650,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 12,
+      "tf_mm": 17,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPE 400",
@@ -4067,7 +5681,16 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13.5,
+      "tf_mm": 18,
+      "r_mm": 18,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "UPN": [
@@ -4091,7 +5714,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5,
+      "tf_mm": 7,
+      "r_mm": 7,
+      "r2_mm": 3.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 65",
@@ -4113,7 +5746,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 5.5,
+      "tf_mm": 7.5,
+      "r_mm": 7.5,
+      "r2_mm": 4,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 80",
@@ -4135,7 +5778,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 8,
+      "r_mm": 8,
+      "r2_mm": 4,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 100",
@@ -4157,7 +5810,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 6,
+      "tf_mm": 8.5,
+      "r_mm": 8.5,
+      "r2_mm": 4.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 120",
@@ -4179,7 +5842,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 9,
+      "r_mm": 9,
+      "r2_mm": 4.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 140",
@@ -4201,7 +5874,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7,
+      "tf_mm": 10,
+      "r_mm": 10,
+      "r2_mm": 5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 160",
@@ -4223,7 +5906,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 7.5,
+      "tf_mm": 10.5,
+      "r_mm": 10.5,
+      "r2_mm": 5.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 180",
@@ -4245,7 +5938,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8,
+      "tf_mm": 11,
+      "r_mm": 11,
+      "r2_mm": 5.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 200",
@@ -4267,7 +5970,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 8.5,
+      "tf_mm": 11.5,
+      "r_mm": 11.5,
+      "r2_mm": 6,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 220",
@@ -4289,7 +6002,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9,
+      "tf_mm": 12.5,
+      "r_mm": 12.5,
+      "r2_mm": 6.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 240",
@@ -4311,7 +6034,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 9.5,
+      "tf_mm": 13,
+      "r_mm": 13,
+      "r2_mm": 6.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 260",
@@ -4333,7 +6066,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 14,
+      "r_mm": 14,
+      "r2_mm": 7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 280",
@@ -4355,7 +6098,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 15,
+      "r_mm": 15,
+      "r2_mm": 7.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 300",
@@ -4377,7 +6130,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 10,
+      "tf_mm": 16,
+      "r_mm": 16,
+      "r2_mm": 8,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 320",
@@ -4399,7 +6162,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 17.5,
+      "r_mm": 17.5,
+      "r2_mm": 8.8,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 350",
@@ -4421,7 +6194,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 16,
+      "r_mm": 16,
+      "r2_mm": 8,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 380",
@@ -4443,7 +6226,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 13.5,
+      "tf_mm": 16,
+      "r_mm": 16,
+      "r2_mm": 8,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UPN 400",
@@ -4465,7 +6258,17 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "tw_mm": 14,
+      "tf_mm": 18,
+      "r_mm": 18,
+      "r2_mm": 9,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Channel geometry dimensions imported from the published V2026-1 workbook. h, b, tw, tf, r and r2 are stored in mm where published.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "RHS": [
@@ -4499,7 +6302,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Iz and It are direct published values. Iw=0 is an explicit closed-section warping treatment because the source does not tabulate a warping constant.",
       "ltb_quality_note": "Published hot-finished SHS properties used for the square RHS-labelled rows; zero warping is explicitly handled as a valid closed-section value.",
       "ltb_data_status": "verified_published_table_closed_section",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/hfshs/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table_closed_section",
+      "geometry_data_verified": true
     },
     {
       "name": "RHS 140x140x10",
@@ -4531,7 +6340,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Iz and It are direct published values. Iw=0 is an explicit closed-section warping treatment because the source does not tabulate a warping constant.",
       "ltb_quality_note": "Published hot-finished SHS properties used for the square RHS-labelled rows; zero warping is explicitly handled as a valid closed-section value.",
       "ltb_data_status": "verified_published_table_closed_section",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/hfshs/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table_closed_section",
+      "geometry_data_verified": true
     }
   ],
   "UB": [
@@ -4566,7 +6381,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 914x419x343",
@@ -4599,7 +6420,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 914x305x289",
@@ -4632,7 +6459,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 914x305x253",
@@ -4665,7 +6498,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 914x305x224",
@@ -4698,7 +6537,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 914x305x201",
@@ -4731,7 +6576,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 838x292x226",
@@ -4764,7 +6615,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 838x292x194",
@@ -4797,7 +6654,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 838x292x176",
@@ -4830,7 +6693,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 762x267x197",
@@ -4863,7 +6732,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 762x267x173",
@@ -4896,7 +6771,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 762x267x147",
@@ -4929,7 +6810,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 762x267x134",
@@ -4962,7 +6849,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 686x254x170",
@@ -4995,7 +6888,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 686x254x152",
@@ -5028,7 +6927,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 686x254x140",
@@ -5061,7 +6966,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 686x254x125",
@@ -5094,7 +7005,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x305x238",
@@ -5127,7 +7044,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x305x179",
@@ -5160,7 +7083,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x305x149",
@@ -5193,7 +7122,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x229x140",
@@ -5226,7 +7161,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x229x125",
@@ -5259,7 +7200,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x229x113",
@@ -5292,7 +7239,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 610x229x101",
@@ -5325,7 +7278,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 533x210x122",
@@ -5358,7 +7317,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 533x210x109",
@@ -5391,7 +7356,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 533x210x101",
@@ -5424,7 +7395,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 533x210x92",
@@ -5457,7 +7434,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 533x210x82",
@@ -5490,7 +7473,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x191x98",
@@ -5523,7 +7512,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x191x89",
@@ -5556,7 +7551,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x191x82",
@@ -5589,7 +7590,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x191x74",
@@ -5622,7 +7629,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x191x67",
@@ -5655,7 +7668,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x152x82",
@@ -5688,7 +7707,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x152x74",
@@ -5721,7 +7746,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x152x67",
@@ -5754,7 +7785,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x152x60",
@@ -5787,7 +7824,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 457x152x52",
@@ -5820,7 +7863,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x178x74",
@@ -5853,7 +7902,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x178x67",
@@ -5886,7 +7941,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x178x60",
@@ -5919,7 +7980,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x178x54",
@@ -5952,7 +8019,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x140x46",
@@ -5985,7 +8058,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 406x140x39",
@@ -6018,7 +8097,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x171x67",
@@ -6051,7 +8136,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x171x57",
@@ -6084,7 +8175,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x171x51",
@@ -6117,7 +8214,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x171x45",
@@ -6150,7 +8253,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x127x39",
@@ -6183,7 +8292,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/ub/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 356x127x33",
@@ -6216,7 +8331,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/ub/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x165x54",
@@ -6249,7 +8370,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x165x46",
@@ -6282,7 +8409,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x165x40",
@@ -6315,7 +8448,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x127x48",
@@ -6348,7 +8487,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x127x42",
@@ -6381,7 +8526,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x127x37",
@@ -6414,7 +8565,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x102x33",
@@ -6447,7 +8604,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x102x28",
@@ -6480,7 +8643,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 305x102x25",
@@ -6513,7 +8682,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x146x43",
@@ -6546,7 +8721,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x146x37",
@@ -6579,7 +8760,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x146x31",
@@ -6612,7 +8799,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x102x28",
@@ -6645,7 +8838,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x102x25",
@@ -6678,7 +8877,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 254x102x22",
@@ -6711,7 +8916,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 203x133x30",
@@ -6744,7 +8955,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 203x133x25",
@@ -6777,7 +8994,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 203x102x23",
@@ -6810,7 +9033,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 178x102x19",
@@ -6843,7 +9072,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 152x89x16",
@@ -6876,7 +9111,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UB 127x76x13",
@@ -6909,7 +9150,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Beams datasheet",
+      "geometry_source_edition": "CUBD:ENG:072024",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-beams-datasheet-190724.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "UC": [
@@ -6944,7 +9191,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x551",
@@ -6977,7 +9230,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x467",
@@ -7010,7 +9269,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x393",
@@ -7043,7 +9308,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x340",
@@ -7076,7 +9347,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x287",
@@ -7109,7 +9386,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x406x235",
@@ -7142,7 +9425,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x368x202",
@@ -7175,7 +9464,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x368x177",
@@ -7208,7 +9503,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x368x153",
@@ -7241,7 +9542,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 356x368x129",
@@ -7274,7 +9581,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x283",
@@ -7307,7 +9620,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x240",
@@ -7340,7 +9659,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x198",
@@ -7373,7 +9698,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x158",
@@ -7406,7 +9737,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x137",
@@ -7439,7 +9776,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x118",
@@ -7472,7 +9815,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 305x305x97",
@@ -7505,7 +9854,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 254x254x167",
@@ -7538,7 +9893,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 254x254x132",
@@ -7571,7 +9932,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 254x254x107",
@@ -7604,7 +9971,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 254x254x89",
@@ -7637,7 +10010,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 254x254x73",
@@ -7670,7 +10049,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 203x203x86",
@@ -7703,7 +10088,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 203x203x71",
@@ -7736,7 +10127,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 203x203x60",
@@ -7769,7 +10166,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 203x203x52",
@@ -7802,7 +10205,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 203x203x46",
@@ -7835,7 +10244,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 152x152x37",
@@ -7868,7 +10283,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 152x152x30",
@@ -7901,7 +10322,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UC 152x152x23",
@@ -7934,7 +10361,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Columns datasheet",
+      "geometry_source_edition": "CUCD:ENG:072023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-columns-datasheet-100723.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "UBP": [
@@ -7969,7 +10402,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 356x368x152",
@@ -8002,7 +10441,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 356x368x133",
@@ -8035,7 +10480,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 356x368x109",
@@ -8068,7 +10519,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x223",
@@ -8101,7 +10558,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x186",
@@ -8134,7 +10597,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x149",
@@ -8167,7 +10636,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x126",
@@ -8200,7 +10675,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x110",
@@ -8233,7 +10714,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x95",
@@ -8266,7 +10753,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x88",
@@ -8299,7 +10792,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 305x305x79",
@@ -8332,7 +10831,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 254x254x85",
@@ -8365,7 +10870,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 254x254x71",
@@ -8398,7 +10909,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 254x254x63",
@@ -8431,7 +10948,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 203x203x54",
@@ -8464,7 +10987,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "UBP 203x203x45",
@@ -8497,7 +11026,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Universal Bearing Piles datasheet",
+      "geometry_source_edition": "CUBPD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-universal-bearing-piles-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "J": [
@@ -8532,7 +11067,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 254x114x37",
@@ -8565,7 +11106,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 203x152x52",
@@ -8598,7 +11145,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 152x127x37",
@@ -8631,7 +11184,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 127x114x29",
@@ -8664,7 +11223,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 127x114x27",
@@ -8697,7 +11262,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 127x76x16",
@@ -8730,7 +11301,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 114x114x27",
@@ -8763,7 +11340,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 102x102x23",
@@ -8796,7 +11379,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 102x44x7",
@@ -8829,7 +11418,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 89x89x19",
@@ -8862,7 +11457,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 76x76x15",
@@ -8895,7 +11496,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "J 76x76x13",
@@ -8928,7 +11535,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal table and converted to the app's mm-based units.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars Sales Programme",
+      "geometry_source_edition": "V2026-1",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repo/Sections/Sections%20and%20Merchant%20Bars-ArcelorMittal_V2026-1.xlsx",
+      "geometry_quality_note": "Geometry dimensions retained from the existing verified bundled section row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "PFC": [
@@ -8963,7 +11576,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/pfc/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 380x100x54",
@@ -8996,7 +11615,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/pfc/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 300x100x46",
@@ -9029,7 +11654,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 300x90x41",
@@ -9062,7 +11693,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 260x90x35",
@@ -9095,7 +11732,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 260x75x28",
@@ -9130,7 +11773,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 230x90x32",
@@ -9165,7 +11814,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 230x75x26",
@@ -9200,7 +11855,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 200x90x30",
@@ -9235,7 +11896,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 200x75x23",
@@ -9270,7 +11937,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 180x90x26",
@@ -9305,7 +11978,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 180x75x20",
@@ -9340,7 +12019,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 150x90x24",
@@ -9375,7 +12060,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 150x75x18",
@@ -9410,7 +12101,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official British Steel dimensions and properties datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "British Steel Parallel Flange Channels datasheet",
+      "geometry_source_edition": "CPFCD:ENG:012023",
+      "geometry_source_ref": "https://www.britishsteel.co.uk/wp-content/uploads/2026/02/british-steel-parallel-flange-channels-datasheet.pdf",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 125x65x15",
@@ -9445,7 +12142,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/pfc/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     },
     {
       "name": "PFC 100x50x10",
@@ -9478,7 +12181,13 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^12.",
       "ltb_quality_note": "Verified against the official Blue Book table because this designation is not listed in the current British Steel family datasheet.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "geometry_source_name": "Steel for Life Blue Book",
+      "geometry_source_edition": "EC3 UK National Annex data v18",
+      "geometry_source_ref": "https://www.steelforlifebluebook.co.uk/pfc/ec3-ukna/section-properties-dimensions-properties/",
+      "geometry_quality_note": "Geometry dimensions retained from the existing UK-sourced verified bundled PFC row.",
+      "geometry_data_status": "verified_published_table",
+      "geometry_data_verified": true
     }
   ],
   "CH": [
@@ -9489,7 +12198,7 @@ const PROFILE_DB = {
       "tw_mm": 12.2,
       "tf_mm": 16.8,
       "r1_mm": 15.2,
-      "r2_mm": 4.8,
+      "r2_mm": 12,
       "et_mm": 9.7,
       "es_mm": 23.1,
       "mass_kg_m": 65.5,
@@ -9516,7 +12225,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 24,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 381x102x55",
@@ -9525,7 +12241,7 @@ const PROFILE_DB = {
       "tw_mm": 10.4,
       "tf_mm": 16.3,
       "r1_mm": 15.2,
-      "r2_mm": 4.8,
+      "r2_mm": 14.1,
       "et_mm": 9.2,
       "es_mm": 25.2,
       "mass_kg_m": 55,
@@ -9552,7 +12268,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 28.2,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 305x102x46",
@@ -9561,7 +12284,7 @@ const PROFILE_DB = {
       "tw_mm": 10.2,
       "tf_mm": 14.8,
       "r1_mm": 15.2,
-      "r2_mm": 4.8,
+      "r2_mm": 13.35,
       "et_mm": 9.7,
       "es_mm": 26.5,
       "mass_kg_m": 46.2,
@@ -9588,7 +12311,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 26.7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 305x89x42",
@@ -9597,7 +12327,7 @@ const PROFILE_DB = {
       "tw_mm": 10.2,
       "tf_mm": 13.7,
       "r1_mm": 13.7,
-      "r2_mm": 3.2,
+      "r2_mm": 12.85,
       "et_mm": 8.7,
       "es_mm": 21.8,
       "mass_kg_m": 41.8,
@@ -9624,7 +12354,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 25.7,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 254x89x36",
@@ -9633,7 +12370,7 @@ const PROFILE_DB = {
       "tw_mm": 9.1,
       "tf_mm": 13.6,
       "r1_mm": 13.7,
-      "r2_mm": 3.2,
+      "r2_mm": 10.2,
       "et_mm": 8.9,
       "es_mm": 24.2,
       "mass_kg_m": 35.7,
@@ -9660,7 +12397,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 20.4,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 254x76x28",
@@ -9669,7 +12413,7 @@ const PROFILE_DB = {
       "tw_mm": 8.1,
       "tf_mm": 10.9,
       "r1_mm": 12.2,
-      "r2_mm": 3.2,
+      "r2_mm": 9.5,
       "et_mm": 7.1,
       "es_mm": 18.5,
       "mass_kg_m": 28.2,
@@ -9696,7 +12440,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 19,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 229x89x33",
@@ -9732,7 +12483,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 19,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 229x76x26",
@@ -9768,7 +12526,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 17.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 203x89x30",
@@ -9804,7 +12569,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 17.5,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 203x76x24",
@@ -9828,7 +12600,7 @@ const PROFILE_DB = {
       "Weff_z_mm3": 26300,
       "Avz_mm2": 1557,
       "r1_mm": 17,
-      "r2_mm": 8.8,
+      "r2_mm": 8.5,
       "et_mm": 11.5,
       "es_mm": 9.55,
       "It_mm4": 115000,
@@ -9840,7 +12612,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 17,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 178x89x27",
@@ -9849,7 +12628,7 @@ const PROFILE_DB = {
       "tw_mm": 7.6,
       "tf_mm": 12.3,
       "r1_mm": 13.7,
-      "r2_mm": 3.2,
+      "r2_mm": 8.5,
       "et_mm": 17,
       "es_mm": 27.6,
       "mass_kg_m": 26.8,
@@ -9876,7 +12655,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 17,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 178x76x21",
@@ -9885,7 +12671,7 @@ const PROFILE_DB = {
       "tw_mm": 6.6,
       "tf_mm": 10.3,
       "r1_mm": 12.2,
-      "r2_mm": 3.2,
+      "r2_mm": 8,
       "et_mm": 10.9,
       "es_mm": 22,
       "mass_kg_m": 20.8,
@@ -9912,7 +12698,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 16,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 152x89x24",
@@ -9921,7 +12714,7 @@ const PROFILE_DB = {
       "tw_mm": 7.1,
       "tf_mm": 11.6,
       "r1_mm": 13.7,
-      "r2_mm": 3.2,
+      "r2_mm": 8,
       "et_mm": 19.9,
       "es_mm": 28.7,
       "mass_kg_m": 23.9,
@@ -9948,7 +12741,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 16,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 152x76x18",
@@ -9957,7 +12757,7 @@ const PROFILE_DB = {
       "tw_mm": 6.4,
       "tf_mm": 9,
       "r1_mm": 12.2,
-      "r2_mm": 2.4,
+      "r2_mm": 7,
       "et_mm": 11.5,
       "es_mm": 22.1,
       "mass_kg_m": 17.9,
@@ -9984,7 +12784,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 14,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 127x64x15",
@@ -9993,7 +12800,7 @@ const PROFILE_DB = {
       "tw_mm": 6.4,
       "tf_mm": 9.2,
       "r1_mm": 10.7,
-      "r2_mm": 2.4,
+      "r2_mm": 6.5,
       "et_mm": 10.9,
       "es_mm": 19.4,
       "mass_kg_m": 14.9,
@@ -10020,7 +12827,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 13,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 102x51x10",
@@ -10029,7 +12843,7 @@ const PROFILE_DB = {
       "tw_mm": 6.1,
       "tf_mm": 7.6,
       "r1_mm": 9.1,
-      "r2_mm": 2.4,
+      "r2_mm": 6,
       "et_mm": 7.6,
       "es_mm": 15.1,
       "mass_kg_m": 10.4,
@@ -10056,7 +12870,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     },
     {
       "name": "CH 76x38x7",
@@ -10065,7 +12886,7 @@ const PROFILE_DB = {
       "tw_mm": 5.1,
       "tf_mm": 6.8,
       "r1_mm": 7.6,
-      "r2_mm": 2.4,
+      "r2_mm": 6,
       "et_mm": 6.7,
       "es_mm": 11.9,
       "mass_kg_m": 6.7,
@@ -10092,7 +12913,14 @@ const PROFILE_DB = {
       "ltb_source_note": "Direct published table values. Iz and It multiplied by 10^4; Iw multiplied by 10^9.",
       "ltb_quality_note": "Verified against the published ArcelorMittal catalogue for legacy J/CH designations.",
       "ltb_data_status": "verified_published_table",
-      "ltb_data_verified": true
+      "ltb_data_verified": true,
+      "r_mm": 12,
+      "geometry_source_name": "ArcelorMittal Sections and Merchant Bars legacy catalogue",
+      "geometry_source_edition": "2018-05-18 PDF",
+      "geometry_source_ref": "https://sections.arcelormittal.com/repository2/Sections/5_1_5_ArcelorMittal_FR_EN_RU_web.pdf",
+      "geometry_quality_note": "CH taper-flange channel geometry imported from the published legacy catalogue. h, b, tw, tf, r and r2 are stored in mm.",
+      "geometry_data_status": "verified_published_table_fallback",
+      "geometry_data_verified": true
     }
   ]
 };

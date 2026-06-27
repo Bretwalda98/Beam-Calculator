@@ -4889,6 +4889,8 @@ function buildSectionSourceIndex(){
       if(row.ltb_source_units) group.assumptions.add(row.ltb_source_units);
       if(row.ltb_source_note) group.assumptions.add(row.ltb_source_note);
       if(row.ltb_quality_note) group.assumptions.add(row.ltb_quality_note);
+      if(row.geometry_source_name) group.assumptions.add(`Geometry source: ${row.geometry_source_name}${row.geometry_source_edition ? ' ('+row.geometry_source_edition+')' : ''}.`);
+      if(row.geometry_quality_note) group.assumptions.add(row.geometry_quality_note);
       if(!name) group.assumptions.add('Source to be confirmed');
     });
   });
@@ -4911,7 +4913,7 @@ function renderSectionSourceIndex(){
       <td>${escHtml(group.edition)}</td>
       <td>${escHtml(Array.from(group.families).sort().join(', '))}</td>
       <td>${escHtml(group.reference)}</td>
-      <td>${escHtml(Array.from(group.assumptions).slice(0,3).join(' '))}</td>
+      <td>${escHtml(Array.from(group.assumptions).slice(0,6).join(' '))}</td>
     </tr>`).join('');
   host.innerHTML=`
     <h3>Section Data Sources</h3>

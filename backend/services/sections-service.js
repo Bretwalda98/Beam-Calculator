@@ -86,13 +86,15 @@ function buildSectionSourceIndex() {
       if (row.ltb_source_units) group.assumptions.add(row.ltb_source_units);
       if (row.ltb_source_note) group.assumptions.add(row.ltb_source_note);
       if (row.ltb_quality_note) group.assumptions.add(row.ltb_quality_note);
+      if (row.geometry_source_name) group.assumptions.add(`Geometry source: ${row.geometry_source_name}${row.geometry_source_edition ? ` (${row.geometry_source_edition})` : ''}.`);
+      if (row.geometry_quality_note) group.assumptions.add(row.geometry_quality_note);
       if (sourceName === 'Source to be confirmed') group.assumptions.add('Source to be confirmed');
     });
   });
   return Array.from(groups.values()).map((group) => ({
     ...group,
     sectionTypes: Array.from(group.sectionTypes).sort(),
-    assumptions: Array.from(group.assumptions).slice(0, 5)
+    assumptions: Array.from(group.assumptions).slice(0, 8)
   })).sort((a, b) => a.sourceName.localeCompare(b.sourceName));
 }
 
