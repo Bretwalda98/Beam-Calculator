@@ -189,13 +189,13 @@ async function routeApi(req, res, url) {
 }
 
 const server = http.createServer(async (req, res) => {
-  setSecurityHeaders(res);
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  setSecurityHeaders(res, { legacyFrontend: !url.pathname.startsWith('/api/') });
   applyCors(req, res);
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     return res.end();
   }
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   if (url.pathname.startsWith('/api/')) return routeApi(req, res, url);
   return serveStatic(req, res, url.pathname);
 });
