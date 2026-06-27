@@ -1556,6 +1556,151 @@ body.plan-plus .ad-slot{display:none!important}
   .settings-tabs{display:flex!important;overflow-x:auto}.settings-tab{flex:1 0 92px}
   .trap-entry-fields{grid-template-columns:minmax(0,1fr)}
 }
+
+/* ===== v34.3 responsive modes and theme audit ===== */
+:root{
+  --surface:var(--panel);
+  --surface-subtle:var(--panel-2);
+  --focus-ring:0 0 0 3px rgba(var(--accent-rgb),.24);
+  --warning:#b45309;
+  --warning-bg:#fff7ed;
+  --warning-border:#fed7aa;
+  --success-bg:#ecfdf5;
+  --success-border:#bbf7d0;
+  --danger-bg:#fef2f2;
+  --danger-border:#fecaca;
+  --disabled-bg:#eef2f7;
+  --disabled-text:#667085;
+  --placeholder:#6b7280;
+}
+:root[data-theme="dark"]{
+  --surface:#171e28!important;
+  --surface-subtle:#202a38!important;
+  --warning:#fbbf24;
+  --warning-bg:#35250f;
+  --warning-border:#7c4a03;
+  --success-bg:#0f2d22;
+  --success-border:#1f6b4a;
+  --danger-bg:#3a171b;
+  --danger-border:#7f2631;
+  --disabled-bg:#242d3b;
+  --disabled-text:#a8b3c3;
+  --placeholder:#a8b3c3;
+}
+html,body{max-width:100%;overflow-x:hidden}
+body.layout-mobile,body.layout-tablet,body.layout-desktop{min-width:0}
+button:focus-visible,.btn:focus-visible,.file-menu-item:focus-visible,.settings-tab:focus-visible,.rail-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:none!important;
+  box-shadow:var(--focus-ring)!important;
+}
+input::placeholder,textarea::placeholder{color:var(--placeholder)!important;opacity:1}
+button:disabled,.btn:disabled,input:disabled,select:disabled,textarea:disabled{
+  cursor:not-allowed!important;
+  opacity:1!important;
+  background:var(--disabled-bg)!important;
+  border-color:var(--border)!important;
+  color:var(--disabled-text)!important;
+}
+select option{background:var(--surface)!important;color:var(--text)!important}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--accent);min-height:auto!important}
+.red{color:var(--danger)!important}.green{color:var(--good)!important}
+.file-menu,.settings-panel,.modal-panel,.chart-modal-panel,.start-card,.auth-card,.pricing-card,.about-card,.table-host,.chart-wrap,.info-tip-content{
+  background:var(--surface)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+.file-menu{width:min(430px,calc(100vw - 24px))!important;max-height:calc(100dvh - 90px);overflow:auto}
+.project-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.project-meta-grid .full{grid-column:1/-1}
+.project-meta-grid textarea{min-height:70px!important}
+.layout-mode-options{grid-template-columns:repeat(4,1fr)!important}
+.data-table{color:var(--text)!important}
+.source-index-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.source-index-table{min-width:900px}
+.data-table th{background:var(--surface-subtle)!important;color:var(--muted)!important;border-color:var(--border)!important}
+.data-table td{background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+.result-block,.metric-card,.warning-note,.status-strip,.panel,.support-preview,.multi-load-card,.custom-preview{
+  background:var(--surface-subtle)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+.warning-note.warn,.settings-account-note,.integration-note{background:var(--warning-bg)!important;border-color:var(--warning-border)!important;color:var(--text)!important}
+.warning-note.bad,.err{background:var(--danger-bg)!important;border-color:var(--danger-border)!important;color:var(--danger)!important}
+.warning-note.ok{background:var(--success-bg)!important;border-color:var(--success-border)!important;color:var(--text)!important}
+.tooltip,.info-tip-content{color:var(--text)!important}
+.report-frame,.latex-frame{width:100%;background:#fff!important}
+body.layout-desktop .container{margin-left:var(--app-rail-w)!important}
+body.layout-desktop .app-rail{display:flex!important}
+body.layout-desktop .app-statusbar{display:flex!important}
+body.layout-desktop .app-topbar{height:72px!important;min-height:72px!important;flex-wrap:nowrap!important}
+body.layout-desktop .layout{grid-template-columns:minmax(300px,var(--left-panel-w)) minmax(0,1fr)!important}
+body.layout-desktop .workspace{grid-template-columns:minmax(0,1fr) minmax(300px,clamp(300px,24vw,var(--right-panel-w)))!important}
+body.layout-desktop .inputs-card,body.layout-desktop .inspector-shell{position:sticky!important}
+body.layout-tablet .app-rail{display:flex!important;width:52px!important}
+body.layout-tablet .container{margin-left:52px!important;padding:12px!important}
+body.layout-tablet .layout{grid-template-columns:minmax(280px,340px) minmax(0,1fr)!important;gap:12px!important}
+body.layout-tablet .workspace{grid-template-columns:minmax(0,1fr)!important}
+body.layout-tablet .inputs-card{position:sticky!important;top:86px!important;max-height:calc(100dvh - 112px)!important;border-right:0!important;border-radius:10px!important;background:var(--surface)!important}
+body.layout-tablet .inspector-shell{position:static!important;max-height:none!important;padding-left:0!important}
+body.layout-tablet .inspector-block{min-height:0!important}
+body.layout-tablet .compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.layout-tablet .chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.layout-tablet .stage-tabs,body.layout-tablet .inspector-tabs{display:flex!important;overflow-x:auto;scrollbar-width:thin}
+body.layout-tablet .tab-btn{min-width:112px;min-height:44px!important}
+body.layout-mobile{padding-bottom:0}
+body.layout-mobile .app-statusbar,body.layout-mobile .app-rail{display:none!important}
+body.layout-mobile .container{margin-left:0!important;padding:8px!important;width:100%!important}
+body.layout-mobile .app-topbar{height:auto!important;min-height:64px!important;flex-wrap:wrap!important;padding:10px!important}
+body.layout-mobile .brand-lockup{min-width:0;flex:1 1 auto}
+body.layout-mobile .app-subtitle{display:none}
+body.layout-mobile .toolbar-right{width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+body.layout-mobile .toolbar-right .btn{min-width:44px!important;min-height:44px!important;padding:0 12px!important}
+body.layout-mobile .toolbar-right .btn span:not(.visually-hidden){display:none}
+body.layout-mobile .layout,body.layout-mobile .workspace{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+body.layout-mobile .main-workspace-card{padding:0!important}
+body.layout-mobile .inputs-card,body.layout-mobile .inspector-shell{position:static!important;max-height:none!important;overflow:visible!important;padding:0!important;border-right:0!important}
+body.layout-mobile .dock-head{padding:6px 2px 10px!important}
+body.layout-mobile .compact-grid,body.layout-mobile .settings-row,body.layout-mobile .theme-options,body.layout-mobile .layout-mode-options,body.layout-mobile .auth-grid,body.layout-mobile .pricing-grid,body.layout-mobile .project-meta-grid{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body.layout-mobile label,body.layout-mobile .compact-grid label{font-size:12px!important}
+body.layout-mobile input,body.layout-mobile select,body.layout-mobile textarea,body.layout-mobile .btn,body.layout-mobile .file-menu-item,body.layout-mobile .tab-btn,body.layout-mobile .loadcase-tab{
+  min-height:44px!important;
+  font-size:14px!important;
+}
+body.layout-mobile .accordion>summary{min-height:48px!important;font-size:14px!important}
+body.layout-mobile .summary-strip,body.layout-mobile .stage-tabs,body.layout-mobile .inspector-tabs,body.layout-mobile .loadcase-tabs{
+  display:flex!important;
+  overflow-x:auto;
+  flex-wrap:nowrap!important;
+  gap:8px!important;
+}
+body.layout-mobile .summary-chip,body.layout-mobile .tab-btn,body.layout-mobile .loadcase-tab{flex:0 0 auto}
+body.layout-mobile .overview-grid,body.layout-mobile .chart-grid{grid-template-columns:minmax(0,1fr)!important}
+body.layout-mobile #beamSketch{height:190px!important}
+body.layout-mobile canvas.chart{height:220px!important}
+body.layout-mobile .focus-chart canvas.chart{height:260px!important}
+body.layout-mobile .result-block,body.layout-mobile .table-wrap,body.layout-mobile #centreTables{overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.layout-mobile .data-table{min-width:560px}
+body.layout-mobile .modal{padding:0!important;align-items:stretch!important}
+body.layout-mobile .modal-panel,body.layout-mobile .settings-panel,body.layout-mobile .chart-modal-panel{
+  width:100vw!important;
+  height:100dvh!important;
+  max-height:none!important;
+  border-radius:0!important;
+}
+body.layout-mobile .settings-layout{grid-template-columns:1fr!important;grid-template-rows:auto minmax(0,1fr)!important}
+body.layout-mobile .settings-tabs{display:flex!important;overflow-x:auto;border-right:0!important;border-bottom:1px solid var(--border)!important}
+body.layout-mobile .settings-tab{flex:1 0 98px!important;justify-content:center!important}
+body.layout-mobile .file-menu{position:fixed!important;left:8px!important;right:8px!important;top:72px!important;width:auto!important;max-height:calc(100dvh - 88px)!important}
+body.layout-mobile .modal-actions{width:100%;display:flex;overflow-x:auto}
+body.layout-mobile .modal-split{grid-template-columns:1fr!important}
+body.layout-mobile .report-frame{min-height:calc(100dvh - 132px)}
+body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760px,94vw)!important}
+@media print{
+  body{background:#fff!important;color:#111827!important;overflow:visible!important}
+  .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
+}
 </style>
 </head>
 <body>
@@ -1576,6 +1721,32 @@ body.plan-plus .ad-slot{display:none!important}
           <label>Project name
             <input id="projectName" type="text" maxlength="100" value="Untitled beam project" aria-label="Project name">
           </label>
+          <div class="project-meta-grid" aria-label="Project metadata">
+            <label>Calculation title
+              <input id="calculationTitle" type="text" maxlength="120" placeholder="Beam section check">
+            </label>
+            <label>Job/reference number
+              <input id="jobReference" type="text" maxlength="80" placeholder="Project ref">
+            </label>
+            <label>Revision
+              <input id="projectRevision" type="text" maxlength="20" placeholder="P01">
+            </label>
+            <label>Date
+              <input id="projectDate" type="date">
+            </label>
+            <label>Company name
+              <input id="companyName" type="text" maxlength="120" placeholder="Company">
+            </label>
+            <label>Engineer name
+              <input id="engineerName" type="text" maxlength="120" placeholder="Engineer">
+            </label>
+            <label>Checked by
+              <input id="checkedBy" type="text" maxlength="120" placeholder="Checker">
+            </label>
+            <label class="full">Notes/comments
+              <textarea id="projectNotes" maxlength="1200" placeholder="Notes for saved project and report header"></textarea>
+            </label>
+          </div>
           <div id="projectStatus" class="file-menu-status" aria-live="polite">Not saved yet</div>
         </div>
         <div class="file-menu-list">
@@ -2111,7 +2282,7 @@ body.plan-plus .ad-slot{display:none!important}
 
 <footer class="app-statusbar">
   <div id="saveStatus" class="status-save"><i class="bi bi-check2"></i><span>All changes calculated</span></div>
-  <span>Calculation engine: v34.2.1</span>
+  <span>Calculation engine: v34.3.0</span>
   <span class="status-divider"></span>
   <span>Section DB: published source data</span>
   <span class="status-divider"></span>
@@ -2166,11 +2337,11 @@ body.plan-plus .ad-slot{display:none!important}
       </div>
       <div class="auth-grid" style="margin-top:12px">
         <div class="auth-card">
-          <h3>Sign in or sign up</h3>
-          <p>Create or reopen a local account on this device. This static build does not store a password.</p>
+          <h3>Account and report profile</h3>
+          <p>Use Google or Apple when OAuth is configured. The fields below only save a local report profile on this device.</p>
           <label>Display name<input id="accountName" type="text" autocomplete="name" placeholder="Your name"></label>
           <label>Email address<input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
-          <button id="emailSignInBtn" class="btn primary-action" type="button" style="margin-top:9px">Sign in / create account</button>
+          <button id="emailSignInBtn" class="btn primary-action" type="button" style="margin-top:9px">Save local profile</button>
           <div class="social-auth">
             <button id="googleSignInBtn" class="btn" type="button"><i class="bi bi-google"></i> Google</button>
             <button id="appleSignInBtn" class="btn" type="button"><i class="bi bi-apple"></i> Apple</button>
@@ -2238,6 +2409,29 @@ body.plan-plus .ad-slot{display:none!important}
             </div>
           </div>
           <div class="settings-group">
+            <div class="settings-group-title">Project metadata defaults</div>
+            <div class="settings-row">
+              <label>Default project name
+                <input id="settingsDefaultProjectName" type="text" maxlength="100" placeholder="Untitled beam project">
+              </label>
+              <label>Default calculation title
+                <input id="settingsDefaultCalculationTitle" type="text" maxlength="120" placeholder="Beam section check">
+              </label>
+              <label>Default job/reference
+                <input id="settingsDefaultJobReference" type="text" maxlength="80" placeholder="Project ref">
+              </label>
+              <label>Default company name
+                <input id="settingsDefaultCompany" type="text" maxlength="120" autocomplete="organization">
+              </label>
+              <label>Default engineer name
+                <input id="settingsDefaultEngineer" type="text" maxlength="120" autocomplete="name">
+              </label>
+              <label>Default checked by
+                <input id="settingsDefaultCheckedBy" type="text" maxlength="120" autocomplete="name">
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
             <div class="settings-group-title">Workflow</div>
             <div class="setting-toggle">
               <div><strong>Auto recalculate</strong><small>Update results as inputs change.</small></div>
@@ -2259,6 +2453,15 @@ body.plan-plus .ad-slot{display:none!important}
               <label class="theme-choice"><input type="radio" name="settingsTheme" value="light"><span class="theme-choice-card"><i class="bi bi-sun"></i>Light</span></label>
               <label class="theme-choice"><input type="radio" name="settingsTheme" value="dark"><span class="theme-choice-card"><i class="bi bi-moon-stars"></i>Dark</span></label>
               <label class="theme-choice"><input type="radio" name="settingsTheme" value="system"><span class="theme-choice-card"><i class="bi bi-circle-half"></i>System</span></label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Layout mode</div>
+            <div class="segmented layout-mode-options">
+              <label><input type="radio" name="settingsLayoutMode" value="auto"><span>Auto</span></label>
+              <label><input type="radio" name="settingsLayoutMode" value="mobile"><span>Mobile</span></label>
+              <label><input type="radio" name="settingsLayoutMode" value="tablet"><span>Tablet</span></label>
+              <label><input type="radio" name="settingsLayoutMode" value="desktop"><span>Desktop</span></label>
             </div>
           </div>
           <div class="settings-group">
@@ -2296,7 +2499,7 @@ body.plan-plus .ad-slot{display:none!important}
 
         <section id="settingsAccount" class="settings-pane" role="tabpanel">
           <h2>Account</h2>
-          <div class="settings-account-note">Email sign-in and sign-up work locally in this standalone build. Verified email, Google, Apple and cloud sync require production authentication credentials.</div>
+          <div class="settings-account-note">Google and Apple sign-in require configured OAuth start URLs plus a backend profile endpoint. Local profile details are used only for report metadata and do not authenticate the user.</div>
           <div id="accountSettingsHost"></div>
         </section>
 
@@ -2304,9 +2507,10 @@ body.plan-plus .ad-slot{display:none!important}
           <h2>About</h2>
           <div class="about-card"><h3>Ingeniarch Labs</h3><p><strong>Beam Calculator Studio is made by Ingeniarch Labs.</strong></p></div>
           <div class="about-card disclaimer"><h3>Verification disclaimer</h3><p>This calculator, its section data implementation and its engineering outputs have not yet been independently or third-party verified. A competent engineer must check all inputs, assumptions, calculations and results before design, fabrication or construction use.</p></div>
-          <div class="about-card"><h3>Beam Calculator Studio</h3><p>Version 34.2.1 • Local single-file engineering workspace.</p></div>
+          <div class="about-card"><h3>Beam Calculator Studio</h3><p>Version 34.3.0 - Local single-file engineering workspace.</p></div>
           <div class="about-card"><h3>Calculation basis</h3><p>Load combinations follow EN 1990. Steel resistance and stability checks follow the implemented EN 1993 methods shown in Help and the generated report.</p></div>
-          <div class="about-card"><h3>Section data</h3><p>Published section properties are sourced from ArcelorMittal, British Steel and Steel for Life Blue Book data where available.</p></div>
+          <div class="about-card"><h3>Section data</h3><p>Published section properties are sourced from row-level metadata in the bundled section database. Unknown entries are marked as source to be confirmed.</p></div>
+          <div id="sectionSourceIndex" class="about-card"><h3>Section Data Sources</h3><p>Loading source index...</p></div>
           <div class="about-card"><h3>Privacy and licence</h3><p>Preferences are stored locally in this browser. No project inputs are uploaded by the calculator. See the included LICENSE file for project licensing.</p></div>
         </section>
       </div>
@@ -2698,15 +2902,31 @@ const adConfig = {
 const sponsorConfig = adConfig.fallback;
 
 function detectDeviceMode(){
-  return window.matchMedia('(max-width: 980px)').matches ? 'mobile' : 'desktop';
+  const width = window.innerWidth || document.documentElement.clientWidth || 1440;
+  if(width < 720) return 'mobile';
+  if(width < 1180) return 'tablet';
+  return 'desktop';
 }
-function applyDisplayScale(){
+function resolvedLayoutMode(settings=uiSettings){
+  const selected = settings?.layoutMode || 'auto';
+  return ['mobile','tablet','desktop'].includes(selected) ? selected : detectDeviceMode();
+}
+function applyDisplayScale(settings=uiSettings){
   const body = document.body;
-  const mode = detectDeviceMode();
+  const mode = resolvedLayoutMode(settings);
+  const selected = settings?.layoutMode || 'auto';
+  document.documentElement.dataset.layoutMode = selected;
+  document.documentElement.dataset.resolvedLayout = mode;
+  body.dataset.layoutMode = selected;
+  body.dataset.resolvedLayout = mode;
   body.classList.toggle('device-mobile', mode==='mobile');
+  body.classList.toggle('device-tablet', mode==='tablet');
   body.classList.toggle('device-desktop', mode==='desktop');
+  body.classList.toggle('layout-mobile', mode==='mobile');
+  body.classList.toggle('layout-tablet', mode==='tablet');
+  body.classList.toggle('layout-desktop', mode==='desktop');
   ['scale-720','scale-1080','scale-4k'].forEach(c=>body.classList.remove(c));
-  if(mode==='mobile') return;
+  if(mode!=='desktop') return;
   const w = window.innerWidth || 1600;
   const scale = w >= 2500 ? '4k' : (w >= 1700 ? '1080' : '720');
   if(scale==='720') body.classList.add('scale-720');
@@ -3293,6 +3513,8 @@ function deleteSelectedLoadCasePackage(){
 const PROJECT_STORAGE_KEY='beam_calc_projects_v1';
 const PROJECT_FILE_FORMAT='beam-calculator-project';
 const ACCOUNT_STORAGE_KEY='beam_calc_account_v1';
+const APP_VERSION='34.3.0';
+const PROJECT_METADATA_IDS=['calculationTitle','jobReference','projectRevision','projectDate','companyName','engineerName','checkedBy','projectNotes'];
 const PROJECT_FIELD_IDS=[
   'analysisMode','supportType','loadUnit','material','span','spanCount','multiLeftEnd','multiRightEnd',
   'load_combo','gammaM0','psi_q1','psi_q2','springLeftPct','springRightPct','sectionSourceMode',
@@ -3301,15 +3523,24 @@ const PROJECT_FIELD_IDS=[
   'endPostType','webStiffener','stiffenerA','bucklingKy','bucklingCurveY','bucklingKz','bucklingCurveZ'
 ];
 const subscriptionConfig={
-  auth:{emailEndpoint:'',googleUrl:'',appleUrl:''},
+  auth:{
+    emailEndpoint:'',
+    profileEndpoint:'',
+    signOutEndpoint:'',
+    googleStartUrl:'TODO_BACKEND_GOOGLE_OAUTH_START_URL',
+    appleStartUrl:'TODO_BACKEND_APPLE_OAUTH_START_URL',
+    googleClientId:'TODO_GOOGLE_OAUTH_CLIENT_ID',
+    appleServiceId:'TODO_APPLE_SERVICE_ID',
+    redirectUri:'TODO_OAUTH_REDIRECT_URI'
+  },
   billing:{monthlyCheckoutUrl:'',yearlyCheckoutUrl:''}
 };
 function getAccountState(){
   try{
     const saved=JSON.parse(localStorage.getItem(ACCOUNT_STORAGE_KEY)||'null');
-    return {email:'',name:'Guest user',plan:'free',...(saved||{})};
+    return {email:'',name:'Guest user',plan:'free',authenticated:false,provider:'local',...(saved||{})};
   }catch(err){
-    return {email:'',name:'Guest user',plan:'free'};
+    return {email:'',name:'Guest user',plan:'free',authenticated:false,provider:'local'};
   }
 }
 let accountState=getAccountState();
@@ -3321,13 +3552,14 @@ function saveAccountState(next){
 function isPlusPlan(){ return accountState.plan==='plus'; }
 function applyAccountState(){
   document.body.classList.toggle('plan-plus',isPlusPlan());
+  document.body.classList.toggle('is-authenticated',!!accountState.authenticated);
   const badge=$('planBadge');
   if(badge){
     badge.classList.toggle('plus',isPlusPlan());
     badge.innerHTML=`<i class="bi ${isPlusPlan()?'bi-stars':'bi-person'}"></i><span>${isPlusPlan()?'Plus':'Free'}</span>`;
   }
   if($('accountDisplayName')) $('accountDisplayName').textContent=accountState.name||accountState.email||'Guest user';
-  if($('accountDisplayMeta')) $('accountDisplayMeta').textContent=`${isPlusPlan()?'Plus':'Free'} plan • ${accountState.email?'signed in':'local guest'}`;
+  if($('accountDisplayMeta')) $('accountDisplayMeta').textContent=`${isPlusPlan()?'Plus':'Free'} plan - ${accountState.authenticated ? `signed in with ${accountState.provider||'OAuth'}` : (accountState.email ? 'local profile only' : 'local guest')}${accountState.email ? ` - ${accountState.email}` : ''}`;
   if($('accountName')) $('accountName').value=accountState.email?(accountState.name||''):'';
   if($('accountEmail')) $('accountEmail').value=accountState.email||'';
   if($('signOutBtn')) $('signOutBtn').disabled=!accountState.email;
@@ -3362,7 +3594,7 @@ async function signInWithEmail(){
       const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
       if(!response.ok) throw new Error('Authentication service rejected the request.');
       const profile=await response.json();
-      saveAccountState({email,name:profile.name||requestedName||email,plan:profile.plan==='plus'?'plus':'free'});
+      saveAccountState({email,name:profile.name||requestedName||email,plan:profile.plan==='plus'?'plus':'free',authenticated:true,provider:'email'});
       setAccountStatus('Signed in successfully.');
       return;
     }catch(err){
@@ -3370,13 +3602,56 @@ async function signInWithEmail(){
       return;
     }
   }
-  saveAccountState({email,name:requestedName||email,plan:accountState.plan==='plus'?'plus':'free'});
-  setAccountStatus('Signed in locally. This profile will be available again on this device.');
+  saveAccountState({email,name:requestedName||email,plan:accountState.plan==='plus'?'plus':'free',authenticated:false,provider:'local'});
+  setAccountStatus('Local profile saved for project metadata. This is not an authenticated sign-in.',true);
+}
+function isConfiguredUrl(value){
+  return /^https?:\/\//i.test(String(value||'')) && !/^TODO_/i.test(String(value||''));
 }
 function beginExternalAuth(provider){
-  const url=provider==='google'?subscriptionConfig.auth.googleUrl:subscriptionConfig.auth.appleUrl;
-  if(url){ window.location.href=url; return; }
-  setAccountStatus(`${provider==='google'?'Google':'Apple'} sign-in needs its OAuth URL and credentials configured.`,true);
+  const label=provider==='google'?'Google':'Apple';
+  const url=provider==='google'?subscriptionConfig.auth.googleStartUrl:subscriptionConfig.auth.appleStartUrl;
+  if(isConfiguredUrl(url)){
+    const next=new URL(url, window.location.href);
+    if(!next.searchParams.has('returnTo')) next.searchParams.set('returnTo', window.location.href.split('#')[0]);
+    window.location.href=next.toString();
+    return;
+  }
+  setAccountStatus(`${label} sign-in is not configured. Supply ${provider==='google'?'googleStartUrl and googleClientId':'appleStartUrl and appleServiceId'}, redirectUri, and profileEndpoint in subscriptionConfig.auth.`,true);
+}
+async function refreshAuthenticatedProfile(showStatus=false){
+  const endpoint=subscriptionConfig.auth.profileEndpoint;
+  if(!isConfiguredUrl(endpoint)) return false;
+  try{
+    const response=await fetch(endpoint,{credentials:'include'});
+    if(response.status===401){
+      if(showStatus) setAccountStatus('No authenticated session is active.',true);
+      return false;
+    }
+    if(!response.ok) throw new Error('The authentication profile endpoint did not return a valid session.');
+    const profile=await response.json();
+    if(!profile?.email) throw new Error('The authentication profile response is missing an email address.');
+    saveAccountState({
+      email:String(profile.email),
+      name:String(profile.name||profile.email),
+      plan:profile.plan==='plus'?'plus':'free',
+      authenticated:true,
+      provider:profile.provider||'oauth'
+    });
+    if(showStatus) setAccountStatus('Signed in successfully.');
+    return true;
+  }catch(err){
+    if(showStatus) setAccountStatus(err.message||'Could not verify the authenticated session.',true);
+    return false;
+  }
+}
+async function signOut(){
+  const endpoint=subscriptionConfig.auth.signOutEndpoint;
+  if(isConfiguredUrl(endpoint)){
+    try{ await fetch(endpoint,{method:'POST',credentials:'include'}); }catch(err){}
+  }
+  saveAccountState({email:'',name:'Guest user',plan:'free',authenticated:false,provider:'local'});
+  setAccountStatus('Signed out.');
 }
 function beginCheckout(period){
   const url=period==='yearly'?subscriptionConfig.billing.yearlyCheckoutUrl:subscriptionConfig.billing.monthlyCheckoutUrl;
@@ -3401,6 +3676,64 @@ function setProjectStatus(message,isError=false){
   host.textContent=message;
   host.style.color=isError?'var(--danger)':'';
 }
+function todayIsoDate(){
+  const d=new Date();
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+function projectMetadataDefaults(settings=uiSettings){
+  return {
+    projectName:settings.defaultProjectName||'Untitled beam project',
+    calculationTitle:settings.defaultCalculationTitle||'Beam section check',
+    jobReference:settings.defaultJobReference||'',
+    projectRevision:'',
+    projectDate:todayIsoDate(),
+    companyName:settings.defaultCompanyName||'',
+    engineerName:settings.defaultEngineerName||'',
+    checkedBy:settings.defaultCheckedBy||'',
+    projectNotes:''
+  };
+}
+function getCurrentSectionSourceSnapshot(){
+  try{
+    const sec=getSelectedProfile();
+    if(!sec) return {sectionName:$('sec_size')?.value||'', sourceName:'Source to be confirmed', reference:'Source to be confirmed', detail:'No section row is currently selected.', status:'source_to_be_confirmed'};
+    const src=getSectionSourceInfo(sec);
+    return {
+      sectionName:sec.name||'',
+      family:getFamilyKey(sec)||$('sec_series')?.value||'',
+      sourceName:src.title||'Source to be confirmed',
+      reference:src.url||'Source to be confirmed',
+      detail:src.detail||'Source to be confirmed',
+      status:String(sec.section_data_status||sec.ltb_data_status||'bundled_row'),
+      verified:sec.ltb_data_verified===true
+    };
+  }catch(err){
+    return {sectionName:$('sec_size')?.value||'', sourceName:'Source to be confirmed', reference:'Source to be confirmed', detail:'Section source could not be resolved at save time.', status:'source_to_be_confirmed'};
+  }
+}
+function collectProjectMetadata(){
+  const defaults=projectMetadataDefaults();
+  const meta={...defaults};
+  meta.projectName=String($('projectName')?.value||defaults.projectName).trim()||defaults.projectName;
+  PROJECT_METADATA_IDS.forEach(id=>{ meta[id]=String($(id)?.value||'').trim(); });
+  if(!meta.calculationTitle) meta.calculationTitle=defaults.calculationTitle;
+  if(!meta.projectDate) meta.projectDate=defaults.projectDate;
+  meta.sectionSource=getCurrentSectionSourceSnapshot();
+  return meta;
+}
+function applyProjectMetadata(metadata={}, {useDefaults=true, force=false}={}){
+  const defaults=useDefaults ? projectMetadataDefaults() : {};
+  const merged={...defaults,...(metadata||{})};
+  if($('projectName') && (force || !$('projectName').value)) $('projectName').value=merged.projectName||'Untitled beam project';
+  PROJECT_METADATA_IDS.forEach(id=>{
+    const el=$(id);
+    if(!el) return;
+    const next=merged[id] ?? '';
+    if(force || !el.value) el.value=String(next);
+  });
+  if($('projectDate') && !$('projectDate').value) $('projectDate').value=merged.projectDate||todayIsoDate();
+}
 function captureProjectField(id){
   const element=$(id);
   if(!element) return undefined;
@@ -3419,6 +3752,7 @@ function collectProjectPackage(name,existing={}){
   PROJECT_FIELD_IDS.forEach(id=>{const value=captureProjectField(id);if(value!==undefined)fields[id]=value;});
   const customValues={};
   qsa('[data-custom-field]').forEach(element=>customValues[element.dataset.customField]=element.value);
+  const metadata=collectProjectMetadata();
   return {
     format:PROJECT_FILE_FORMAT,
     version:1,
@@ -3426,6 +3760,8 @@ function collectProjectPackage(name,existing={}){
     name:String(name||existing.name||'Untitled beam project').trim().slice(0,100)||'Untitled beam project',
     createdAt:existing.createdAt||now,
     updatedAt:now,
+    metadata,
+    sectionSource:metadata.sectionSource,
     fields,
     customValues,
     loads:collectCurrentLoadCasePackage(`${name||'Project'} loads`,existing.loads||{}),
@@ -3442,7 +3778,7 @@ function collectProjectPackage(name,existing={}){
 function normaliseProjectPackage(raw){
   if(!raw||typeof raw!=='object'||raw.format!==PROJECT_FILE_FORMAT||+raw.version!==1) throw new Error('This is not a supported Beam Calculator project file.');
   if(!raw.loads||!raw.fields) throw new Error('The project file is missing calculation inputs.');
-  return {...raw,id:String(raw.id||createLoadCasePackageId()),name:String(raw.name||'Imported beam project').slice(0,100),fields:{...raw.fields},customValues:{...(raw.customValues||{})},workspace:{...(raw.workspace||{})}};
+  return {...raw,id:String(raw.id||createLoadCasePackageId()),name:String(raw.name||'Imported beam project').slice(0,100),metadata:{...(raw.metadata||{}),projectName:raw.metadata?.projectName||raw.name||'Imported beam project'},sectionSource:raw.sectionSource||raw.metadata?.sectionSource||null,fields:{...raw.fields},customValues:{...(raw.customValues||{})},workspace:{...(raw.workspace||{})}};
 }
 function applyProjectPackage(raw){
   const project=normaliseProjectPackage(raw);
@@ -3480,6 +3816,7 @@ function applyProjectPackage(raw){
   stageButton?.click(); inspectorButton?.click();
   toggleInputs(!!project.workspace.inputsCollapsed);
   $('projectName').value=project.name;
+  applyProjectMetadata({...project.metadata,projectName:project.name},{useDefaults:true,force:true});
   $('projectName').dataset.projectId=project.id;
   decorateContextHelp();
   runCalc(true);
@@ -3583,6 +3920,7 @@ function hideStartScreen(){
 }
 function startNewProject(){
   hideStartScreen();
+  applyProjectMetadata(projectMetadataDefaults(uiSettings),{force:true});
   window._projectDirty=false;
   setProjectStatus('New unsaved project');
 }
@@ -3644,12 +3982,19 @@ const THEME_KEY='beam_calc_theme_v1';
 const APP_SETTINGS_KEY='beam_calc_settings_v2';
 const DEFAULT_UI_SETTINGS={
   theme:'light',
+  layoutMode:'auto',
   density:'comfortable',
   accent:'blue',
   chartPalette:'cobalt',
   reduceMotion:false,
   defaultMode:'single',
   defaultUnit:'tonne',
+  defaultProjectName:'Untitled beam project',
+  defaultCalculationTitle:'Beam section check',
+  defaultJobReference:'',
+  defaultCompanyName:'',
+  defaultEngineerName:'',
+  defaultCheckedBy:'',
   autoRecalculate:true,
   openProject:true
 };
@@ -3700,27 +4045,42 @@ function applyUiSettings(settings){
   document.body.dataset.density=settings.density||'comfortable';
   document.body.classList.toggle('reduce-motion',!!settings.reduceMotion);
   applyTheme(resolvedTheme(settings.theme));
+  applyDisplayScale(settings);
 }
 function populateSettingsForm(settings){
   $('settingsDefaultMode').value=settings.defaultMode;
   $('settingsDefaultUnit').value=settings.defaultUnit;
+  if($('settingsDefaultProjectName')) $('settingsDefaultProjectName').value=settings.defaultProjectName||'';
+  if($('settingsDefaultCalculationTitle')) $('settingsDefaultCalculationTitle').value=settings.defaultCalculationTitle||'';
+  if($('settingsDefaultJobReference')) $('settingsDefaultJobReference').value=settings.defaultJobReference||'';
+  if($('settingsDefaultCompany')) $('settingsDefaultCompany').value=settings.defaultCompanyName||'';
+  if($('settingsDefaultEngineer')) $('settingsDefaultEngineer').value=settings.defaultEngineerName||'';
+  if($('settingsDefaultCheckedBy')) $('settingsDefaultCheckedBy').value=settings.defaultCheckedBy||'';
   $('settingsAutoRecalc').checked=!!settings.autoRecalculate;
   $('settingsOpenProject').checked=!!settings.openProject;
   $('settingsChartPalette').value=settings.chartPalette;
   $('settingsReduceMotion').checked=!!settings.reduceMotion;
   qsa('[name="settingsTheme"]').forEach(el=>{el.checked=el.value===settings.theme;});
+  qsa('[name="settingsLayoutMode"]').forEach(el=>{el.checked=el.value===(settings.layoutMode||'auto');});
   qsa('[name="settingsDensity"]').forEach(el=>{el.checked=el.value===settings.density;});
   qsa('[name="settingsAccent"]').forEach(el=>{el.checked=el.value===settings.accent;});
 }
 function readSettingsForm(){
   return {
     theme:document.querySelector('[name="settingsTheme"]:checked')?.value||'light',
+    layoutMode:document.querySelector('[name="settingsLayoutMode"]:checked')?.value||'auto',
     density:document.querySelector('[name="settingsDensity"]:checked')?.value||'comfortable',
     accent:document.querySelector('[name="settingsAccent"]:checked')?.value||'blue',
     chartPalette:$('settingsChartPalette').value,
     reduceMotion:$('settingsReduceMotion').checked,
     defaultMode:$('settingsDefaultMode').value,
     defaultUnit:$('settingsDefaultUnit').value,
+    defaultProjectName:String($('settingsDefaultProjectName')?.value||'').trim()||'Untitled beam project',
+    defaultCalculationTitle:String($('settingsDefaultCalculationTitle')?.value||'').trim()||'Beam section check',
+    defaultJobReference:String($('settingsDefaultJobReference')?.value||'').trim(),
+    defaultCompanyName:String($('settingsDefaultCompany')?.value||'').trim(),
+    defaultEngineerName:String($('settingsDefaultEngineer')?.value||'').trim(),
+    defaultCheckedBy:String($('settingsDefaultCheckedBy')?.value||'').trim(),
     autoRecalculate:$('settingsAutoRecalc').checked,
     openProject:$('settingsOpenProject').checked
   };
@@ -3760,6 +4120,7 @@ function applyGeneralSettingsToSession(settings){
     $('loadUnit').dataset.prevUnit=settings.defaultUnit;
     refreshUnitUI();
   }
+  applyProjectMetadata(projectMetadataDefaults(settings),{useDefaults:true});
 }
 function saveSettings(){
   uiSettings=readSettingsForm();
@@ -3783,7 +4144,7 @@ function initSettingsUI(){
   $('settingsReset')?.addEventListener('click',resetSettings);
   $('settingsModal')?.addEventListener('click',e=>{if(e.target.id==='settingsModal') closeSettingsModal(true);});
   qsa('.settings-tab').forEach(btn=>btn.addEventListener('click',()=>setSettingsTab(btn.dataset.settingsTab)));
-  qsa('[name="settingsTheme"],[name="settingsDensity"],[name="settingsAccent"],#settingsChartPalette,#settingsReduceMotion').forEach(el=>el.addEventListener('change',previewAppearanceSettings));
+  qsa('[name="settingsTheme"],[name="settingsLayoutMode"],[name="settingsDensity"],[name="settingsAccent"],#settingsChartPalette,#settingsReduceMotion').forEach(el=>el.addEventListener('change',previewAppearanceSettings));
   const systemTheme=window.matchMedia?.('(prefers-color-scheme: dark)');
   systemTheme?.addEventListener?.('change',()=>{if(uiSettings.theme==='system'){applyUiSettings(uiSettings);runCalc(true);}});
 }
@@ -4008,7 +4369,8 @@ function getSectionSourceInfo(sec){
       url:sec.ltb_data_source_ref || 'Bundled sections_database.js'
     };
   }
-  return {title:'Bundled section data', detail:'Loaded from sections_database.js. Review the row metadata before relying on an unverified source.', url:'Bundled sections_database.js'};
+  // TODO: Confirm source metadata for section rows that do not carry ltb_source_name / ltb_data_source.
+  return {title:'Source to be confirmed', detail:'This section row is bundled in sections_database.js but does not currently carry a confirmed source name, standard/catalogue, edition or reference.', url:'Source to be confirmed'};
 }
 function getCalculationReferences(){
   return [
@@ -4019,6 +4381,74 @@ function getCalculationReferences(){
     {title:'Member buckling / interaction', detail:'BS EN 1993-1-1 clause 6.3.3(4) using simplified interaction factors shown in the app output.', url:'https://www.steelforlifebluebook.co.uk/explanatory-notes/ec3-ukna/axial-force-bending-tables'},
     {title:'Lateral torsional buckling', detail:'EN 1993-1-1 clauses 6.3.2.2 and 6.3.2.3, with elastic critical moment factors from NCCI SN003. Monosymmetric sections require specialist C3/shear-centre treatment and are not auto-checked.', url:'https://eurocodes.jrc.ec.europa.eu/sites/default/files/2022-06/SN003a-EN-EU.pdf'}
   ];
+}
+function sourceRegionFromText(sourceName, family){
+  const text=`${sourceName||''} ${family||''}`.toLowerCase();
+  if(text.includes('british') || text.includes('steel for life') || ['UB','UC','UBP','PFC'].includes(family)) return 'United Kingdom';
+  if(text.includes('arcelormittal') || ['IPE','HEA','HEB','HEM','HEAA'].includes(family)) return 'Europe';
+  return 'Not specified';
+}
+function buildSectionSourceIndex(){
+  const db=getProfileDB();
+  const groups=new Map();
+  Object.entries(db).forEach(([family,rows])=>{
+    (Array.isArray(rows)?rows:[]).forEach(row=>{
+      const name=row.ltb_source_name || row.ltb_data_source || '';
+      const sourceName=name || 'Source to be confirmed';
+      const edition=row.ltb_source_edition || (name ? 'Version/date not stated in row' : 'Source to be confirmed');
+      const reference=row.ltb_data_source_ref || (name ? 'Bundled sections_database.js row metadata' : 'Source to be confirmed');
+      const key=[sourceName,edition,reference].join('|');
+      if(!groups.has(key)){
+        groups.set(key,{
+          sourceName,
+          standard:sourceName,
+          region:sourceRegionFromText(sourceName,family),
+          edition,
+          reference,
+          families:new Set(),
+          assumptions:new Set(),
+          unknown:!name
+        });
+      }
+      const group=groups.get(key);
+      group.families.add(family);
+      group.region=group.region==='Not specified'?sourceRegionFromText(sourceName,family):group.region;
+      if(row.ltb_source_units) group.assumptions.add(row.ltb_source_units);
+      if(row.ltb_source_note) group.assumptions.add(row.ltb_source_note);
+      if(row.ltb_quality_note) group.assumptions.add(row.ltb_quality_note);
+      if(!name) group.assumptions.add('Source to be confirmed');
+    });
+  });
+  return Array.from(groups.values()).sort((a,b)=>a.sourceName.localeCompare(b.sourceName));
+}
+function renderSectionSourceIndex(){
+  const host=$('sectionSourceIndex');
+  if(!host) return;
+  // TODO: Confirm source metadata for any rows grouped as "Source to be confirmed".
+  const groups=buildSectionSourceIndex();
+  if(!groups.length){
+    host.innerHTML='<h3>Section Data Sources</h3><p>Source to be confirmed. No section database rows were available.</p>';
+    return;
+  }
+  const rows=groups.map(group=>`
+    <tr>
+      <td>${escHtml(group.sourceName)}</td>
+      <td>${escHtml(group.standard)}</td>
+      <td>${escHtml(group.region)}</td>
+      <td>${escHtml(group.edition)}</td>
+      <td>${escHtml(Array.from(group.families).sort().join(', '))}</td>
+      <td>${escHtml(group.reference)}</td>
+      <td>${escHtml(Array.from(group.assumptions).slice(0,3).join(' '))}</td>
+    </tr>`).join('');
+  host.innerHTML=`
+    <h3>Section Data Sources</h3>
+    <p>Source groups below are generated from row-level metadata in sections_database.js. Rows without source metadata are not guessed.</p>
+    <div class="source-index-table-wrap">
+      <table class="data-table source-index-table">
+        <thead><tr><th>Source name</th><th>Standard/catalogue/reference</th><th>Region</th><th>Version/date</th><th>Section types</th><th>Reference</th><th>Assumptions or limitations</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 function getSectionLTBProps(sec){
   const It = getSectionPropCandidates(sec, ['It_mm4','Ix_mm4','I_t_mm4','Ix']);
@@ -6067,6 +6497,8 @@ function runCalc(force=false){
   const sp = currentSpringPercents();
 
   window._lastCalcData = {
+    appVersion:APP_VERSION,
+    projectMetadata:collectProjectMetadata(),
     sec, mat, L, supportType, spanCfg, lc, rawLoads, axialRaw, axialEd, check, ltb, endSupport, memberBuckling,
     uls, sls, ulsNote, deflAllow_mm, deflPeak, passDefl, passLTB, passSupport, IR_NM, passNM,
     passMemberBuckling, passAll, governingIR, maxReaction, sp, ucfg, forceUnit, momentUnit, deflIR, supportIR
@@ -6295,6 +6727,38 @@ function runCalc(force=false){
   markCalculationSaved();
 }
 
+function canvasDataUrl(id){
+  try{
+    const canvas=$(id);
+    if(!canvas || !canvas.width || !canvas.height) return '';
+    return canvas.toDataURL('image/png');
+  }catch(err){
+    return '';
+  }
+}
+function getReportImages(){
+  return [
+    ['Beam sketch', canvasDataUrl('beamSketch')],
+    ['ULS shear force diagram', canvasDataUrl('chartV')],
+    ['ULS bending moment diagram', canvasDataUrl('chartM')],
+    ['SLS deflection diagram', canvasDataUrl('chartY')]
+  ].filter(([,src])=>src);
+}
+function buildReportLoadRows(rawLoads, unit){
+  const rows=[];
+  (rawLoads?.udls||[]).forEach(load=>{
+    if(!((load.G||0)||(load.Q1||0)||(load.Q2||0))) return;
+    rows.push(`<tr><td>${escHtml(load.label||'UDL')}</td><td>${load.span ? `Span ${escHtml(load.span)}` : '-'}</td><td>${fmt2(load.x1)} to ${fmt2(load.x2)} m</td><td>UDL</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.udlShort)}</td></tr>`);
+  });
+  (rawLoads?.points||[]).forEach(load=>{
+    if(Math.abs(load.M||0)>1e-12){
+      rows.push(`<tr><td>${escHtml(load.label||'Moment')}</td><td>-</td><td>x=${fmt2(load.x)} m</td><td>Moment</td><td>${fmt3(load.M)} ${escHtml(unit.momentShort)} in ${escHtml(load.momentCase||'G')}</td></tr>`);
+    }else if((load.G||0)||(load.Q1||0)||(load.Q2||0)){
+      rows.push(`<tr><td>${escHtml(load.label||'Point')}</td><td>-</td><td>x=${fmt2(load.x)} m</td><td>Point</td><td>G=${fmt3(load.G||0)}, Q1=${fmt3(load.Q1||0)}, Q2=${fmt3(load.Q2||0)} ${escHtml(unit.forceLong)}</td></tr>`);
+    }
+  });
+  return rows.length ? rows.join('') : '<tr><td colspan="5">No non-zero user-entered loads.</td></tr>';
+}
 
 function embeddedPreviewThemeCss(){
   if(document.documentElement.getAttribute('data-theme')!=='dark') return '';
@@ -6315,8 +6779,13 @@ function buildReportHTML(data){
   const srcInfo = getSectionSourceInfo(sec);
   const calcRefs = getCalculationReferences();
   const supportText = supportLabelValue(supportType);
+  const meta = {...projectMetadataDefaults(), ...(data.projectMetadata||{})};
+  const sourceSnapshot = meta.sectionSource || getCurrentSectionSourceSnapshot();
+  const reportImages = getReportImages();
+  const unit = currentUnit();
   const now = new Date();
   const bodyRows = (rows)=>rows.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('');
+  const loadRows = buildReportLoadRows(rawLoads, unit);
   const checkRows = [
     ['Moment', `${fmt3(check.IR_M)} ${check.passM ? 'PASS' : 'FAIL'}`],
     ['Shear', `${fmt3(check.IR_V)} ${check.passV ? 'PASS' : 'FAIL'}`],
@@ -6363,6 +6832,16 @@ function buildReportHTML(data){
   .card .v{font-size:18px;font-weight:800;margin-top:4px}
   .small{font-size:12px}
   .full{margin-top:18px}
+  .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 16px}
+  .meta-item{border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc}
+  .meta-item .k{font-size:10px;text-transform:uppercase;letter-spacing:.25px;color:#475569}
+  .meta-item .v{font-size:13px;font-weight:700;color:#111827;margin-top:2px;word-break:break-word}
+  .notes{white-space:pre-wrap}
+  .diagram-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .diagram-card{border:1px solid #cbd5e1;border-radius:10px;padding:10px;background:#f8fafc}
+  .diagram-card img{width:100%;height:auto;display:block}
+  @media(max-width:760px){.head,.grid,.summary,.meta-grid,.diagram-grid{display:block}.meta-item,.card,.section,.diagram-card{margin-bottom:10px}}
+  @media print{body{margin:14mm}.meta-grid{grid-template-columns:repeat(4,1fr)}.diagram-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ===== v24 splitter fix + compact load inputs ===== */
 #leftDockSplitter,#rightInspectorSplitter{pointer-events:auto} 
@@ -6591,18 +7070,38 @@ ${embeddedPreviewThemeCss()}
 <body>
 <div class="head">
   <div>
-    <h1>Beam calculation report</h1>
-    <div class="muted">${sec.name} • ${mat.grade} • ${supportText}</div>
-    <div class="muted small">Generated ${now.toLocaleString()}</div>
+    <h1>${escHtml(meta.calculationTitle || 'Beam calculation report')}</h1>
+    <div class="muted">${escHtml(meta.projectName || 'Untitled beam project')} - ${escHtml(sec.name)} - ${escHtml(mat.grade)} - ${escHtml(supportText)}</div>
+    <div class="muted small">Generated ${escHtml(now.toLocaleString())}</div>
   </div>
   <div class="status">${passAll ? 'PASS' : 'FAIL'} • Governing IR = ${fmt3(governingIR)}</div>
 </div>
+
+<div class="meta-grid">
+  <div class="meta-item"><div class="k">Project</div><div class="v">${escHtml(meta.projectName || 'Untitled beam project')}</div></div>
+  <div class="meta-item"><div class="k">Job/reference</div><div class="v">${escHtml(meta.jobReference || '-')}</div></div>
+  <div class="meta-item"><div class="k">Revision</div><div class="v">${escHtml(meta.projectRevision || '-')}</div></div>
+  <div class="meta-item"><div class="k">Date</div><div class="v">${escHtml(meta.projectDate || '-')}</div></div>
+  <div class="meta-item"><div class="k">Company</div><div class="v">${escHtml(meta.companyName || '-')}</div></div>
+  <div class="meta-item"><div class="k">Engineer</div><div class="v">${escHtml(meta.engineerName || '-')}</div></div>
+  <div class="meta-item"><div class="k">Checked by</div><div class="v">${escHtml(meta.checkedBy || '-')}</div></div>
+  <div class="meta-item"><div class="k">App/version</div><div class="v">Beam Calculator Studio ${escHtml(data.appVersion || APP_VERSION)}</div></div>
+</div>
+${meta.projectNotes ? `<div class="section full"><h2>Notes/comments</h2><div class="card notes">${escHtml(meta.projectNotes)}</div></div>` : ''}
 
 <div class="summary">
   <div class="card"><div class="k">Span</div><div class="v">${fmt2(L)} m</div></div>
   <div class="card"><div class="k">Max moment</div><div class="v">${fmtMomentFromkNm(uls.peakM.val)} ${momentUnit}</div></div>
   <div class="card"><div class="k">Max shear</div><div class="v">${fmtForceFromkN(uls.peakV.val)} ${forceUnit}</div></div>
   <div class="card"><div class="k">Deflection</div><div class="v">${fmt2(deflPeak)} mm</div></div>
+</div>
+
+<div class="section full">
+  <h2>Load data</h2>
+  <table class="check">
+    <thead><tr><th>Label</th><th>Span</th><th>Position</th><th>Type</th><th>Characteristic components</th></tr></thead>
+    <tbody>${loadRows}</tbody>
+  </table>
 </div>
 
 <div class="grid">
@@ -6688,12 +7187,15 @@ ${embeddedPreviewThemeCss()}
   <table>${bodyRows(checkRows)}</table>
 </div>
 
+${reportImages.length ? `<div class="section full"><h2>Diagrams and graphs</h2><div class="diagram-grid">${reportImages.map(([label,src])=>`<div class="diagram-card"><h3>${escHtml(label)}</h3><img alt="${escHtml(label)}" src="${src}"></div>`).join('')}</div></div>` : ''}
+
 <div class="section full">
   <h2>Data sources & references</h2>
   <table>${bodyRows([
     ['Section data source', srcInfo.title],
     ['Section data note', srcInfo.detail],
     ['Section data reference', srcInfo.url],
+    ['Saved section source reference', `${escHtml(sourceSnapshot.sourceName||'Source to be confirmed')}<br>${escHtml(sourceSnapshot.reference||'Source to be confirmed')}`],
     ['Calculation references', calcRefs.map(r=>`${r.title}: ${r.url}`).join('<br>')]
   ])}</table>
 </div>
@@ -6704,13 +7206,15 @@ ${embeddedPreviewThemeCss()}
 </body></html>`;
 }
 function reportFileBaseName(data){
-  return `beam_report_${(data.sec?.name||'section').replace(/[^a-z0-9]+/gi,'_')}`;
+  const meta=data?.projectMetadata||{};
+  const base=[meta.projectName,meta.jobReference,meta.calculationTitle,data.sec?.name||'section'].filter(Boolean).join('_');
+  return `beam_report_${base.replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,120)||'section'}`;
 }
 function showReportModal(){
   try{
     if(!window._lastCalcData) runCalc();
     const data = window._lastCalcData;
-    if(!data){ alert('No solved calculation is available yet.'); return; }
+    if(!data){ setProjectStatus('No solved calculation is available yet.',true); return; }
     const html = buildReportHTML(data);
     window._lastReportHTML = html;
     const frame = $('reportFrame');
@@ -6719,7 +7223,7 @@ function showReportModal(){
     if(modal){ modal.classList.remove('hide'); modal.setAttribute('aria-hidden','false'); }
   }catch(err){
     console.error(err);
-    alert('Report preview failed.');
+    setProjectStatus(`Report preview failed: ${err.message||'unknown error'}`,true);
   }
 }
 function closeReportModal(){
@@ -6732,7 +7236,7 @@ function downloadReportHTML(){
   try{
     if(!window._lastCalcData) runCalc();
     const data = window._lastCalcData;
-    if(!data){ alert('No solved calculation is available yet.'); return; }
+    if(!data){ setProjectStatus('No solved calculation is available yet.',true); return; }
     const html = window._lastReportHTML || buildReportHTML(data);
     const blob = new Blob([html], {type:'text/html'});
     const url = URL.createObjectURL(blob);
@@ -6745,7 +7249,7 @@ function downloadReportHTML(){
     setTimeout(()=>URL.revokeObjectURL(url), 3000);
   }catch(err){
     console.error(err);
-    alert('Report download failed.');
+    setProjectStatus(`Report download failed: ${err.message||'unknown error'}`,true);
   }
 }
 function printReportPreview(){
@@ -6754,7 +7258,7 @@ function printReportPreview(){
     $('reportFrame')?.contentWindow?.print();
   }catch(err){
     console.error(err);
-    alert('Print could not be started from the preview.');
+    setProjectStatus(`Print could not be started from the preview: ${err.message||'unknown error'}`,true);
   }
 }
 function exportReport(){
@@ -6781,6 +7285,7 @@ function buildLatexReport(data){
   const {sec,mat,L,supportType,spanCfg,lc,rawLoads,check,ltb,endSupport,memberBuckling,uls,sls,ulsNote,deflAllow_mm,deflPeak,passAll,governingIR,maxReaction,deflIR,supportIR,IR_NM,passNM,passDefl}=data;
   const refs=getCalculationReferences();
   const src=getSectionSourceInfo(sec);
+  const meta={...projectMetadataDefaults(), ...(data.projectMetadata||{})};
   const supportText=supportLabelValue(supportType);
   const Wsel=check.Wsel||getW_for_MRd(sec,check.cls);
   const mods=getSectionModuli(sec);
@@ -6809,8 +7314,12 @@ function buildLatexReport(data){
   push(String.raw`\begin{document}`);
   push(String.raw`\begin{center}`);
   push(String.raw`{\LARGE\textbf{Beam Calculator Studio}}\\[2mm]`);
-  push(String.raw`{\large Independent step-by-step calculation package}`);
+  push(`{\\large ${escLatex(meta.calculationTitle || 'Independent step-by-step calculation package')}}`);
   push(String.raw`\end{center}`);
+  push(`\\textbf{Project:} ${escLatex(meta.projectName||'Untitled beam project')} \\quad \\textbf{Job/ref:} ${escLatex(meta.jobReference||'--')} \\quad \\textbf{Revision:} ${escLatex(meta.projectRevision||'--')}\\\\`);
+  push(`\\textbf{Company:} ${escLatex(meta.companyName||'--')} \\quad \\textbf{Engineer:} ${escLatex(meta.engineerName||'--')} \\quad \\textbf{Checked by:} ${escLatex(meta.checkedBy||'--')} \\quad \\textbf{Date:} ${escLatex(meta.projectDate||'--')}\\\\`);
+  push(`\\textbf{App/version:} Beam Calculator Studio ${escLatex(data.appVersion || APP_VERSION)}\\\\`);
+  if(meta.projectNotes) push(`\\textbf{Notes/comments:} ${escLatex(meta.projectNotes)}\\\\`);
   push(`\\textbf{Member:} ${escLatex(sec.name)} \\quad \\textbf{Grade:} ${escLatex(mat.grade)} \\quad \\textbf{System:} ${escLatex(spanCfg.mode==='multi'?`Continuous beam (${spanCfg.count} spans)`:'Single span')}\\\\`);
   push(`\\textbf{Support arrangement:} ${escLatex(supportText)} \\quad \\textbf{Total length:} ${fmt2(L)}\\,m \\quad \\textbf{Result:} \\textcolor{${passAll?'passgreen':'failred'}}{\\textbf{${status(passAll)}}}`);
   push(String.raw`\tableofcontents`);
@@ -7457,6 +7966,7 @@ $('downloadProjectBtn')?.addEventListener('click',()=>{downloadCurrentProject();
 $('installProjectBtn')?.addEventListener('click',()=>{closeFileMenu();$('projectFileInput')?.click();});
 $('fileAccountBtn')?.addEventListener('click',()=>{closeFileMenu();openSettingsModal('settingsAccount');});
 $('projectName')?.addEventListener('input',markProjectDirty);
+PROJECT_METADATA_IDS.forEach(id=>$(id)?.addEventListener('input',markProjectDirty));
 $('projectFileInput')?.addEventListener('change',event=>installProjectFile(event.target.files?.[0]));
 $('startNewProject')?.addEventListener('click',startNewProject);
 $('startLoadProject')?.addEventListener('click',()=>{
@@ -7472,7 +7982,7 @@ $('startContinue')?.addEventListener('click',hideStartScreen);
 $('emailSignInBtn')?.addEventListener('click',signInWithEmail);
 $('googleSignInBtn')?.addEventListener('click',()=>beginExternalAuth('google'));
 $('appleSignInBtn')?.addEventListener('click',()=>beginExternalAuth('apple'));
-$('signOutBtn')?.addEventListener('click',()=>{saveAccountState({email:'',name:'Guest user',plan:'free'});setAccountStatus('Signed out.');});
+$('signOutBtn')?.addEventListener('click',signOut);
 $('upgradeMonthlyBtn')?.addEventListener('click',()=>beginCheckout('monthly'));
 $('upgradeYearlyBtn')?.addEventListener('click',()=>beginCheckout('yearly'));
 window.addEventListener('beforeunload',event=>{if(window._projectDirty){event.preventDefault();event.returnValue='';}});
@@ -7490,8 +8000,10 @@ function init(){
   updateLCPreview();
   initProfileDropdowns();
   initCustomSectionUI();
+  renderSectionSourceIndex();
   populateProjectSelectors();
   applyAccountState();
+  refreshAuthenticatedProfile(false);
   refreshUnitUI();
   syncSpringUI();
   syncModeUI(true);
