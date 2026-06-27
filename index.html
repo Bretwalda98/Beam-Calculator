@@ -8,10 +8,21 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <h1>Professional Beam Calculator</h1>
-      <p>Server-side engineering calculations with authenticated project storage.</p>
+    <div class="brand-stack">
+      <div class="product-mark" aria-hidden="true">BC</div>
+      <div>
+        <h1>Beam Calculator</h1>
+        <p>Server-side steel beam design workspace</p>
+      </div>
     </div>
+
+    <nav class="workspace-nav" aria-label="Workspace">
+      <a href="#inputPanel">Input</a>
+      <a href="#resultsPanel">Results</a>
+      <a href="#reportPanel">Report</a>
+      <a href="#sourcesPanel">Sources</a>
+    </nav>
+
     <div class="top-actions">
       <span id="layoutBadge" class="badge">Auto</span>
       <button id="themeToggle" type="button">Theme</button>
@@ -22,11 +33,15 @@
   </header>
 
   <main class="app-shell">
-    <aside class="panel input-panel">
+    <aside id="inputPanel" class="panel input-panel">
       <div class="panel-head">
-        <h2>Inputs</h2>
-        <span id="accountState" class="subtle">Local guest</span>
+        <div>
+          <h2>Project Input</h2>
+          <p class="subtle">Cloud sign-in is optional; local drafts still work.</p>
+        </div>
+        <span id="accountState" class="account-pill">Local guest</span>
       </div>
+
       <form id="calcForm">
         <fieldset>
           <legend>Project</legend>
@@ -38,7 +53,7 @@
           <label>Job/reference <input name="jobReference" maxlength="80"></label>
           <label>Revision <input name="revision" maxlength="30"></label>
           <label>Revision description <input name="revisionDescription" maxlength="180" value="Current calculation issue"></label>
-          <label>Engineer <input name="engineerName" maxlength="120"></label>
+          <label>Prepared by <input name="engineerName" maxlength="120"></label>
           <label>Checked by <input name="checkedBy" maxlength="120"></label>
           <label>Approved by <input name="approvedBy" maxlength="120"></label>
           <label>Date <input name="date" type="date"></label>
@@ -49,7 +64,7 @@
         </fieldset>
 
         <fieldset>
-          <legend>Model</legend>
+          <legend>Workspace</legend>
           <label>Layout mode
             <select id="layoutMode">
               <option value="auto">Auto</option>
@@ -65,6 +80,17 @@
               <option value="dark">Dark</option>
             </select>
           </label>
+          <label>Units
+            <select name="units">
+              <option value="kn" selected>kN</option>
+              <option value="tonne">Metric tonnes</option>
+            </select>
+          </label>
+          <label class="check"><input name="includeSelfWeight" type="checkbox" checked> Include self weight</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Beam Model</legend>
           <label>Span L (m) <input name="span" type="number" min="0.1" step="0.01" value="6"></label>
           <label>Support
             <select name="supportType">
@@ -76,17 +102,6 @@
               <option value="spring_roller">Spring at x=0, roller at x=L</option>
             </select>
           </label>
-          <label>Units
-            <select name="units">
-              <option value="tonne">Metric tonnes</option>
-              <option value="kn">kN</option>
-            </select>
-          </label>
-          <label class="check"><input name="includeSelfWeight" type="checkbox" checked> Include self weight</label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Section</legend>
           <label>Family <select id="sectionFamily" name="sectionFamily"></select></label>
           <label>Size <select id="sectionName" name="sectionName"></select></label>
           <label>Steel grade
@@ -127,7 +142,7 @@
         </fieldset>
 
         <fieldset>
-          <legend>Checks</legend>
+          <legend>Design Checks</legend>
           <label>Deflection limit L / <input name="deflectionLimit" type="number" min="1" step="1" value="300"></label>
           <label>gamma M0 <input name="gammaM0" type="number" min="0.1" step="0.01" value="1"></label>
           <label>gamma M1 <input name="gammaM1" type="number" min="0.1" step="0.01" value="1"></label>
@@ -135,39 +150,62 @@
           <label>LTB restraints <input name="ltbRestraints" type="number" min="0" step="1" value="0"></label>
         </fieldset>
 
-        <div class="button-row">
-          <button class="primary" type="submit">Calculate on server</button>
-          <button id="saveProject" type="button">Save project</button>
-          <button id="openReport" type="button">Print report</button>
-          <button id="downloadLatex" type="button">LaTeX</button>
-          <button id="downloadPdf" type="button">PDF fallback</button>
+        <div class="runbar">
+          <button class="primary" type="submit">Calculate</button>
+          <button id="saveProject" type="button">Save</button>
+          <button id="loadLocalDraft" type="button">Load Draft</button>
         </div>
       </form>
     </aside>
 
     <section class="workspace">
       <div id="status" class="status">Ready. Calculations run on the backend API.</div>
-      <div class="result-grid">
-        <article class="metric"><span>Status</span><strong id="resultStatus">-</strong></article>
-        <article class="metric"><span>Governing IR</span><strong id="resultIR">-</strong></article>
-        <article class="metric"><span>Max moment</span><strong id="resultMoment">-</strong></article>
-        <article class="metric"><span>Max shear</span><strong id="resultShear">-</strong></article>
-        <article class="metric"><span>Deflection</span><strong id="resultDeflection">-</strong></article>
-        <article class="metric"><span>Source</span><strong id="resultSource">-</strong></article>
-      </div>
 
-      <div class="panel">
+      <section id="resultsPanel" class="summary-band">
+        <article class="status-tile">
+          <span>Overall Status</span>
+          <strong id="resultStatus">-</strong>
+          <small id="resultSource">-</small>
+        </article>
+        <div class="result-grid">
+          <article class="metric"><span>Governing IR</span><strong id="resultIR">-</strong></article>
+          <article class="metric"><span>Max moment</span><strong id="resultMoment">-</strong></article>
+          <article class="metric"><span>Max shear</span><strong id="resultShear">-</strong></article>
+          <article class="metric"><span>Deflection</span><strong id="resultDeflection">-</strong></article>
+        </div>
+      </section>
+
+      <section class="panel diagram-panel">
         <div class="panel-head">
-          <h2>Diagrams</h2>
-          <span class="subtle">Rendered from server result arrays</span>
+          <div>
+            <h2>Analysis Diagrams</h2>
+            <p class="subtle">Moment, shear and deflection from the server result arrays.</p>
+          </div>
         </div>
         <canvas id="diagramCanvas" width="1200" height="520"></canvas>
-      </div>
+      </section>
 
-      <div class="panel">
+      <section id="reportPanel" class="panel report-panel">
         <div class="panel-head">
-          <h2>Checks</h2>
-          <span class="subtle">No equations are present in this browser client.</span>
+          <div>
+            <h2>Calculation Package</h2>
+            <p class="subtle">Generated on the server from the current input and result.</p>
+          </div>
+        </div>
+        <div class="report-actions">
+          <button id="openReport" class="primary" type="button">Open Print Report</button>
+          <button id="downloadLatex" type="button">Download LaTeX</button>
+          <button id="downloadPdf" type="button">Download PDF Fallback</button>
+          <button id="exportProject" type="button">Export Project JSON</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Design Checks</h2>
+            <p class="subtle">Utilisation checks returned by the backend.</p>
+          </div>
         </div>
         <div class="table-wrap">
           <table id="checksTable">
@@ -175,11 +213,14 @@
             <tbody></tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <div class="panel">
+      <section id="sourcesPanel" class="panel">
         <div class="panel-head">
-          <h2>Information Sources</h2>
+          <div>
+            <h2>Section Data Sources</h2>
+            <p class="subtle">Unknown rows remain marked as source to be confirmed.</p>
+          </div>
           <button id="loadSources" type="button">Refresh</button>
         </div>
         <div class="table-wrap">
@@ -188,7 +229,7 @@
             <tbody></tbody>
           </table>
         </div>
-      </div>
+      </section>
     </section>
   </main>
 

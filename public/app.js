@@ -133,12 +133,20 @@ async function calculate(event) {
   setStatus(`Server calculation complete: ${result.status}`, result.status === 'PASS' ? 'ok' : 'error');
 }
 
+async function ensureFreshCalculation() {
+  const input = readForm();
+  if (!state.lastResult || JSON.stringify(input) !== JSON.stringify(state.lastResult.input)) {
+    await calculate();
+  }
+  return state.lastResult;
+}
+
 function renderResult(result) {
   $('#resultStatus').textContent = result.status;
   $('#resultIR').textContent = result.summary.governingIR;
-  $('#resultMoment').textContent = `${result.summary.maxMoment} ${result.summary.momentUnit}`;
-  $('#resultShear').textContent = `${result.summary.maxShear} ${result.summary.forceUnit}`;
-  $('#resultDeflection').textContent = `${result.summary.deflection} mm`;
+  $('#resultMoment').textContent = joinUnit(result.summary.maxMoment, result.summary.momentUnit);
+  $('#resultShear').textContent = joinUnit(result.summary.maxShear, result.summary.forceUnit);
+  $('#resultDeflection').textContent = joinUnit(result.summary.deflection, 'mm');
   $('#resultSource').textContent = result.source.title;
   const checks = result.checks;
   $('#checksTable tbody').innerHTML = Object.entries(checks).map(([name, check]) => {
@@ -150,15 +158,23 @@ function renderResult(result) {
   drawDiagram(result.diagrams.series || []);
 }
 
+function themeValue(name, fallback) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+function joinUnit(value, unit) {
+  return `${value}\u00a0${String(unit || '').replace(/\s+/g, '\u00a0')}`.trim();
+}
+
 function drawDiagram(series) {
   const canvas = $('#diagramCanvas');
   const ctx = canvas.getContext('2d');
-  const css = getComputedStyle(document.documentElement);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = css.getPropertyValue('--panel-2').trim();
+  ctx.fillStyle = themeValue('--surface-2', '#f8fafc');
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (!series.length) return;
-  drawSeries(ctx, series, 'moment', 30, 150, css.getPropertyValue('--accent').trim(), 'Moment');
+  drawSeries(ctx, series, 'moment', 30, 150, themeValue('--accent', '#2563eb'), 'Moment');
   drawSeries(ctx, series, 'shear', 190, 150, '#dc2626', 'Shear');
   drawSeries(ctx, series, 'deflection', 350, 140, '#15803d', 'Deflection');
 }
@@ -185,7 +201,7 @@ function drawSeries(ctx, rows, key, top, height, color, label) {
     else ctx.lineTo(x, y);
   });
   ctx.stroke();
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+  ctx.fillStyle = themeValue('--text', '#18202a');
   ctx.font = '18px system-ui';
   ctx.fillText(label, left, top - 8);
 }
@@ -220,7 +236,8 @@ async function startAuth(provider) {
 }
 
 async function saveProject() {
-  if (!state.lastResult) await calculate();
+  await ensureFreshCalculation();
+  localStorage.setItem('beam_local_draft_v1', JSON.stringify(state.lastResult));
   try {
     const body = {
       name: state.lastResult.input.metadata.projectName,
@@ -230,15 +247,93 @@ async function saveProject() {
     };
     const res = await api('/api/projects', { method: 'POST', body: JSON.stringify(body) });
     const saved = await res.json();
-    setStatus(`Saved server project ${saved.project.name}`, 'ok');
+    setStatus(`Saved server project ${saved.project.name}. Local draft also updated.`, 'ok');
   } catch (err) {
-    localStorage.setItem('beam_local_draft_v1', JSON.stringify(state.lastResult));
     setStatus(`${err.message} Local draft saved in this browser.`, 'error');
   }
 }
 
+function setFieldValue(name, value) {
+  const el = document.querySelector(`[name="${name}"]`);
+  if (!el) return;
+  if (el.type === 'checkbox') {
+    el.checked = Boolean(value);
+    return;
+  }
+  el.value = value ?? '';
+}
+
+async function applyInputToForm(input) {
+  const meta = input.metadata || {};
+  [
+    'projectName', 'clientName', 'companyName', 'companyLogoUrl', 'jobReference',
+    'calculationTitle', 'beamMark', 'revision', 'revisionDescription', 'engineerName',
+    'checkedBy', 'approvedBy', 'date', 'designCode', 'nationalAnnex', 'notes'
+  ].forEach((name) => setFieldValue(name, name === 'date' ? (meta[name] || new Date().toISOString().slice(0, 10)) : meta[name]));
+  setFieldValue('units', input.units || 'kn');
+  setFieldValue('span', input.model?.span ?? 6);
+  setFieldValue('supportType', input.model?.supportType || 'ss');
+  setFieldValue('includeSelfWeight', input.model?.includeSelfWeight !== false);
+  setFieldValue('material', input.material?.grade || 'S355');
+  setFieldValue('sectionClass', input.settings?.sectionClass ?? 2);
+  setFieldValue('deflectionLimit', input.settings?.deflectionLimit ?? 300);
+  setFieldValue('gammaM0', input.settings?.gammaM0 ?? 1);
+  setFieldValue('gammaM1', input.settings?.gammaM1 ?? 1);
+  setFieldValue('enableLTB', input.settings?.enableLTB !== false);
+  setFieldValue('ltbRestraints', input.settings?.ltbRestraints ?? 0);
+  setFieldValue('combination', input.combination?.combination || 'en1990_610');
+  const firstUdl = input.loads?.udls?.[0] || {};
+  setFieldValue('udlG', firstUdl.G ?? 0);
+  setFieldValue('udlQ1', firstUdl.Q1 ?? 0);
+  const firstPoint = input.loads?.points?.[0] || {};
+  setFieldValue('pointQ1', firstPoint.Q1 ?? 0);
+  setFieldValue('pointX', firstPoint.x ?? (input.model?.span ? input.model.span / 2 : 3));
+  setFieldValue('axialG', input.axial?.G ?? 0);
+  if (input.section?.family) {
+    $('#sectionFamily').value = input.section.family;
+    await loadSectionNames();
+    if ([...$('#sectionName').options].some((option) => option.value === input.section.name)) {
+      $('#sectionName').value = input.section.name;
+    }
+  }
+}
+
+async function loadLocalDraft() {
+  const raw = localStorage.getItem('beam_local_draft_v1');
+  if (!raw) {
+    setStatus('No local draft is saved in this browser.', 'error');
+    return;
+  }
+  const draft = JSON.parse(raw);
+  if (!draft?.input) throw new Error('Saved local draft is not a valid beam project.');
+  await applyInputToForm(draft.input);
+  if (draft.result) {
+    state.lastResult = draft;
+    renderResult(draft.result);
+    setStatus('Loaded local draft. Recalculate before issuing a report if inputs have changed.', 'ok');
+  } else {
+    await calculate();
+  }
+}
+
+async function exportProjectJson() {
+  await ensureFreshCalculation();
+  const payload = {
+    schemaVersion: 2,
+    exportedAt: new Date().toISOString(),
+    input: state.lastResult.input,
+    result: state.lastResult.result
+  };
+  const name = String(state.lastResult.input.metadata.projectName || 'beam-project')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'beam-project';
+  downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `${name}.json`);
+  setStatus('Project JSON exported from the current server calculation.', 'ok');
+}
+
 async function downloadPdf() {
-  if (!state.lastResult) await calculate();
+  await ensureFreshCalculation();
   const res = await api('/api/pdf', {
     method: 'POST',
     body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
@@ -248,7 +343,7 @@ async function downloadPdf() {
 }
 
 async function openHtmlReport() {
-  if (!state.lastResult) await calculate();
+  await ensureFreshCalculation();
   const res = await api('/api/report/html', {
     method: 'POST',
     body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
@@ -263,7 +358,7 @@ async function openHtmlReport() {
 }
 
 async function downloadLatex() {
-  if (!state.lastResult) await calculate();
+  await ensureFreshCalculation();
   const res = await api('/api/report/latex', {
     method: 'POST',
     body: JSON.stringify({ input: state.lastResult.input, result: state.lastResult.result, metadata: state.lastResult.input.metadata })
@@ -300,9 +395,11 @@ $('#googleSignIn').addEventListener('click', () => startAuth('google'));
 $('#appleSignIn').addEventListener('click', () => startAuth('apple'));
 $('#signOut').addEventListener('click', async () => { await api('/api/auth/logout', { method: 'POST' }); await refreshSession(); });
 $('#saveProject').addEventListener('click', () => saveProject().catch((err) => setStatus(err.message, 'error')));
+$('#loadLocalDraft').addEventListener('click', () => loadLocalDraft().catch((err) => setStatus(err.message, 'error')));
 $('#openReport').addEventListener('click', () => openHtmlReport().catch((err) => setStatus(err.message, 'error')));
 $('#downloadLatex').addEventListener('click', () => downloadLatex().catch((err) => setStatus(err.message, 'error')));
 $('#downloadPdf').addEventListener('click', () => downloadPdf().catch((err) => setStatus(err.message, 'error')));
+$('#exportProject').addEventListener('click', () => exportProjectJson().catch((err) => setStatus(err.message, 'error')));
 $('#loadSources').addEventListener('click', () => loadSources().catch((err) => setStatus(err.message, 'error')));
 addEventListener('resize', applySettings);
 $('[name="date"]').value = new Date().toISOString().slice(0, 10);
