@@ -1,7 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const api = async (url, options = {}) => {
   const res = await fetch(url, {
-    credentials: 'include',
+    credentials: 'omit',
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options
   });

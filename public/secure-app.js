@@ -33,7 +33,7 @@ function apiUrl(path) {
 
 async function api(path, options = {}) {
   const response = await fetch(apiUrl(path), {
-    credentials: 'include',
+    credentials: 'omit',
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options
   });
