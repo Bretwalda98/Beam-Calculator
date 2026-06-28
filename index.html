@@ -2036,6 +2036,264 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
   body.layout-mobile .section-preview-facts{grid-template-columns:1fr!important}
   body.layout-mobile #sectionProfilePreview{height:190px!important}
 }
+
+/* ===== v35 QA repair: toolbar, modals, touch targets and mobile tables ===== */
+html,body{max-width:100%;overflow-x:hidden}
+body.modal-open{overflow:hidden!important}
+.top-action-label-short{display:none}
+.more-menu-wrap{position:relative}
+.more-menu{
+  position:absolute;
+  top:calc(100% + 9px);
+  right:0;
+  z-index:2147483501;
+  width:min(270px,calc(100vw - 24px));
+  padding:8px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--panel);
+  box-shadow:0 24px 70px rgba(15,23,42,.24);
+}
+.more-menu.hide{display:none}
+.more-menu-item{
+  width:100%;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 10px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+  text-align:left;
+  font:inherit;
+  font-size:12px;
+  font-weight:750;
+}
+.more-menu-item:hover,.more-menu-item:focus-visible{outline:none;background:var(--btn-hover)}
+.more-menu-item i{width:18px;color:var(--accent);font-size:15px;text-align:center}
+.report-frame-scroll,.export-scroll{max-width:100%;overflow:auto;-webkit-overflow-scrolling:touch}
+.export-pane{min-width:0}
+.export-mobile-tabs{display:none;gap:8px;margin-bottom:8px}
+.export-mobile-tab{flex:1 1 0;min-height:44px}
+.export-mobile-tab.active{border-color:rgba(59,130,246,.55);background:rgba(59,130,246,.12);color:var(--text)}
+.load-entry-card.has-error{border-color:rgba(220,38,38,.55)!important;box-shadow:0 0 0 2px rgba(220,38,38,.12)!important}
+.load-field input[aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px rgba(220,38,38,.16)!important}
+.load-validation-note:empty{display:none!important}
+.load-validation-note:not(:empty){display:block!important;margin-top:2px!important;line-height:1.35!important}
+.load-remove-btn{width:44px!important;min-width:44px!important;min-height:44px!important}
+.menu-button,.dock-collapse,.rail-button{min-width:44px!important;min-height:44px!important}
+.info-tip{min-width:26px!important;min-height:26px!important}
+.modal-body a,.source-item .src-url{overflow-wrap:anywhere;word-break:break-word}
+.source-index-table td,.source-index-table th{overflow-wrap:anywhere;word-break:normal}
+body.layout-desktop #moreMenuBtn,body.layout-desktop #moreMenu{display:none!important}
+body.layout-desktop #saveToolbarBtn{display:inline-flex!important}
+body.layout-desktop #themeBtn span:not(.visually-hidden){display:inline!important}
+body.layout-desktop .file-menu-wrap{order:1!important}
+body.layout-desktop #saveToolbarBtn{order:2!important}
+body.layout-desktop #reportBtn{order:3!important}
+body.layout-desktop #latexBtn{order:4!important}
+body.layout-desktop #recalcBtn{order:5!important}
+body.layout-desktop #helpBtn{order:6!important}
+body.layout-desktop #themeBtn{order:7!important}
+body.layout-tablet #helpBtn,body.layout-tablet #recalcBtn,body.layout-tablet #themeBtn{display:none!important}
+body.layout-tablet #saveToolbarBtn,body.layout-tablet #moreMenuBtn{display:inline-flex!important}
+body.layout-tablet .more-menu{position:fixed;top:70px;right:10px}
+body.layout-tablet .file-menu-wrap{order:1!important}
+body.layout-tablet #saveToolbarBtn{order:2!important}
+body.layout-tablet #reportBtn{order:3!important}
+body.layout-tablet #latexBtn{order:4!important}
+body.layout-tablet .more-menu-wrap{order:5!important}
+body.layout-tablet .toolbar-right .btn{
+  width:auto!important;
+  min-width:44px!important;
+  padding:0 10px!important;
+  gap:6px!important;
+}
+body.layout-tablet .toolbar-right .btn span:not(.visually-hidden){display:inline!important}
+body.layout-tablet #latexBtn .top-action-label-short{display:none!important}
+body.layout-mobile .app-topbar{grid-template-columns:minmax(0,1fr) auto!important}
+body.layout-mobile .toolbar-right{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:6px!important;
+  overflow:visible!important;
+}
+body.layout-mobile .file-menu-wrap{order:1!important}
+body.layout-mobile #reportBtn{order:2!important}
+body.layout-mobile #latexBtn{order:3!important}
+body.layout-mobile .more-menu-wrap{order:4!important}
+body.layout-mobile #saveToolbarBtn,
+body.layout-mobile #helpBtn,
+body.layout-mobile #recalcBtn,
+body.layout-mobile #themeBtn{display:none!important}
+body.layout-mobile #moreMenuBtn,
+body.layout-mobile #fileMenuBtn,
+body.layout-mobile #reportBtn,
+body.layout-mobile #latexBtn{
+  display:inline-flex!important;
+  min-width:0!important;
+  width:100%!important;
+  padding:0 6px!important;
+  gap:5px!important;
+}
+body.layout-mobile .toolbar-right .btn span:not(.visually-hidden){display:inline!important}
+body.layout-mobile #latexBtn .top-action-label-full{display:none!important}
+body.layout-mobile #latexBtn .top-action-label-short{display:inline!important}
+body.layout-mobile #fileMenuBtn .bi-chevron-down{display:none!important}
+body.layout-mobile .file-menu,
+body.layout-mobile .more-menu{
+  position:fixed!important;
+  left:8px!important;
+  right:8px!important;
+  top:118px!important;
+  width:auto!important;
+  max-height:calc(100dvh - 128px)!important;
+  overflow:auto!important;
+}
+body.layout-mobile .file-menu:not(.hide){display:flex!important;flex-direction:column!important}
+body.layout-mobile .file-menu-list{order:-1!important;padding-top:0!important;padding-bottom:8px!important;border-bottom:1px solid var(--border)!important}
+body.layout-mobile .file-menu-head{padding-top:8px!important}
+body.layout-mobile .file-menu-head .project-meta-grid{display:none!important}
+body.layout-mobile .file-menu-item{min-height:44px!important;font-size:13px!important}
+body.layout-mobile #reportModal .modal-panel,
+body.layout-mobile #latexModal .modal-panel{
+  width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  border-radius:0!important;
+  padding:10px!important;
+  gap:8px!important;
+}
+body.layout-mobile #reportModal .modal-head,
+body.layout-mobile #latexModal .modal-head{align-items:flex-start!important;gap:8px!important}
+body.layout-mobile #reportModal .modal-actions,
+body.layout-mobile #latexModal .modal-actions{justify-content:flex-start!important}
+body.layout-mobile #reportModal .report-frame-scroll,
+body.layout-mobile #latexModal .export-scroll{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  flex:1 1 auto;
+}
+body.layout-mobile #reportFrame,
+body.layout-mobile #latexFrame{
+  width:760px!important;
+  min-width:760px!important;
+  height:calc(100dvh - 172px)!important;
+  border:0!important;
+  border-radius:0!important;
+}
+body.layout-mobile #latexModal .export-mobile-tabs{display:flex!important}
+body.layout-mobile #latexModal .modal-toolbar{display:none!important}
+body.layout-mobile #latexModal .modal-split{display:block!important;min-height:0!important;overflow:visible!important}
+body.layout-mobile #latexModal .latex-preview-pane{display:block!important}
+body.layout-mobile #latexModal .latex-source-pane{display:none!important}
+body.layout-mobile #latexModal.source-active .latex-preview-pane{display:none!important}
+body.layout-mobile #latexModal.source-active .latex-source-pane{
+  display:flex!important;
+  height:calc(100dvh - 178px)!important;
+  min-height:0!important;
+}
+body.layout-mobile #latexModal .modal-side textarea{min-height:0!important}
+body.layout-mobile .ad-slot{padding:10px 11px!important;gap:8px!important;align-items:flex-start!important}
+body.layout-mobile .ad-headline{font-size:.9rem!important}
+body.layout-mobile .ad-text{font-size:.78rem!important}
+body.layout-mobile .ad-actions .btn{min-height:40px!important}
+:root[data-theme="dark"] .app-topbar,
+:root[data-theme="dark"] .file-menu,
+:root[data-theme="dark"] .more-menu,
+:root[data-theme="dark"] .modal-panel,
+:root[data-theme="dark"] .chart-modal-panel,
+:root[data-theme="dark"] .start-card,
+:root[data-theme="dark"] .settings-panel,
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .stage-block,
+:root[data-theme="dark"] .inspector-block,
+:root[data-theme="dark"] .workspace-header,
+:root[data-theme="dark"] .accordion,
+:root[data-theme="dark"] .multi-load-card,
+:root[data-theme="dark"] .load-entry-card,
+:root[data-theme="dark"] .section-preview-panel,
+:root[data-theme="dark"] .about-card,
+:root[data-theme="dark"] .modal-card,
+:root[data-theme="dark"] .source-item,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .result-block,
+:root[data-theme="dark"] .metric-card{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2))!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+:root[data-theme="dark"] .btn,
+:root[data-theme="dark"] .tab-btn,
+:root[data-theme="dark"] .loadcase-tab,
+:root[data-theme="dark"] .summary-chip,
+:root[data-theme="dark"] .pill,
+:root[data-theme="dark"] .badge,
+:root[data-theme="dark"] .file-menu-item,
+:root[data-theme="dark"] .more-menu-item,
+:root[data-theme="dark"] .section-preview-type{
+  background:var(--btn-bg)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+  box-shadow:none!important;
+}
+:root[data-theme="dark"] .btn:hover,
+:root[data-theme="dark"] .file-menu-item:hover,
+:root[data-theme="dark"] .more-menu-item:hover,
+:root[data-theme="dark"] .tab-btn:hover{background:var(--btn-hover)!important}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2))!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder{color:#a8b3c7!important}
+:root[data-theme="dark"] select option{background:var(--panel)!important;color:var(--text)!important}
+:root[data-theme="dark"] .tab-btn.active,
+:root[data-theme="dark"] .loadcase-tab.active,
+:root[data-theme="dark"] .export-mobile-tab.active{
+  background:rgba(96,165,250,.16)!important;
+  color:#dbeafe!important;
+  border-color:rgba(96,165,250,.62)!important;
+}
+:root[data-theme="dark"] .ad-slot{
+  background:linear-gradient(180deg,rgba(245,158,11,.10),rgba(245,158,11,.04))!important;
+  border-color:rgba(245,158,11,.28)!important;
+}
+@media(max-width:600px){
+  .source-index-table-wrap{overflow:visible!important}
+  .source-index-table{min-width:0!important;width:100%!important;display:block!important}
+  .source-index-table thead{display:none!important}
+  .source-index-table tbody,.source-index-table tr,.source-index-table td{display:block!important;width:100%!important}
+  .source-index-table tr{border:1px solid var(--border);border-radius:10px;margin:0 0 10px;padding:8px;background:rgba(255,255,255,.03)}
+  :root[data-theme="light"] .source-index-table tr{background:rgba(2,6,23,.03)}
+  .source-index-table td{border:0!important;padding:5px 0!important}
+  .source-index-table td::before{content:attr(data-label);display:block;margin-bottom:2px;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+  .modal-body table:not(.source-index-table){display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:412px){
+  body.layout-mobile .toolbar-right{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:390px){
+  body.layout-mobile .toolbar-right{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:360px){
+  body.layout-mobile .toolbar-right{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  body.layout-mobile #fileMenuBtn,
+  body.layout-mobile #reportBtn,
+  body.layout-mobile #latexBtn,
+  body.layout-mobile #moreMenuBtn{font-size:11px!important}
+}
+@media(max-width:320px){
+  body.layout-mobile .toolbar-right{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important}
+  body.layout-mobile #reportFrame,
+  body.layout-mobile #latexFrame{width:720px!important;min-width:720px!important}
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -2054,7 +2312,7 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
   <span class="badge" id="themeBadge">Light</span>
   <div class="toolbar toolbar-right">
     <div class="file-menu-wrap">
-      <button id="fileMenuBtn" class="btn" type="button" aria-haspopup="menu" aria-expanded="false"><i class="bi bi-folder2"></i><span>File</span><i class="bi bi-chevron-down"></i></button>
+      <button id="fileMenuBtn" class="btn top-action" type="button" aria-haspopup="menu" aria-expanded="false"><i class="bi bi-folder2"></i><span class="top-action-label-main">Open</span><i class="bi bi-chevron-down"></i></button>
       <div id="fileMenu" class="file-menu hide" role="menu" aria-label="Project file actions">
         <div class="file-menu-head">
           <label>Project name
@@ -2122,11 +2380,23 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
         <div class="file-menu-plan"><span>Current plan</span><span id="planBadge" class="plan-badge"><i class="bi bi-person"></i><span>Free</span></span></div>
       </div>
     </div>
-    <button id="helpBtn" class="btn" type="button"><i class="bi bi-question-circle"></i><span>Help</span></button>
-    <button id="latexBtn" class="btn" type="button" title="Open Hand Calculation export"><i class="bi bi-sigma"></i><span>Hand Calculation</span></button>
-    <button id="reportBtn" class="btn" type="button"><i class="bi bi-file-earmark-text"></i><span>Report</span></button>
-    <button id="recalcBtn" class="btn" type="button"><i class="bi bi-arrow-repeat"></i><span>Recalculate</span></button>
-    <button id="themeBtn" class="btn primary-action icon-only" type="button" aria-label="Open settings"><i class="bi bi-gear"></i><span class="visually-hidden">Settings</span></button>
+    <button id="saveToolbarBtn" class="btn top-action" type="button"><i class="bi bi-floppy"></i><span>Save</span></button>
+    <button id="helpBtn" class="btn top-action" type="button"><i class="bi bi-question-circle"></i><span>Help</span></button>
+    <button id="latexBtn" class="btn top-action" type="button" title="Open Hand Calculation export"><i class="bi bi-sigma"></i><span class="top-action-label-full">Hand Calculation</span><span class="top-action-label-short">Hand Calc</span></button>
+    <button id="reportBtn" class="btn top-action" type="button"><i class="bi bi-file-earmark-text"></i><span>Report</span></button>
+    <button id="recalcBtn" class="btn top-action" type="button"><i class="bi bi-arrow-repeat"></i><span>Recalculate</span></button>
+    <button id="themeBtn" class="btn top-action" type="button" aria-label="Open settings"><i class="bi bi-gear"></i><span>Settings</span></button>
+    <div class="more-menu-wrap">
+      <button id="moreMenuBtn" class="btn top-action" type="button" aria-haspopup="menu" aria-expanded="false"><i class="bi bi-three-dots"></i><span>More</span></button>
+      <div id="moreMenu" class="more-menu hide" role="menu" aria-label="More actions">
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="save"><i class="bi bi-floppy"></i>Save</button>
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="recalculate"><i class="bi bi-arrow-repeat"></i>Recalculate</button>
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="help"><i class="bi bi-question-circle"></i>Help</button>
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="settings"><i class="bi bi-gear"></i>Settings</button>
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="download"><i class="bi bi-download"></i>Export data</button>
+        <button class="more-menu-item" type="button" role="menuitem" data-more-action="about"><i class="bi bi-info-circle"></i>About</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -2929,7 +3199,7 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
         <button id="reportModalClose" class="btn" type="button">Close ✕</button>
       </div>
     </div>
-    <iframe id="reportFrame" class="report-frame" title="Report preview"></iframe>
+    <div class="report-frame-scroll"><iframe id="reportFrame" class="report-frame" title="Report preview"></iframe></div>
   </div>
 </div>
 
@@ -2949,9 +3219,13 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
     <div class="modal-toolbar">
       <div class="latex-note">The left pane shows the checked hand calculation preview. The right pane shows the exact calculation source that will be downloaded.</div>
     </div>
+    <div class="export-mobile-tabs" role="tablist" aria-label="Hand Calculation panes">
+      <button class="btn export-mobile-tab active" type="button" role="tab" aria-selected="true" data-export-tab="preview">Preview</button>
+      <button class="btn export-mobile-tab" type="button" role="tab" aria-selected="false" data-export-tab="source">Source</button>
+    </div>
     <div class="modal-split">
-      <iframe id="latexFrame" class="latex-frame" title="Hand Calculation preview"></iframe>
-      <div class="modal-side">
+      <div class="latex-preview-pane export-pane"><div class="export-scroll"><iframe id="latexFrame" class="latex-frame" title="Hand Calculation preview"></iframe></div></div>
+      <div class="modal-side latex-source-pane export-pane">
         <textarea id="latexSourceBox" spellcheck="false" aria-label="Hand Calculation source"></textarea>
       </div>
     </div>
@@ -2972,6 +3246,22 @@ const fmt3 = v => (Number.isFinite(v)? v.toFixed(3) : String(v));
 const fmtXL=(x,L)=>`${(x/L).toFixed(2)}L`;
 const getVar = (name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
+function syncModalBodyLock(){
+  const open=qsa('.modal:not(.hide), .chart-modal:not(.hide), .start-screen:not(.hide)').length>0;
+  document.body.classList.toggle('modal-open',open);
+}
+function showModalElement(modal){
+  if(!modal) return;
+  modal.classList.remove('hide');
+  modal.setAttribute('aria-hidden','false');
+  syncModalBodyLock();
+}
+function hideModalElement(modal){
+  if(!modal) return;
+  modal.classList.add('hide');
+  modal.setAttribute('aria-hidden','true');
+  syncModalBodyLock();
+}
 
 const CONTROL_HELP = {
   projectAccordion:'Defines the global beam model, design combinations, material and support arrangement used by the solver.',
@@ -3364,14 +3654,12 @@ function openHelpModal(){
   const modal = $('helpModal');
   if(!modal) return;
   $('helpModalBody').innerHTML = buildHelpHTML();
-  modal.classList.remove('hide');
-  modal.setAttribute('aria-hidden','false');
+  showModalElement(modal);
 }
 function closeHelpModal(){
   const modal = $('helpModal');
   if(!modal) return;
-  modal.classList.add('hide');
-  modal.setAttribute('aria-hidden','true');
+  hideModalElement(modal);
 }
 
 function currentUnit(){ return unitDefs[$('loadUnit')?.value || 'tonne']; }
@@ -3574,6 +3862,8 @@ function addLoadCard(type, row, defaults={}){
   if(!cfg || !host) return;
   const loadCase=defaults.loadCase || getActiveLoadCase();
   const id=`${cfg.prefix}${row+1}`;
+  const safeId=`load-${type}-${loadCase}-${row}`.replace(/[^a-z0-9_-]+/gi,'_');
+  const errorId=`${safeId}-error`;
   const wrap=document.createElement('div');
   wrap.className='row load-entry-card';
   wrap.dataset.loadType=type;
@@ -3583,10 +3873,12 @@ function addLoadCard(type, row, defaults={}){
     const value=defaults[field.name] ?? cachedLoadValue(type, loadCase, row, field.name);
     const minAttr=field.min!==undefined ? ` min="${field.min}"` : '';
     const help=`${field.label}: ${field.hint}. Position values are measured from the left end of the full beam.`;
+    const inputId=`${safeId}-${field.name}`.replace(/[^a-z0-9_-]+/gi,'_');
+    const ariaLabel=`${id} ${cfg.label}, ${field.label}${field.hint ? ', '+field.hint : ''}`;
     return `
       <div class="load-field">
-        <label>${field.label}<small>${field.hint}</small><span class="info-tip" tabindex="0" role="button" aria-label="${escHtml(help)}" data-info-title="${escHtml(id + ' ' + field.label)}" data-info-detail="${escHtml(help)}"><i class="bi bi-info-lg"></i></span></label>
-        <input class="mini" type="number" step="${field.step || '0.01'}"${minAttr} placeholder="0.00" data-kind="${cfg.kind}" data-row="${row}" data-field="${field.name}" data-case="${loadCase}" value="${escHtml(value)}">
+        <label for="${escHtml(inputId)}">${field.label}<small>${field.hint}</small><span class="info-tip" tabindex="0" role="button" aria-label="${escHtml(help)}" data-info-title="${escHtml(id + ' ' + field.label)}" data-info-detail="${escHtml(help)}"><i class="bi bi-info-lg"></i></span></label>
+        <input id="${escHtml(inputId)}" class="mini" type="number" inputmode="decimal" step="${field.step || '0.01'}"${minAttr} placeholder="0.00" data-kind="${cfg.kind}" data-row="${row}" data-field="${field.name}" data-case="${loadCase}" aria-label="${escHtml(ariaLabel)}" aria-describedby="${escHtml(errorId)}" value="${escHtml(value)}">
       </div>`;
   }).join('');
   wrap.innerHTML=`
@@ -3595,7 +3887,7 @@ function addLoadCard(type, row, defaults={}){
       ${row>0 ? `<button type="button" class="btn load-remove-btn" data-remove-load="${type}" data-row="${row}" data-case="${loadCase}" aria-label="Remove ${id}"><i class="bi bi-trash"></i></button>` : ''}
     </div>
     <div class="load-entry-fields">${fields}</div>
-    <div class="load-validation-note" data-load-error="${type}:${loadCase}:${row}"></div>
+    <div id="${escHtml(errorId)}" class="load-validation-note" data-load-error="${type}:${loadCase}:${row}" aria-live="polite"></div>
   `;
   host.appendChild(wrap);
 }
@@ -4383,13 +4675,11 @@ async function installProjectFile(file){
 }
 function showStartScreen(){
   populateProjectSelectors($('projectName')?.dataset.projectId||'');
-  $('startScreen')?.classList.remove('hide');
-  $('startScreen')?.setAttribute('aria-hidden','false');
+  showModalElement($('startScreen'));
 }
 function hideStartScreen(){
   try{sessionStorage.setItem('beam_calc_session_started','1');}catch(err){}
-  $('startScreen')?.classList.add('hide');
-  $('startScreen')?.setAttribute('aria-hidden','true');
+  hideModalElement($('startScreen'));
 }
 function startNewProject(){
   hideStartScreen();
@@ -4571,13 +4861,11 @@ function openSettingsModal(tab='settingsGeneral'){
   populateSettingsForm(uiSettings);
   applyAccountState();
   setSettingsTab(tab);
-  $('settingsModal').classList.remove('hide');
-  $('settingsModal').setAttribute('aria-hidden','false');
+  showModalElement($('settingsModal'));
 }
 function closeSettingsModal(restore=true){
   if(restore) applyUiSettings(settingsSnapshot);
-  $('settingsModal').classList.add('hide');
-  $('settingsModal').setAttribute('aria-hidden','true');
+  hideModalElement($('settingsModal'));
   if(restore) runCalc(true);
 }
 function applyGeneralSettingsToSession(settings){
@@ -4907,13 +5195,13 @@ function renderSectionSourceIndex(){
   }
   const rows=groups.map(group=>`
     <tr>
-      <td>${escHtml(group.sourceName)}</td>
-      <td>${escHtml(group.standard)}</td>
-      <td>${escHtml(group.region)}</td>
-      <td>${escHtml(group.edition)}</td>
-      <td>${escHtml(Array.from(group.families).sort().join(', '))}</td>
-      <td>${escHtml(group.reference)}</td>
-      <td>${escHtml(Array.from(group.assumptions).slice(0,6).join(' '))}</td>
+      <td data-label="Source name">${escHtml(group.sourceName)}</td>
+      <td data-label="Standard/catalogue/reference">${escHtml(group.standard)}</td>
+      <td data-label="Region">${escHtml(group.region)}</td>
+      <td data-label="Version/date">${escHtml(group.edition)}</td>
+      <td data-label="Section types">${escHtml(Array.from(group.families).sort().join(', '))}</td>
+      <td data-label="Reference">${escHtml(group.reference)}</td>
+      <td data-label="Assumptions or limitations">${escHtml(Array.from(group.assumptions).slice(0,6).join(' '))}</td>
     </tr>`).join('');
   host.innerHTML=`
     <h3>Section Data Sources</h3>
@@ -5909,10 +6197,23 @@ function updateCustomSectionSummary(sec){
 
 function clearLoadCardErrors(){
   qsa('[data-load-error]').forEach(el=>{ el.textContent=''; });
+  qsa('.load-entry-card.has-error').forEach(el=>el.classList.remove('has-error'));
+  qsa('.load-field input[aria-invalid="true"]').forEach(el=>el.removeAttribute('aria-invalid'));
+}
+function clearLoadCardError(type, loadCase, row){
+  const host=$(`[data-load-error="${type}:${loadCase}:${row}"]`);
+  if(host) host.textContent='';
+  const card=host?.closest('.load-entry-card');
+  card?.classList.remove('has-error');
+  card?.querySelectorAll('input[aria-invalid="true"]').forEach(el=>el.removeAttribute('aria-invalid'));
 }
 function setLoadCardError(type, loadCase, row, message){
   const host=$(`[data-load-error="${type}:${loadCase}:${row}"]`);
-  if(host) host.textContent=message;
+  if(!host) return;
+  host.textContent=message;
+  const card=host.closest('.load-entry-card');
+  card?.classList.add('has-error');
+  card?.querySelectorAll('input').forEach(el=>el.setAttribute('aria-invalid','true'));
 }
 function readLoadField(kind, loadCase, row, field){
   return parseNum($(`[data-kind="${kind}"][data-case="${loadCase}"][data-row="${row}"][data-field="${field}"]`)?.value);
@@ -6747,16 +7048,14 @@ function openChartModal(chartData){
   const c = $('chartModalCanvas');
   if(!modal || !c) return;
   $('chartModalTitle').textContent = chartData.title;
-  modal.classList.remove('hide');
-  modal.setAttribute('aria-hidden','false');
+  showModalElement(modal);
   c._chartHover = null;
   renderChart(c, chartData.xs, chartData.ys, chartData.title, chartData.yLabel);
 }
 function closeChartModal(){
   const modal = $('chartModal');
   if(!modal) return;
-  modal.classList.add('hide');
-  modal.setAttribute('aria-hidden','true');
+  hideModalElement(modal);
 }
 function renderChart(canvas, xs, ys, title, yLabel){
   if(!canvas) return;
@@ -7518,12 +7817,18 @@ function reportSectionSvg(sec, opts={}){
   const rect=(x,y,w,h,cls='steel')=>`<rect class="${cls}" x="${sx(x).toFixed(2)}" y="${sy(y+h).toFixed(2)}" width="${(w*scale).toFixed(2)}" height="${(h*scale).toFixed(2)}"/>`;
   const dim=(x1,y1,x2,y2,label)=>`<line class="dim" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/><text class="dimtext" x="${((x1+x2)/2).toFixed(2)}" y="${((y1+y2)/2-4).toFixed(2)}">${escHtml(label)}</text>`;
   const axis=g.hasEnvelope ? `<line class="axis" x1="${(x0-18).toFixed(2)}" y1="${(y0+dh/2).toFixed(2)}" x2="${(x0+dw+18).toFixed(2)}" y2="${(y0+dh/2).toFixed(2)}"/><line class="axis" x1="${(x0+dw/2).toFixed(2)}" y1="${(y0-18).toFixed(2)}" x2="${(x0+dw/2).toFixed(2)}" y2="${(y0+dh+18).toFixed(2)}"/><circle class="centroid" cx="${(x0+dw/2).toFixed(2)}" cy="${(y0+dh/2).toFixed(2)}" r="3"/><text class="axislabel" x="${(x0+dw-18).toFixed(2)}" y="${(y0+dh/2-6).toFixed(2)}">y-y</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+16).toFixed(2)}">z-z / ENA</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+dh/2+14).toFixed(2)}">PNA</text>` : '';
+  const radiusNote=(x,y)=>{
+    const parts=[];
+    if(g.r) parts.push(`r=${fmt2(g.r)} mm`);
+    if(g.r2) parts.push(`r2=${fmt2(g.r2)} mm`);
+    return parts.length ? `<text class="note" x="${x.toFixed(2)}" y="${y.toFixed(2)}">${escHtml(parts.join('; '))}</text>` : '';
+  };
   let body='';
   let note=g.warning || '';
   if(g.shape==='i' && g.hasDetailed){
     const webX=(g.b-g.tw)/2;
     body=rect(0,0,g.b,g.tf)+rect(webX,g.tf,g.tw,g.h-2*g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
-    if(g.r) body+=`<text class="note" x="${(x0+dw-62).toFixed(2)}" y="${(y0+18).toFixed(2)}">r=${fmt2(g.r)} mm</text>`;
+    body+=radiusNote(x0+dw-94,y0+18);
     body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`);
     body+=dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
     body+=dim(sx(webX),y0+dh/2+18,sx(webX+g.tw),y0+dh/2+18,`tw=${fmt2(g.tw)}`);
@@ -7531,6 +7836,7 @@ function reportSectionSvg(sec, opts={}){
   }else if(g.shape==='box' && g.hasDetailed){
     const rr=(g.r||0)*scale;
     body=`<rect class="steel" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${dw.toFixed(2)}" height="${dh.toFixed(2)}" rx="${rr.toFixed(2)}"/><rect class="void" x="${(x0+g.t*scale).toFixed(2)}" y="${(y0+g.t*scale).toFixed(2)}" width="${Math.max(0,dw-2*g.t*scale).toFixed(2)}" height="${Math.max(0,dh-2*g.t*scale).toFixed(2)}" rx="${Math.max(0,rr-g.t*scale).toFixed(2)}"/>`;
+    body+=radiusNote(x0+dw-94,y0+18);
     body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.t*scale,`t=${fmt2(g.t)}`);
   }else if(g.shape==='chs' && g.hasDetailed){
     const D=sectionDim(sec,['D_mm','h_mm','b_mm']);
@@ -7539,12 +7845,15 @@ function reportSectionSvg(sec, opts={}){
     body+=dim(cx-rad,y0+dh+24,cx+rad,y0+dh+24,`D=${fmt2(D)} mm`)+dim(cx+rad+18,cy-rad,cx+rad+18,cy-rad+g.t*scale,`t=${fmt2(g.t)}`);
   }else if(g.shape==='channel' && g.hasDetailed){
     body=rect(0,0,g.tw,g.h)+rect(0,0,g.b,g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
+    body+=radiusNote(x0+dw-94,y0+18);
     body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.tf*scale,`tf=${fmt2(g.tf)}`)+dim(x0,y0+dh/2+18,x0+g.tw*scale,y0+dh/2+18,`tw=${fmt2(g.tw)}`);
   }else if(g.shape==='tee' && g.hasDetailed){
     body=rect((g.b-g.tw)/2,0,g.tw,g.h-g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
+    body+=radiusNote(x0+dw-94,y0+18);
     body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
   }else if(g.shape==='angle' && g.hasDetailed){
     body=rect(0,0,g.t,g.h)+rect(0,0,g.b,g.t);
+    body+=radiusNote(x0+dw-94,y0+18);
     body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`a=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0+dh-g.t*scale,x0+dw+18,y0+dh,`t=${fmt2(g.t)}`);
   }else if(g.shape==='solid_rect' && g.hasDetailed){
     body=rect(0,0,g.b,g.h,'steel');
@@ -8746,7 +9055,7 @@ function showReportModal(){
     const frame = $('reportFrame');
     if(frame) frame.srcdoc = html;
     const modal = $('reportModal');
-    if(modal){ modal.classList.remove('hide'); modal.setAttribute('aria-hidden','false'); }
+    if(modal) showModalElement(modal);
   }catch(err){
     console.error(err);
     setProjectStatus(`Report preview failed: ${err.message||'unknown error'}`,true);
@@ -8755,8 +9064,7 @@ function showReportModal(){
 function closeReportModal(){
   const modal = $('reportModal');
   if(!modal) return;
-  modal.classList.add('hide');
-  modal.setAttribute('aria-hidden','true');
+  hideModalElement(modal);
 }
 function downloadReportHTML(){
   try{
@@ -9475,7 +9783,10 @@ function openLatexModal(){
     $('latexSourceBox').value = tex;
     $('latexFrame').srcdoc = buildLatexPreviewHTML(data);
     const modal = $('latexModal');
-    if(modal){ modal.classList.remove('hide'); modal.setAttribute('aria-hidden','false'); }
+    if(modal){
+      setLatexModalTab('preview');
+      showModalElement(modal);
+    }
   }catch(err){
     console.error(err);
     alert('Hand Calculation preview failed.');
@@ -9484,8 +9795,7 @@ function openLatexModal(){
 function closeLatexModal(){
   const modal = $('latexModal');
   if(!modal) return;
-  modal.classList.add('hide');
-  modal.setAttribute('aria-hidden','true');
+  hideModalElement(modal);
 }
 function downloadLatexFile(){
   try{
@@ -9511,6 +9821,17 @@ function exportLatex(){
   openLatexModal();
 }
 
+function setLatexModalTab(tab='preview'){
+  const modal=$('latexModal');
+  const showSource=tab==='source';
+  modal?.classList.toggle('source-active',showSource);
+  qsa('[data-export-tab]').forEach(btn=>{
+    const active=btn.dataset.exportTab===tab;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-selected',active?'true':'false');
+  });
+}
+
 function wireExportModals(){
   if(window._exportModalsWired) return;
   window._exportModalsWired = true;
@@ -9522,6 +9843,7 @@ function wireExportModals(){
   $('latexModal')?.addEventListener('click', e=>{ if(e.target.id==='latexModal') closeLatexModal(); });
   $('latexDownloadBtn')?.addEventListener('click', downloadLatexFile);
   $('latexRefreshBtn')?.addEventListener('click', openLatexModal);
+  qsa('[data-export-tab]').forEach(btn=>btn.addEventListener('click',()=>setLatexModalTab(btn.dataset.exportTab)));
   document.addEventListener('keydown', e=>{
     if(e.key!=='Escape') return;
     if(!$('latexModal')?.classList.contains('hide')) closeLatexModal();
@@ -9610,6 +9932,40 @@ function setFileMenuOpen(open){
   button.setAttribute('aria-expanded',open?'true':'false');
 }
 function closeFileMenu(){setFileMenuOpen(false);}
+function setMoreMenuOpen(open){
+  const menu=$('moreMenu');
+  const button=$('moreMenuBtn');
+  if(!menu||!button) return;
+  menu.classList.toggle('hide',!open);
+  button.setAttribute('aria-expanded',open?'true':'false');
+}
+function closeMoreMenu(){setMoreMenuOpen(false);}
+function runMoreAction(action){
+  closeMoreMenu();
+  closeFileMenu();
+  switch(action){
+    case 'save':
+      saveCurrentProject();
+      break;
+    case 'recalculate':
+      runCalc(true);
+      break;
+    case 'help':
+      openHelpModal();
+      break;
+    case 'settings':
+      openSettingsModal('settingsGeneral');
+      break;
+    case 'download':
+      downloadCurrentProject();
+      break;
+    case 'about':
+      openSettingsModal('settingsAbout');
+      break;
+    default:
+      break;
+  }
+}
 
 document.addEventListener('input',event=>{if(event.target.closest('.file-menu,#settingsModal,#startScreen'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
 document.addEventListener('change',event=>{if(event.target.closest('.file-menu,#settingsModal,#startScreen'))return;window._lastUiInputAt=Date.now();if(!uiSettings.autoRecalculate) markCalculationPending();},true);
@@ -9632,6 +9988,13 @@ document.addEventListener('click',event=>{
   if(!btn) return;
   removeLoadCard(btn.dataset.removeLoad, btn.dataset.case || getActiveLoadCase(), parseInt(btn.dataset.row||'0',10));
   runCalc();
+});
+document.addEventListener('input',event=>{
+  const field=event.target.closest('[data-kind][data-case][data-row]');
+  if(!field) return;
+  const card=field.closest('.load-entry-card');
+  const type=card?.dataset.loadType;
+  if(type) clearLoadCardError(type, field.dataset.case || getActiveLoadCase(), field.dataset.row || '0');
 });
 initInspectorTabs();
 initSplitters();
@@ -9682,10 +10045,17 @@ $('springLeftPct').addEventListener('input', liveRun);
 $('springRightPct').addEventListener('input', liveRun);
 $('displayScale')?.addEventListener('change', ()=>{ applyDisplayScale(); runCalc(); });
 $('latexBtn')?.addEventListener('click', exportLatex);
-$('fileMenuBtn')?.addEventListener('click',event=>{event.stopPropagation();setFileMenuOpen($('fileMenu')?.classList.contains('hide'));});
+$('saveToolbarBtn')?.addEventListener('click',()=>saveCurrentProject());
+$('fileMenuBtn')?.addEventListener('click',event=>{event.stopPropagation();closeMoreMenu();setFileMenuOpen($('fileMenu')?.classList.contains('hide'));});
 $('fileMenu')?.addEventListener('click',event=>event.stopPropagation());
-document.addEventListener('click',closeFileMenu);
-document.addEventListener('keydown',event=>{if(event.key==='Escape')closeFileMenu();});
+$('moreMenuBtn')?.addEventListener('click',event=>{event.stopPropagation();closeFileMenu();setMoreMenuOpen($('moreMenu')?.classList.contains('hide'));});
+$('moreMenu')?.addEventListener('click',event=>{
+  event.stopPropagation();
+  const item=event.target.closest('[data-more-action]');
+  if(item) runMoreAction(item.dataset.moreAction);
+});
+document.addEventListener('click',()=>{closeFileMenu();closeMoreMenu();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeFileMenu();closeMoreMenu();}});
 $('newProjectBtn')?.addEventListener('click',()=>{closeFileMenu();requestNewProject();});
 $('saveProjectBtn')?.addEventListener('click',()=>{saveCurrentProject();closeFileMenu();});
 $('openProjectBtn')?.addEventListener('click',()=>{closeFileMenu();showStartScreen();});
