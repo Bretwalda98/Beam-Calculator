@@ -9,13 +9,21 @@ const num = (id, fallback = 0) => {
 };
 const txt = (id, fallback = '') => String($(id)?.value ?? fallback).trim();
 const fmt = (value, dp = 2) => Number.isFinite(Number(value)) ? Number(value).toFixed(dp) : '-';
+const fmt3 = (value) => fmt(value, 3);
+const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-const WORKER_API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
+const API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
+const WORKER_API_BASE = API_BASE;
+const LOAD_CASES = ['G', 'Q1', 'Q2'];
+const LOAD_TYPES = {
+  uniform: { host: 'multiUniformRows', prefix: 'U', title: 'Uniform load', fields: [['q', 'q'], ['x1', 'x1'], ['x2', 'x2']] },
+  point: { host: 'multiPointRows', prefix: 'P', title: 'Point load', fields: [['P', 'P'], ['x', 'x']] },
+  moment: { host: 'multiMomentRows', prefix: 'M', title: 'Moment load', fields: [['M', 'M'], ['x', 'x']] },
+  trap: { host: 'multiTrapRows', prefix: 'T', title: 'Trapezoidal load', fields: [['q1', 'q1'], ['q2', 'q2'], ['x1', 'x1'], ['x2', 'x2']] }
+};
 
 function defaultApiBase() {
-  const host = window.location.hostname;
-  if (host === 'beam-calculator.pages.dev' || host === 'beamcalculatorstudio.com' || host === 'www.beamcalculatorstudio.com') return WORKER_API_BASE;
-  return '';
+  return WORKER_API_BASE;
 }
 
 const state = {
@@ -24,7 +32,8 @@ const state = {
   sectionPreviewCache: new Map(),
   last: null,
   settings: JSON.parse(localStorage.getItem('beam_ui_settings_v4') || '{}'),
-  activeLoadCase: 'G'
+  activeLoadCase: 'G',
+  chartPayloads: new Map()
 };
 
 function apiUrl(path) {
@@ -88,6 +97,62 @@ function hideModal(id) {
   if (!$$('.modal:not(.hide), .chart-modal:not(.hide), .start-screen:not(.hide)').length) document.body.classList.remove('modal-open');
 }
 
+function showStartScreen() {
+  toggleMenu('fileMenu', 'fileMenuBtn', false);
+  toggleMenu('moreMenu', 'moreMenuBtn', false);
+  populateStartProjects();
+  ensureStartBackendStatus('Checking calculation service...');
+  showModal('startScreen');
+}
+
+function hideStartScreen() {
+  try { sessionStorage.setItem('beam_calc_session_started', '1'); } catch (err) {}
+  hideModal('startScreen');
+}
+
+function shouldShowStartScreen() {
+  if (state.settings.openProject === false) return false;
+  try {
+    return sessionStorage.getItem('beam_calc_session_started') !== '1';
+  } catch (err) {
+    return true;
+  }
+}
+
+function ensureStartBackendStatus(message, tone = 'muted') {
+  const branding = document.querySelector('.start-branding');
+  if (!branding) return;
+  let status = $('startBackendStatus');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'startBackendStatus';
+    status.className = 'integration-note';
+    status.setAttribute('aria-live', 'polite');
+    branding.prepend(status);
+  }
+  status.className = `integration-note ${tone === 'error' ? 'red' : tone === 'ok' ? 'green' : ''}`;
+  status.textContent = message;
+}
+
+function populateStartProjects() {
+  const select = $('startProjectSelect');
+  if (!select) return;
+  const hasDraft = Boolean(localStorage.getItem('beam_project_secure_draft_v1') || localStorage.getItem('beam_local_draft_v1'));
+  select.innerHTML = hasDraft
+    ? '<option value="local-draft">Local browser draft</option>'
+    : '<option value="">(no saved projects)</option>';
+}
+
+function startNewProject() {
+  hideStartScreen();
+  applyMetadata({ projectName: 'Untitled beam project', calculationTitle: 'Beam section check', date: new Date().toISOString().slice(0, 10) });
+  clearLoadCards();
+  initLoads();
+  applyDefaultMetadata(true);
+  recalculateDebounced();
+  setSaveStatus('New project ready.', 'ok');
+}
+
 function detectLayout() {
   if (window.innerWidth < 700) return 'mobile';
   if (window.innerWidth < 1120) return 'tablet';
@@ -98,6 +163,7 @@ function applySettings() {
   const themeMode = state.settings.theme || 'system';
   const theme = themeMode === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeMode;
   document.documentElement.dataset.theme = theme;
+  $('themeBadge') && ($('themeBadge').textContent = theme[0].toUpperCase() + theme.slice(1));
   const selected = state.settings.layoutMode || 'auto';
   const layout = selected === 'auto' ? detectLayout() : selected;
   document.documentElement.dataset.layoutMode = selected;
@@ -110,10 +176,27 @@ function applySettings() {
   });
   $$('input[name="settingsTheme"]').forEach((el) => { el.checked = el.value === themeMode; });
   $$('input[name="settingsLayoutMode"]').forEach((el) => { el.checked = el.value === selected; });
+  $$('input[name="settingsDensity"]').forEach((el) => { el.checked = el.value === (state.settings.density || 'compact'); });
+  $$('input[name="settingsAccent"]').forEach((el) => { el.checked = el.value === (state.settings.accent || 'blue'); });
+  setValue('settingsDefaultMode', state.settings.defaultMode || 'single');
+  setValue('settingsDefaultUnit', state.settings.defaultUnit || 'tonne');
+  setValue('settingsDefaultProjectName', state.settings.defaultProjectName || '');
+  setValue('settingsDefaultCalculationTitle', state.settings.defaultCalculationTitle || '');
+  setValue('settingsDefaultJobReference', state.settings.defaultJobReference || '');
+  setValue('settingsDefaultCompany', state.settings.defaultCompany || '');
+  setValue('settingsDefaultEngineer', state.settings.defaultEngineer || '');
+  setValue('settingsDefaultCheckedBy', state.settings.defaultCheckedBy || '');
+  if ($('settingsAutoRecalc')) $('settingsAutoRecalc').checked = state.settings.autoRecalc !== false;
+  if ($('settingsOpenProject')) $('settingsOpenProject').checked = state.settings.openProject !== false;
 }
 
 function saveSettings() {
   localStorage.setItem('beam_ui_settings_v4', JSON.stringify(state.settings));
+}
+
+function setValue(id, value) {
+  const el = $(id);
+  if (el) el.value = value ?? '';
 }
 
 function selectedSectionId() {
@@ -151,6 +234,10 @@ async function getSectionPreview() {
 }
 
 async function updateSectionPreview() {
+  if ($('sectionSourceMode')?.value === 'custom') {
+    renderCustomSectionNotice();
+    return;
+  }
   const section = await getSectionPreview();
   if (!section) return;
   $('sectionPreviewName').textContent = section.designation || 'Section';
@@ -174,6 +261,59 @@ async function updateSectionPreview() {
     ['Mass', props.mass_kg_m, 'kg/m'],
     ['Wel,y', props.Wel_y_mm3, 'mm3']
   ].filter(([, value]) => value).map(([key, value, unit]) => `<div class="prop-chip"><strong>${esc(key)}</strong><span>${esc(fmt(value, key === 'Mass' ? 2 : 0))} ${esc(unit)}</span></div>`).join('');
+}
+
+function syncSectionSourceMode() {
+  const custom = $('sectionSourceMode')?.value === 'custom';
+  $('librarySectionControls')?.classList.toggle('hide', custom);
+  $('customSectionPanel')?.classList.toggle('hide', !custom);
+  if (custom) renderCustomSectionNotice();
+  else updateSectionPreview().catch((err) => setSaveStatus(err.message, 'error'));
+}
+
+function initCustomSectionUi() {
+  const type = $('customSectionType');
+  if (type && !type.options.length) {
+    type.innerHTML = [
+      ['welded_i', 'Welded I / H section'],
+      ['rhs', 'RHS / SHS'],
+      ['chs', 'CHS'],
+      ['channel', 'Channel'],
+      ['angle', 'Angle']
+    ].map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+  }
+  renderCustomSectionFields();
+}
+
+function renderCustomSectionFields() {
+  const type = $('customSectionType')?.value || 'welded_i';
+  const fields = {
+    welded_i: [['h', 'Overall depth h', 300], ['b', 'Flange width b', 150], ['tw', 'Web thickness tw', 8], ['tf', 'Flange thickness tf', 12]],
+    rhs: [['h', 'Outer depth h', 200], ['b', 'Outer width b', 100], ['t', 'Wall thickness t', 8]],
+    chs: [['D', 'Outside diameter D', 168.3], ['t', 'Wall thickness t', 8]],
+    channel: [['h', 'Overall depth h', 200], ['b', 'Flange width b', 75], ['tw', 'Web thickness tw', 8], ['tf', 'Flange thickness tf', 12]],
+    angle: [['a', 'Long leg a', 100], ['b', 'Short leg b', 75], ['t', 'Thickness t', 8]]
+  }[type] || [];
+  const host = $('customSectionFields');
+  if (host) {
+    host.innerHTML = fields.map(([id, label, value]) => `<label>${esc(label)}<input data-custom-dim="${esc(id)}" type="number" min="0" step="0.1" value="${esc(value)}"></label>`).join('');
+  }
+  renderCustomSectionNotice();
+}
+
+function renderCustomSectionNotice() {
+  $('sectionPreviewName') && ($('sectionPreviewName').textContent = $('customSectionName')?.value || 'Custom section');
+  $('sectionPreviewType') && ($('sectionPreviewType').textContent = 'Custom');
+  const message = 'Custom section calculation is not enabled in this secure frontend until the backend custom-section endpoint is supplied.';
+  if ($('sectionProfilePreview')) $('sectionProfilePreview').innerHTML = `<div class="micro-note">${esc(message)}</div>`;
+  if ($('sectionPreviewFacts')) $('sectionPreviewFacts').innerHTML = '';
+  if ($('customSectionSummary')) $('customSectionSummary').textContent = message;
+  if ($('sec_summary')) $('sec_summary').textContent = message;
+  const warning = $('sectionPreviewWarning');
+  if (warning) {
+    warning.classList.remove('hide');
+    warning.textContent = message;
+  }
 }
 
 function drawSectionSvg(section) {
@@ -235,77 +375,142 @@ function drawSectionSvg(section) {
   </svg>`;
 }
 
-function addLoadCard(type, index = 0) {
-  const cfg = {
-    uniform: { host: 'multiUniformRows', prefix: 'U', fields: [['q', 'q'], ['x1', 'x1'], ['x2', 'x2']] },
-    point: { host: 'multiPointRows', prefix: 'P', fields: [['P', 'P'], ['x', 'x']] },
-    moment: { host: 'multiMomentRows', prefix: 'M', fields: [['M', 'M'], ['x', 'x']] },
-    trap: { host: 'multiTrapRows', prefix: 'T', fields: [['q1', 'q1'], ['q2', 'q2'], ['x1', 'x1'], ['x2', 'x2']] }
-  }[type];
+function normaliseLoadType(type) {
+  return type === 'trapezoidal' ? 'trap' : type;
+}
+
+function countLoadCards(type, loadCase = state.activeLoadCase) {
+  return $$(`.load-entry-card[data-load-type="${type}"][data-case="${loadCase}"]`).length;
+}
+
+function renumberLoadCards(type, loadCase = state.activeLoadCase) {
+  const cfg = LOAD_TYPES[type];
+  $$(`.load-entry-card[data-load-type="${type}"][data-case="${loadCase}"]`).forEach((card, index) => {
+    card.dataset.row = String(index);
+    const tag = card.querySelector('.tag');
+    if (tag) tag.textContent = `${cfg.prefix}${index + 1}`;
+    const remove = card.querySelector('.load-remove-btn');
+    if (remove) remove.setAttribute('aria-label', `Remove ${cfg.prefix}${index + 1}`);
+  });
+}
+
+function syncLoadCaseVisibility() {
+  $$('[data-loadcase]').forEach((btn) => btn.classList.toggle('active', btn.dataset.loadcase === state.activeLoadCase));
+  $$('.load-entry-card[data-case]').forEach((card) => {
+    card.classList.toggle('is-loadcase-hidden', card.dataset.case !== state.activeLoadCase);
+  });
+}
+
+function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values = {}, userAdded = false) {
+  const cfg = LOAD_TYPES[type];
   const host = $(cfg.host);
+  if (!host) return null;
+  const rowIndex = index ?? countLoadCards(type, loadCase);
   const L = num('span', 6);
   const card = document.createElement('div');
   card.className = 'row load-entry-card';
   card.dataset.loadType = type;
-  card.dataset.row = String(index);
-  card.dataset.case = state.activeLoadCase;
-  card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${index + 1}</span><span>${type[0].toUpperCase() + type.slice(1)} load</span></div>${index ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${index + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
+  card.dataset.row = String(rowIndex);
+  card.dataset.case = loadCase;
+  if (userAdded) card.dataset.userAdded = 'true';
+  card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${rowIndex + 1}</span><span>${esc(cfg.title)}</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
     <div class="load-entry-fields">${cfg.fields.map(([field, label]) => {
-      const value = (field === 'x2') ? L : 0;
-      return `<div class="load-field"><label>${label}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${state.activeLoadCase}" value="${value}"></div>`;
+      const fallback = (field === 'x2') ? L : 0;
+      const value = values[field] ?? fallback;
+      return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${loadCase}" value="${esc(value)}"></div>`;
     }).join('')}</div><div class="load-validation-note"></div>`;
-  card.querySelector('.load-remove-btn')?.addEventListener('click', () => { card.remove(); recalculateDebounced(); });
+  card.classList.toggle('is-loadcase-hidden', loadCase !== state.activeLoadCase);
+  card.querySelector('.load-remove-btn')?.addEventListener('click', () => {
+    card.remove();
+    renumberLoadCards(type, loadCase);
+    recalculateDebounced();
+  });
   host.appendChild(card);
+  return card;
 }
 
 function initLoads() {
-  ['uniform', 'point', 'moment', 'trap'].forEach((type) => addLoadCard(type, 0));
+  LOAD_CASES.forEach((loadCase) => Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, loadCase)));
+  syncLoadCaseVisibility();
 }
 
 function loadCaseValue(loadCase, type, field) {
   return Number($$(`[data-load-type="${type}"][data-field="${field}"][data-case="${loadCase}"]`).at(0)?.value || 0);
 }
 
+function loadField(card, field, fallback = 0) {
+  const raw = card.querySelector(`[data-field="${field}"]`)?.value;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function setLoadError(card, errors) {
+  card.classList.toggle('has-error', errors.length > 0);
+  card.querySelectorAll('input').forEach((input) => input.setAttribute('aria-invalid', errors.length > 0 ? 'true' : 'false'));
+  const note = card.querySelector('.load-validation-note');
+  if (note) note.textContent = errors.join(' ');
+}
+
+function validateLoadCard(card, span) {
+  const errors = [];
+  const type = card.dataset.loadType;
+  const checkPos = (field) => {
+    const value = loadField(card, field, NaN);
+    if (!Number.isFinite(value)) errors.push(`${field} must be a number.`);
+    else if (value < 0 || value > span) errors.push(`${field} must be within 0 to ${fmt(span, 2)} m.`);
+    return value;
+  };
+  if (type === 'uniform' || type === 'trap') {
+    const x1 = checkPos('x1');
+    const x2 = checkPos('x2');
+    if (Number.isFinite(x1) && Number.isFinite(x2) && x2 <= x1) errors.push('x2 must be greater than x1.');
+  }
+  if (type === 'point' || type === 'moment') checkPos('x');
+  setLoadError(card, errors);
+  return errors;
+}
+
+function validateAllLoads(span) {
+  const errors = [];
+  $$('.load-entry-card').forEach((card) => errors.push(...validateLoadCard(card, span)));
+  if (errors.length) throw new Error(errors[0]);
+}
+
 function readLoads() {
   const udls = [];
   const points = [];
   const trapSegments = 12;
-  ['G', 'Q1', 'Q2'].forEach((lc) => {
-    $$(`[data-load-type="uniform"][data-case="${lc}"]`).forEach((el) => {
-      if (el.dataset.field !== 'q') return;
-      const card = el.closest('.load-entry-card');
-      const q = Number(el.value || 0);
+  const span = num('span', 6);
+  validateAllLoads(span);
+  LOAD_CASES.forEach((lc) => {
+    $$(`.load-entry-card[data-load-type="uniform"][data-case="${lc}"]`).forEach((card) => {
+      const q = loadField(card, 'q', 0);
       if (!q && !card?.dataset.userAdded) return;
-      udls.push({ label: `U${udls.length + 1}`, x1: Number(card.querySelector('[data-field="x1"]').value || 0), x2: Number(card.querySelector('[data-field="x2"]').value || num('span', 6)), G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
+      udls.push({ label: `U${udls.length + 1}`, x1: loadField(card, 'x1', 0), x2: loadField(card, 'x2', span), G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
     });
-    $$(`[data-load-type="point"][data-case="${lc}"]`).forEach((el) => {
-      if (el.dataset.field !== 'P') return;
-      const card = el.closest('.load-entry-card');
-      const p = Number(el.value || 0);
+    $$(`.load-entry-card[data-load-type="point"][data-case="${lc}"]`).forEach((card) => {
+      const p = loadField(card, 'P', 0);
       if (!p && !card?.dataset.userAdded) return;
-      points.push({ label: `P${points.length + 1}`, x: Number(card.querySelector('[data-field="x"]').value || 0), G: lc === 'G' ? p : 0, Q1: lc === 'Q1' ? p : 0, Q2: lc === 'Q2' ? p : 0 });
+      points.push({ label: `P${points.length + 1}`, x: loadField(card, 'x', 0), G: lc === 'G' ? p : 0, Q1: lc === 'Q1' ? p : 0, Q2: lc === 'Q2' ? p : 0 });
     });
-    $$(`[data-load-type="moment"][data-case="${lc}"]`).forEach((el) => {
-      if (el.dataset.field !== 'M') return;
-      const card = el.closest('.load-entry-card');
-      const m = Number(el.value || 0);
+    $$(`.load-entry-card[data-load-type="moment"][data-case="${lc}"]`).forEach((card) => {
+      const m = loadField(card, 'M', 0);
       if (!m && !card?.dataset.userAdded) return;
-      points.push({ label: `M${points.length + 1}`, x: Number(card.querySelector('[data-field="x"]').value || 0), M: m, momentCase: lc, G: 0, Q1: 0, Q2: 0 });
+      points.push({ label: `M${points.length + 1}`, x: loadField(card, 'x', 0), M: m, momentCase: lc, G: 0, Q1: 0, Q2: 0 });
     });
-    $$(`[data-load-type="trap"][data-case="${lc}"]`).forEach((el) => {
-      if (el.dataset.field !== 'q1') return;
-      const card = el.closest('.load-entry-card');
-      const q1 = Number(el.value || 0);
-      const q2 = Number(card.querySelector('[data-field="q2"]').value || 0);
+    $$(`.load-entry-card[data-load-type="trap"][data-case="${lc}"]`).forEach((card) => {
+      const q1 = loadField(card, 'q1', 0);
+      const q2 = loadField(card, 'q2', 0);
       if (!q1 && !q2 && !card?.dataset.userAdded) return;
-      const x1 = Number(card.querySelector('[data-field="x1"]').value || 0);
-      const x2 = Number(card.querySelector('[data-field="x2"]').value || num('span', 6));
+      const sourceLabel = `T${countLoadCards('trap', lc) ? Number(card.dataset.row || 0) + 1 : udls.length + 1}`;
+      const x1 = loadField(card, 'x1', 0);
+      const x2 = loadField(card, 'x2', span);
       const dx = (x2 - x1) / trapSegments;
       for (let i = 0; i < trapSegments; i += 1) {
         const xa = x1 + i * dx;
         const xb = xa + dx;
         const q = q1 + (q2 - q1) * ((i + 0.5) / trapSegments);
-        udls.push({ label: `T${i + 1}`, x1: xa, x2: xb, G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
+        udls.push({ label: `${sourceLabel}.${i + 1}`, sourceType: 'trap', reportLabel: sourceLabel, q1, q2, loadCase: lc, reportX1: x1, reportX2: x2, x1: xa, x2: xb, G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
       }
     });
   });
@@ -334,6 +539,9 @@ function readMetadata() {
 }
 
 function buildRequest() {
+  if ($('sectionSourceMode')?.value === 'custom') {
+    throw new Error('Custom section calculations require backend custom-section support. Select a library section for this secure build.');
+  }
   return {
     version: 1,
     metadata: readMetadata(),
@@ -388,7 +596,7 @@ function recalculateDebounced() {
 }
 
 function card(k, v, tone = '') {
-  return `<div class="result-card ${tone}"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`;
+  return `<div class="metric-card ${tone}"><div class="metric-label">${esc(k)}</div><div class="metric-value">${esc(v)}</div></div>`;
 }
 
 function renderResult(input, result) {
@@ -462,48 +670,234 @@ function renderWarnings(result) {
   $('warningsPanelContent').innerHTML = warnings.length ? warnings.map((warning) => `<div class="warning-box">${esc(warning)}</div>`).join('') : '<div class="result-block good">No warnings returned by the calculation service.</div>';
 }
 
+function drawFixedSupport(ctx, x, y, left = true, color = '#334155') {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 24);
+  ctx.lineTo(x, y + 24);
+  ctx.stroke();
+  for (let k = 0; k < 7; k += 1) {
+    ctx.beginPath();
+    if (left) { ctx.moveTo(x - 12, y - 24 + k * 8); ctx.lineTo(x, y - 19 + k * 8); }
+    else { ctx.moveTo(x + 12, y - 24 + k * 8); ctx.lineTo(x, y - 19 + k * 8); }
+    ctx.stroke();
+  }
+}
+
+function drawRollerSupport(ctx, x, y, color = '#334155') {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y + 14);
+  ctx.lineTo(x, y);
+  ctx.lineTo(x + 12, y + 14);
+  ctx.closePath();
+  ctx.stroke();
+  [-5, 5].forEach((dx) => {
+    ctx.beginPath();
+    ctx.arc(x + dx, y + 18, 3, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawPinnedSupport(ctx, x, y, color = '#334155') {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y + 16);
+  ctx.lineTo(x, y);
+  ctx.lineTo(x + 12, y + 16);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawSpringSupport(ctx, x, y, left = true, color = '#334155') {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.6;
+  const top = y, bot = y + 24;
+  ctx.beginPath();
+  ctx.moveTo(x, top);
+  ctx.lineTo(x, top + 4);
+  ctx.stroke();
+  const zig = left ? [-6, 6, -6, 6, -6] : [6, -6, 6, -6, 6];
+  let yy = top + 4;
+  ctx.beginPath();
+  ctx.moveTo(x, yy);
+  zig.forEach((dx) => { yy += 4; ctx.lineTo(x + dx, yy); });
+  ctx.lineTo(x, bot);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x - 12, bot + 3);
+  ctx.lineTo(x + 12, bot + 3);
+  ctx.stroke();
+}
+
 function drawBeamSketch(input, result) {
   const canvas = $('beamSketch');
   if (!canvas) return;
   const ctx = setupCanvas(canvas);
-  const W = canvas.width, H = canvas.height, left = 55, right = W - 40, y = H * 0.55;
-  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
-  ctx.fillStyle = '#334155'; ctx.font = '14px Inter,Arial';
-  ctx.fillText('0', left - 5, y + 34); ctx.fillText(fmt(input.model.span, 2), right - 18, y + 34);
-  ctx.fillText(`L = ${fmt(input.model.span, 2)} m`, (left + right) / 2 - 34, y + 34);
-  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(left - 14, y + 24); ctx.lineTo(left, y); ctx.lineTo(left + 14, y + 24); ctx.closePath(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(right, y + 18, 10, 0, Math.PI * 2); ctx.stroke();
-  (result.loads?.raw?.udls || []).filter((u) => !u.isSelf).forEach((u) => {
-    const x1 = left + (u.x1 / input.model.span) * (right - left);
-    const x2 = left + (u.x2 / input.model.span) * (right - left);
-    ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 1.5;
-    for (let x = x1; x <= x2 + 1; x += Math.max(20, (x2 - x1) / 8)) {
-      ctx.beginPath(); ctx.moveTo(x, y - 52); ctx.lineTo(x, y - 5); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x - 4, y - 12); ctx.lineTo(x, y - 5); ctx.lineTo(x + 4, y - 12); ctx.stroke();
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const L = Math.max(Number(input.model.span) || 1, 1e-6);
+  const rawLoads = result.loads?.raw || { udls: [], points: [], supportXs: [0, L] };
+  const supportXs = rawLoads.supportXs?.length ? rawLoads.supportXs : [0, L];
+  const left = 40, right = W - 30, y = H * 0.58;
+  const mapX = (x) => left + (Number(x || 0) / L) * (right - left);
+  const line = getVar('--text') || '#1f2937';
+  const muted = getVar('--muted') || '#64748b';
+  const primary = getVar('--chart-primary') || getVar('--primary') || '#2563eb';
+  const danger = getVar('--danger') || '#ef4444';
+  const accent = getVar('--accent') || '#7c3aed';
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = getVar('--panel') || '#fff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = line;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.lineTo(right, y);
+  ctx.stroke();
+
+  if (input.model.supportType === 'cantilever') {
+    drawFixedSupport(ctx, left, y, true, line);
+  } else if (input.model.supportType === 'fixed_fixed') {
+    drawFixedSupport(ctx, left, y, true, line);
+    drawFixedSupport(ctx, right, y, false, line);
+  } else if (input.model.supportType === 'fixed_roller') {
+    drawFixedSupport(ctx, left, y, true, line);
+    drawRollerSupport(ctx, right, y, line);
+  } else if (input.model.supportType === 'spring_spring') {
+    drawSpringSupport(ctx, left, y, true, line);
+    drawSpringSupport(ctx, right, y, false, line);
+  } else if (input.model.supportType === 'spring_roller') {
+    drawSpringSupport(ctx, left, y, true, line);
+    drawRollerSupport(ctx, right, y, line);
+  } else {
+    supportXs.forEach((sx, index) => {
+      const xx = mapX(sx);
+      if (index === supportXs.length - 1) drawRollerSupport(ctx, xx, y, line);
+      else drawPinnedSupport(ctx, xx, y, line);
+    });
+  }
+
+  ctx.strokeStyle = primary;
+  ctx.fillStyle = primary;
+  ctx.lineWidth = 1.5;
+  (rawLoads.udls || []).filter((u) => !u.isSelf).forEach((u) => {
+    const q = Number(u.G || 0) + Number(u.Q1 || 0) + Number(u.Q2 || 0);
+    if (Math.abs(q) <= 1e-12) return;
+    const xa = mapX(u.x1), xb = mapX(u.x2), yTop = y - 34;
+    ctx.beginPath();
+    ctx.moveTo(xa, yTop);
+    ctx.lineTo(xb, yTop);
+    ctx.stroke();
+    const n = Math.max(3, Math.round((xb - xa) / 40));
+    for (let i = 0; i <= n; i += 1) {
+      const xx = xa + (xb - xa) * i / n;
+      ctx.beginPath();
+      ctx.moveTo(xx, yTop);
+      ctx.lineTo(xx, y - 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xx - 3, y - 7);
+      ctx.lineTo(xx, y - 2);
+      ctx.lineTo(xx + 3, y - 7);
+      ctx.stroke();
     }
+    ctx.font = '700 10px system-ui, -apple-system, Segoe UI';
+    ctx.fillText(`${u.reportLabel || u.label || 'U'} ${fmt(q, 2)} ${result.summary?.forceUnit || ''}/m`, Math.max(4, xa), yTop - 8);
   });
+
+  ctx.strokeStyle = danger;
+  ctx.fillStyle = danger;
+  ctx.lineWidth = 2;
+  (rawLoads.points || []).forEach((p) => {
+    const P = Number(p.G || 0) + Number(p.Q1 || 0) + Number(p.Q2 || 0);
+    if (Math.abs(P) <= 1e-12) return;
+    const xx = mapX(p.x);
+    ctx.beginPath();
+    ctx.moveTo(xx, y - 56);
+    ctx.lineTo(xx, y - 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(xx - 4, y - 8);
+    ctx.lineTo(xx, y - 2);
+    ctx.lineTo(xx + 4, y - 8);
+    ctx.stroke();
+    ctx.font = '700 11px system-ui, -apple-system, Segoe UI';
+    ctx.fillText(`${p.label || 'P'} ${fmt(P, 2)} ${result.summary?.forceUnit || ''}`, Math.max(4, Math.min(xx - 24, W - 90)), y - 62);
+  });
+
+  ctx.strokeStyle = accent;
+  ctx.fillStyle = accent;
+  (rawLoads.points || []).filter((p) => Math.abs(Number(p.M || 0)) > 1e-12).forEach((p) => {
+    const xx = mapX(p.x);
+    const clockwise = Number(p.M) > 0;
+    const cy = y - 25, radius = 17;
+    const start = clockwise ? -Math.PI * 0.25 : Math.PI * 1.25;
+    const end = clockwise ? Math.PI * 1.25 : -Math.PI * 0.25;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(xx, cy, radius, start, end, !clockwise);
+    ctx.stroke();
+    const tangent = end + (clockwise ? Math.PI / 2 : -Math.PI / 2);
+    const ex = xx + Math.cos(end) * radius;
+    const ey = cy + Math.sin(end) * radius;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - 8 * Math.cos(tangent - 0.42), ey - 8 * Math.sin(tangent - 0.42));
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - 8 * Math.cos(tangent + 0.42), ey - 8 * Math.sin(tangent + 0.42));
+    ctx.stroke();
+    ctx.font = '700 10px system-ui, -apple-system, Segoe UI';
+    ctx.fillText(`${p.label || 'M'} ${fmt(p.M, 2)} ${result.summary?.momentUnit || ''}`, Math.max(4, Math.min(xx - 28, W - 116)), cy - radius - 7);
+  });
+
+  const axial = Number(input.axial?.G || 0) + Number(input.axial?.Q1 || 0) + Number(input.axial?.Q2 || 0);
+  if (Math.abs(axial) > 1e-12) {
+    const compression = axial > 0;
+    const ay = Math.max(22, y - 91);
+    const arrow = (fromX, toX) => {
+      ctx.beginPath(); ctx.moveTo(fromX, ay); ctx.lineTo(toX, ay); ctx.stroke();
+      const dir = Math.sign(toX - fromX) || 1;
+      ctx.beginPath();
+      ctx.moveTo(toX, ay);
+      ctx.lineTo(toX - dir * 8, ay - 5);
+      ctx.moveTo(toX, ay);
+      ctx.lineTo(toX - dir * 8, ay + 5);
+      ctx.stroke();
+    };
+    ctx.strokeStyle = accent;
+    ctx.fillStyle = accent;
+    ctx.lineWidth = 2;
+    if (compression) { arrow(left + 2, left + 42); arrow(right - 2, right - 42); }
+    else { arrow(left + 42, left + 2); arrow(right - 42, right - 2); }
+    const label = `N = ${fmt(Math.abs(axial), 2)} ${result.summary?.forceUnit || ''} (${compression ? 'compression' : 'tension'})`;
+    ctx.font = '700 10px system-ui, -apple-system, Segoe UI';
+    ctx.fillText(label, Math.max(4, (W - ctx.measureText(label).width) / 2), ay - 8);
+  }
+
+  ctx.fillStyle = muted;
+  ctx.font = '700 11px system-ui, -apple-system, Segoe UI';
+  ctx.fillText('0', left - 4, y + 40);
+  ctx.fillText(`L = ${fmt(L, 2)} m`, (left + right) / 2 - 24, y + 40);
+  ctx.fillText(fmt(L, 2), right - 20, y + 40);
 }
 
 function setupCanvas(canvas) {
   const rect = canvas.getBoundingClientRect();
-  const ratio = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.round(rect.width * ratio));
-  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width * dpr));
+  canvas.height = Math.max(1, Math.round(rect.height * dpr));
   const ctx = canvas.getContext('2d');
-  ctx.scale(ratio, ratio);
-  canvas.width = rect.width * ratio;
-  canvas.height = rect.height * ratio;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, rect.width, rect.height);
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--panel') || '#fff';
-  ctx.fillRect(0, 0, rect.width, rect.height);
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  return canvas.getContext('2d');
+  return ctx;
 }
 
 function drawAllCharts(series, summary) {
+  state.chartPayloads.clear();
   drawChart('chartV', series, 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb');
   drawChart('chartVFocus', series, 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb');
   drawChart('chartM', series, 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef');
@@ -515,33 +909,94 @@ function drawAllCharts(series, summary) {
 function drawChart(id, series, key, title, color) {
   const canvas = $(id);
   if (!canvas) return;
+  state.chartPayloads.set(id, { series, key, title, color });
+  canvas.dataset.chartKey = id;
   const ctx = setupCanvas(canvas);
-  const W = canvas.width, H = canvas.height, L = 46, R = 20, T = 34, B = 34;
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const padL = 54, padR = 16, padT = 34, padB = 40;
   ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--panel') || '#fff';
+  ctx.fillStyle = getVar('--panel') || '#fff';
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#0f172a';
-  ctx.font = '700 13px Inter,Arial'; ctx.fillText(title, L, 20);
+  ctx.fillStyle = getVar('--text') || '#111827';
+  ctx.font = '900 13px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+  ctx.fillText(title, padL, 22);
   if (!series.length) return;
-  const maxX = Math.max(...series.map((p) => Number(p.x) || 0), 1);
-  const maxY = Math.max(...series.map((p) => Math.abs(Number(p[key]) || 0)), 1e-9);
-  const midY = T + (H - T - B) / 2;
-  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1;
+  const xs = series.map((p) => Number(p.x) || 0);
+  const ys = series.map((p) => Number(p[key]) || 0);
+  let xmin = Math.min(...xs), xmax = Math.max(...xs);
+  let ymin = Math.min(...ys), ymax = Math.max(...ys);
+  if (!Number.isFinite(ymin) || !Number.isFinite(ymax)) { ymin = -1; ymax = 1; }
+  if (Math.abs(ymax - ymin) < 1e-9) { ymin -= 1; ymax += 1; }
+  const ypad = 0.1 * (ymax - ymin);
+  ymin -= ypad; ymax += ypad;
+  const X = (x) => padL + (x - xmin) / (xmax - xmin || 1) * (W - padL - padR);
+  const Y = (y) => padT + (1 - (y - ymin) / (ymax - ymin || 1)) * (H - padT - padB);
+  canvas._plotMeta = { padL, padR, padT, padB, W, H, xmin, xmax, ymin, ymax };
+  ctx.strokeStyle = getVar('--line') || '#cbd5e1';
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.55;
   for (let i = 0; i <= 4; i += 1) {
-    const y = T + i * (H - T - B) / 4;
-    ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke();
+    const y = padT + i * (H - padT - padB) / 4;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
   }
-  ctx.strokeStyle = '#64748b'; ctx.beginPath(); ctx.moveTo(L, midY); ctx.lineTo(W - R, midY); ctx.stroke();
-  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
-  series.forEach((p, i) => {
-    const x = L + (Number(p.x) / maxX) * (W - L - R);
-    const y = midY - (Number(p[key]) / maxY) * ((H - T - B) * 0.42);
-    if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+  ctx.globalAlpha = 1;
+  if (ymin <= 0 && ymax >= 0) {
+    ctx.strokeStyle = getVar('--line') || '#cbd5e1';
+    ctx.beginPath();
+    ctx.moveTo(padL, Y(0));
+    ctx.lineTo(W - padR, Y(0));
+    ctx.stroke();
+  }
+  const fill = color || getVar('--chart-primary') || getVar('--primary') || '#2563eb';
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(X(xs[0]), Y(0));
+  xs.forEach((x, i) => ctx.lineTo(X(x), Y(ys[i])));
+  ctx.lineTo(X(xs[xs.length - 1]), Y(0));
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.globalAlpha = key === 'deflection' ? 0.08 : 0.12;
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = fill;
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  xs.forEach((x, i) => {
+    const px = X(x), py = Y(ys[i]);
+    if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
   });
   ctx.stroke();
-  const peak = series.reduce((best, p) => Math.abs(Number(p[key]) || 0) > Math.abs(Number(best[key]) || 0) ? p : best, series[0]);
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#0f172a';
-  ctx.font = '12px Inter,Arial'; ctx.fillText(`peak ${fmt(peak[key], 3)} at x=${fmt(peak.x, 2)} m`, L, H - 10);
+  const peakIndex = ys.reduce((best, y, i) => Math.abs(y) > Math.abs(ys[best]) ? i : best, 0);
+  const peak = { x: xs[peakIndex], y: ys[peakIndex] };
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(X(peak.x), Y(peak.y), 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = getVar('--muted') || '#64748b';
+  ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+  ctx.fillText('x [m]', W - padR - 36, H - 12);
+  ctx.save();
+  ctx.translate(14, padT + (H - padT - padB) / 2);
+  ctx.rotate(-Math.PI / 2);
+  const unit = title.includes(' - ') ? title.split(' - ').pop().trim() : '';
+  const axisLabel = key === 'shear' ? `V [${unit || '-'}]` : key === 'moment' ? `M [${unit || '-'}]` : 'y [mm]';
+  ctx.fillText(axisLabel, 0, 0);
+  ctx.restore();
+  ctx.fillStyle = getVar('--text') || '#111827';
+  ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+  ctx.fillText(`peak ${fmt3(peak.y)} at x=${fmt(peak.x, 2)} m`, padL, H - 10);
+}
+
+function openChartModal(chartId) {
+  const payload = state.chartPayloads.get(chartId);
+  if (!payload) return;
+  $('chartModalTitle') && ($('chartModalTitle').textContent = payload.title);
+  showModal('chartModal');
+  requestAnimationFrame(() => drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color));
 }
 
 async function ensureFresh() {
@@ -578,6 +1033,7 @@ function downloadBlob(blob, filename) {
 function saveLocalProject() {
   const payload = { schemaVersion: 3, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
   localStorage.setItem('beam_project_secure_draft_v1', JSON.stringify(payload));
+  if ($('projectStatus')) $('projectStatus').textContent = `Saved locally ${new Date().toLocaleTimeString()}`;
   setSaveStatus('Project saved locally. Cloud save requires sign-in/backend storage.', 'ok');
 }
 
@@ -590,6 +1046,7 @@ function loadLocalProject() {
 }
 
 function applyInput(input = {}) {
+  applyMetadata(input.metadata || input.project || input);
   if (input.section?.family) {
     $('sec_series').value = input.section.family;
     populateSectionNames(input.section.name);
@@ -600,6 +1057,93 @@ function applyInput(input = {}) {
   if (input.model?.supportType) $('supportType').value = input.model.supportType;
   $('includeSW').checked = input.model?.includeSelfWeight !== false;
   if (input.settings?.deflectionLimit) $('deflLimit').value = input.settings.deflectionLimit;
+  if (input.settings?.sectionClass) $('sec_class').value = Number(input.settings.sectionClass) <= 2 ? '12' : String(input.settings.sectionClass);
+  if (input.settings?.gammaM0) $('gammaM0').value = input.settings.gammaM0;
+  if (input.settings?.gammaM1) $('gammaM1').value = input.settings.gammaM1;
+  if (input.combination?.combination) $('load_combo').value = input.combination.combination;
+  if (input.combination?.psiQ1 !== undefined) $('psi_q1').value = input.combination.psiQ1;
+  if (input.combination?.psiQ2 !== undefined) $('psi_q2').value = input.combination.psiQ2;
+  if (input.axial) {
+    setValue('axialG', input.axial.G || 0);
+    setValue('axialQ1', input.axial.Q1 || 0);
+    setValue('axialQ2', input.axial.Q2 || 0);
+  }
+  applyLoads(input.loads || {});
+}
+
+function applyMetadata(metadata = {}) {
+  const map = {
+    projectName: metadata.projectName || metadata.project || metadata.name,
+    calculationTitle: metadata.calculationTitle || metadata.title,
+    jobReference: metadata.jobReference || metadata.reference || metadata.jobNumber,
+    clientName: metadata.clientName || metadata.client,
+    memberMark: metadata.beamMark || metadata.memberMark,
+    projectRevision: metadata.revision,
+    revisionDescription: metadata.revisionDescription,
+    projectDate: metadata.date,
+    companyName: metadata.companyName || metadata.company,
+    companyLogo: metadata.companyLogoUrl || metadata.logo,
+    engineerName: metadata.engineerName || metadata.preparedBy,
+    checkedBy: metadata.checkedBy,
+    approvedBy: metadata.approvedBy,
+    designCode: metadata.designCode,
+    nationalAnnex: metadata.nationalAnnex,
+    projectNotes: metadata.notes || metadata.comments
+  };
+  Object.entries(map).forEach(([id, value]) => {
+    if (value !== undefined && value !== null && $(id)) $(id).value = value;
+  });
+}
+
+function clearLoadCards() {
+  Object.values(LOAD_TYPES).forEach((cfg) => {
+    const host = $(cfg.host);
+    if (host) host.innerHTML = '';
+  });
+}
+
+function applyLoads(loads = {}) {
+  clearLoadCards();
+  LOAD_CASES.forEach((loadCase) => Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, loadCase)));
+  const span = num('span', 6);
+  const rows = {
+    uniform: { G: [], Q1: [], Q2: [] },
+    point: { G: [], Q1: [], Q2: [] },
+    moment: { G: [], Q1: [], Q2: [] },
+    trap: { G: [], Q1: [], Q2: [] }
+  };
+  (loads.udls || []).forEach((load) => {
+    if (load.sourceType === 'trap' && load.segmentIndex && load.segmentIndex !== 1) return;
+    if (load.sourceType === 'trap') {
+      const lc = load.loadCase || 'G';
+      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span });
+      return;
+    }
+    LOAD_CASES.forEach((lc) => {
+      const q = Number(load[lc] || 0);
+      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span });
+    });
+  });
+  (loads.points || []).forEach((load) => {
+    if (Number(load.M || 0)) {
+      const lc = load.momentCase || 'G';
+      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0 });
+      return;
+    }
+    LOAD_CASES.forEach((lc) => {
+      const P = Number(load[lc] || 0);
+      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0 });
+    });
+  });
+  Object.entries(rows).forEach(([type, byCase]) => {
+    Object.entries(byCase).forEach(([loadCase, values]) => {
+      const host = $(LOAD_TYPES[type].host);
+      host?.querySelectorAll(`.load-entry-card[data-case="${loadCase}"]`).forEach((card) => card.remove());
+      if (!values.length) addLoadCard(type, 0, loadCase);
+      values.forEach((value, index) => addLoadCard(type, index, loadCase, value, index > 0));
+    });
+  });
+  syncLoadCaseVisibility();
 }
 
 function initTabs() {
@@ -613,23 +1157,151 @@ function initTabs() {
   }));
 }
 
+function activateSettingsPane(id) {
+  $$('[data-settings-tab]').forEach((btn) => {
+    const active = btn.dataset.settingsTab === id;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  $$('.settings-pane').forEach((pane) => pane.classList.toggle('active', pane.id === id));
+}
+
+function collectSettingsForm() {
+  state.settings.theme = document.querySelector('input[name="settingsTheme"]:checked')?.value || state.settings.theme || 'system';
+  state.settings.layoutMode = document.querySelector('input[name="settingsLayoutMode"]:checked')?.value || state.settings.layoutMode || 'auto';
+  state.settings.density = document.querySelector('input[name="settingsDensity"]:checked')?.value || state.settings.density || 'compact';
+  state.settings.accent = document.querySelector('input[name="settingsAccent"]:checked')?.value || state.settings.accent || 'blue';
+  state.settings.defaultMode = $('settingsDefaultMode')?.value || 'single';
+  state.settings.defaultUnit = $('settingsDefaultUnit')?.value || 'tonne';
+  state.settings.defaultProjectName = txt('settingsDefaultProjectName');
+  state.settings.defaultCalculationTitle = txt('settingsDefaultCalculationTitle');
+  state.settings.defaultJobReference = txt('settingsDefaultJobReference');
+  state.settings.defaultCompany = txt('settingsDefaultCompany');
+  state.settings.defaultEngineer = txt('settingsDefaultEngineer');
+  state.settings.defaultCheckedBy = txt('settingsDefaultCheckedBy');
+  state.settings.autoRecalc = $('settingsAutoRecalc')?.checked !== false;
+  state.settings.openProject = $('settingsOpenProject')?.checked !== false;
+}
+
+function applyDefaultMetadata(force = false) {
+  const defaults = {
+    projectName: state.settings.defaultProjectName,
+    calculationTitle: state.settings.defaultCalculationTitle,
+    jobReference: state.settings.defaultJobReference,
+    companyName: state.settings.defaultCompany,
+    engineerName: state.settings.defaultEngineer,
+    checkedBy: state.settings.defaultCheckedBy
+  };
+  Object.entries(defaults).forEach(([id, value]) => {
+    const el = $(id);
+    if (el && value && (force || !el.value || ['Untitled beam project', 'Beam section check'].includes(el.value))) el.value = value;
+  });
+  if ($('loadUnit') && state.settings.defaultUnit) $('loadUnit').value = state.settings.defaultUnit;
+}
+
+function toggleMenu(menuId, buttonId, open) {
+  const menu = $(menuId);
+  const button = $(buttonId);
+  if (!menu) return;
+  const nextOpen = open ?? menu.classList.contains('hide');
+  menu.classList.toggle('hide', !nextOpen);
+  button?.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+}
+
+function handleMoreAction(action) {
+  toggleMenu('moreMenu', 'moreMenuBtn', false);
+  if (action === 'save') return saveLocalProject();
+  if (action === 'recalculate') return calculate().catch((err) => setSaveStatus(err.message, 'error'));
+  if (action === 'help') return $('helpBtn')?.click();
+  if (action === 'settings') return showModal('settingsModal');
+  if (action === 'download') return $('downloadProjectBtn')?.click();
+  if (action === 'about') {
+    activateSettingsPane('settingsAbout');
+    return showModal('settingsModal');
+  }
+}
+
+function handleRailTarget(btn) {
+  const target = btn.dataset.railTarget;
+  $$('.rail-button').forEach((item) => item.classList.toggle('active', item === btn));
+  if (target === 'settingsModal') return showModal('settingsModal');
+  if (target === 'summaryPanel') {
+    document.querySelector('[data-tab-group="inspectorTabs"][data-tab="summaryPanel"]')?.click();
+  } else if (target?.startsWith('stage')) {
+    document.querySelector(`[data-tab-group="stageTabs"][data-tab="${CSS.escape(target)}"]`)?.click();
+  }
+  const el = $(target);
+  if (el?.tagName === 'DETAILS') el.open = true;
+  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function activateExportTab(tab) {
+  const modal = $('latexModal');
+  modal?.classList.toggle('source-active', tab === 'source');
+  $$('[data-export-tab]').forEach((btn) => {
+    const active = btn.dataset.exportTab === tab;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+
+function initSplitters() {
+  const root = document.documentElement;
+  const bind = (id, cssVar, min, max) => {
+    const splitter = $(id);
+    if (!splitter) return;
+    splitter.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      splitter.classList.add('dragging');
+      splitter.setPointerCapture(event.pointerId);
+      const move = (moveEvent) => {
+        const width = id === 'leftDockSplitter'
+          ? Math.min(max, Math.max(min, moveEvent.clientX - (document.querySelector('.container')?.getBoundingClientRect().left || 0)))
+          : Math.min(max, Math.max(min, window.innerWidth - moveEvent.clientX - 18));
+        root.style.setProperty(cssVar, `${Math.round(width)}px`);
+      };
+      const up = () => {
+        splitter.classList.remove('dragging');
+        splitter.removeEventListener('pointermove', move);
+        splitter.removeEventListener('pointerup', up);
+        saveSettings();
+      };
+      splitter.addEventListener('pointermove', move);
+      splitter.addEventListener('pointerup', up);
+    });
+  };
+  bind('leftDockSplitter', '--left-panel-w', 280, 620);
+  bind('rightInspectorSplitter', '--right-panel-w', 260, 520);
+}
+
 function bindEvents() {
+  initCustomSectionUi();
+  $('sectionSourceMode')?.addEventListener('change', () => {
+    syncSectionSourceMode();
+    recalculateDebounced();
+  });
+  $('customSectionType')?.addEventListener('change', renderCustomSectionFields);
+  $('customSectionName')?.addEventListener('input', renderCustomSectionNotice);
+  $('saveCustomSectionBtn')?.addEventListener('click', () => setSaveStatus('Custom sections require backend storage before they can be saved in this secure build.', 'error'));
+  $('deleteCustomSectionBtn')?.addEventListener('click', () => setSaveStatus('No backend custom-section storage is configured yet.', 'error'));
+  $('resetCustomSectionBtn')?.addEventListener('click', renderCustomSectionFields);
   $('sec_series')?.addEventListener('change', () => { populateSectionNames(); recalculateDebounced(); });
   $('sec_size')?.addEventListener('change', () => { updateSectionPreview(); recalculateDebounced(); });
   $$('input,select,textarea').forEach((el) => {
     if (el.closest('.settings-panel') || el.closest('.modal')) return;
-    el.addEventListener('change', recalculateDebounced);
-    el.addEventListener('input', () => { if (el.type === 'number' || el.tagName === 'TEXTAREA') recalculateDebounced(); });
+    el.addEventListener('change', () => { if (state.settings.autoRecalc !== false) recalculateDebounced(); });
+    el.addEventListener('input', () => {
+      if ((el.type === 'number' || el.tagName === 'TEXTAREA') && state.settings.autoRecalc !== false) recalculateDebounced();
+    });
   });
   $$('[data-add-load]').forEach((btn) => btn.addEventListener('click', () => {
-    const type = btn.dataset.addLoad === 'trapezoidal' ? 'trap' : btn.dataset.addLoad;
-    const count = $$(`[data-load-type="${type}"]`).length;
-    addLoadCard(type, count);
+    const type = normaliseLoadType(btn.dataset.addLoad);
+    addLoadCard(type, null, state.activeLoadCase, {}, true);
+    syncLoadCaseVisibility();
   }));
   $$('[data-loadcase]').forEach((btn) => btn.addEventListener('click', () => {
     state.activeLoadCase = btn.dataset.loadcase;
-    $$('[data-loadcase]').forEach((b) => b.classList.toggle('active', b === btn));
-    $$('[data-case]').forEach((el) => el.closest('.load-entry-card')?.classList.toggle('is-loadcase-hidden', el.dataset.case !== state.activeLoadCase));
+    syncLoadCaseVisibility();
   }));
   $('recalcBtn')?.addEventListener('click', () => calculate().catch((err) => setSaveStatus(err.message, 'error')));
   $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
@@ -643,27 +1315,82 @@ function bindEvents() {
   $('helpBtn')?.addEventListener('click', () => { $('helpModalBody').innerHTML = '<p>This production build uses the secure backend for calculations, reports and hand calculations. Enter beam data, press Recalculate, then review returned checks and diagrams.</p>'; showModal('helpModal'); });
   $('helpModalClose')?.addEventListener('click', () => hideModal('helpModal'));
   $('themeBtn')?.addEventListener('click', () => showModal('settingsModal'));
+  $('railToggleBtn')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
+  $('inputRailToggle')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
+  $$('[data-rail-target]').forEach((btn) => btn.addEventListener('click', () => handleRailTarget(btn)));
   $('settingsClose')?.addEventListener('click', () => hideModal('settingsModal'));
   $('settingsCancel')?.addEventListener('click', () => hideModal('settingsModal'));
-  $('settingsSave')?.addEventListener('click', () => { saveSettings(); applySettings(); hideModal('settingsModal'); });
+  $('settingsSave')?.addEventListener('click', () => { collectSettingsForm(); saveSettings(); applySettings(); applyDefaultMetadata(); hideModal('settingsModal'); });
+  $('settingsReset')?.addEventListener('click', () => {
+    state.settings = { theme: 'system', layoutMode: 'auto', density: 'compact', accent: 'blue', autoRecalc: true, openProject: true };
+    saveSettings();
+    applySettings();
+  });
+  $$('[data-settings-tab]').forEach((btn) => btn.addEventListener('click', () => activateSettingsPane(btn.dataset.settingsTab)));
   $$('input[name="settingsTheme"]').forEach((el) => el.addEventListener('change', () => { state.settings.theme = el.value; saveSettings(); applySettings(); }));
   $$('input[name="settingsLayoutMode"]').forEach((el) => el.addEventListener('change', () => { state.settings.layoutMode = el.value; saveSettings(); applySettings(); }));
+  $$('input[name="settingsDensity"], input[name="settingsAccent"]').forEach((el) => el.addEventListener('change', () => {
+    collectSettingsForm();
+    saveSettings();
+    applySettings();
+  }));
+  ['settingsDefaultMode', 'settingsDefaultUnit', 'settingsDefaultProjectName', 'settingsDefaultCalculationTitle', 'settingsDefaultJobReference', 'settingsDefaultCompany', 'settingsDefaultEngineer', 'settingsDefaultCheckedBy', 'settingsAutoRecalc', 'settingsOpenProject'].forEach((id) => {
+    $(id)?.addEventListener('change', () => { collectSettingsForm(); saveSettings(); });
+  });
   $('saveToolbarBtn')?.addEventListener('click', saveLocalProject);
   $('saveProjectBtn')?.addEventListener('click', saveLocalProject);
-  $('openProjectBtn')?.addEventListener('click', () => { try { loadLocalProject(); } catch (err) { setSaveStatus(err.message, 'error'); } });
+  $('newProjectBtn')?.addEventListener('click', startNewProject);
+  $('openProjectBtn')?.addEventListener('click', showStartScreen);
   $('downloadProjectBtn')?.addEventListener('click', () => downloadBlob(new Blob([JSON.stringify({ input: buildRequest(), result: state.last?.result || null }, null, 2)], { type: 'application/json' }), 'beam-project.json'));
   $('projectFileInput')?.addEventListener('change', async (event) => {
     const file = event.target.files?.[0]; if (!file) return;
     const payload = JSON.parse(await file.text());
     applyInput(payload.input || payload);
+    hideStartScreen();
     recalculateDebounced();
   });
   $('installProjectBtn')?.addEventListener('click', () => $('projectFileInput')?.click());
+  $('startNewProject')?.addEventListener('click', startNewProject);
+  $('startLoadProject')?.addEventListener('click', () => {
+    if ($('startProjectSelect')?.value) {
+      try { loadLocalProject(); hideStartScreen(); } catch (err) { setSaveStatus(err.message, 'error'); ensureStartBackendStatus(err.message, 'error'); }
+    } else {
+      $('projectFileInput')?.click();
+    }
+  });
+  $('startSettings')?.addEventListener('click', () => { hideStartScreen(); activateSettingsPane('settingsGeneral'); showModal('settingsModal'); });
+  $('startOpenSelected')?.addEventListener('click', () => {
+    if (!$('startProjectSelect')?.value) return ensureStartBackendStatus('No local project is saved in this browser.', 'error');
+    try { loadLocalProject(); hideStartScreen(); } catch (err) { setSaveStatus(err.message, 'error'); ensureStartBackendStatus(err.message, 'error'); }
+  });
+  $('startInstallProject')?.addEventListener('click', () => $('projectFileInput')?.click());
+  $('startDeleteProject')?.addEventListener('click', () => {
+    localStorage.removeItem('beam_project_secure_draft_v1');
+    localStorage.removeItem('beam_local_draft_v1');
+    populateStartProjects();
+    ensureStartBackendStatus('Local browser draft deleted.', 'ok');
+  });
+  $('startContinue')?.addEventListener('click', hideStartScreen);
   $('fileMenuBtn')?.addEventListener('click', () => $('fileMenu')?.classList.toggle('hide'));
+  $('moreMenuBtn')?.addEventListener('click', () => toggleMenu('moreMenu', 'moreMenuBtn'));
+  $$('[data-more-action]').forEach((btn) => btn.addEventListener('click', () => handleMoreAction(btn.dataset.moreAction)));
+  ['chartV', 'chartVFocus', 'chartM', 'chartMFocus', 'chartY', 'chartYFocus'].forEach((id) => $(id)?.addEventListener('click', () => openChartModal(id)));
+  $('chartModalClose')?.addEventListener('click', () => hideModal('chartModal'));
+  $$('[data-export-tab]').forEach((btn) => btn.addEventListener('click', () => activateExportTab(btn.dataset.exportTab)));
   $('accountModalClose')?.addEventListener('click', () => hideModal('accountModal'));
   $('fileAccountBtn')?.addEventListener('click', () => showModal('accountModal'));
   $('googleSignInBtn')?.addEventListener('click', () => api('/api/auth/google/start').then((r) => r.json()).then((b) => { if (b.url) location.href = b.url; }).catch((err) => $('accountStatus').textContent = err.message));
   $('appleSignInBtn')?.addEventListener('click', () => api('/api/auth/apple/start').then((r) => r.json()).then((b) => { if (b.url) location.href = b.url; }).catch((err) => $('accountStatus').textContent = err.message));
+  initSplitters();
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.file-menu-wrap')) toggleMenu('fileMenu', 'fileMenuBtn', false);
+    if (!event.target.closest('.more-menu-wrap')) toggleMenu('moreMenu', 'moreMenuBtn', false);
+    if (event.target.classList.contains('modal')) hideModal(event.target.id);
+    if (event.target.classList.contains('chart-modal')) hideModal(event.target.id);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') $$('.modal:not(.hide), .chart-modal:not(.hide)').forEach((modal) => hideModal(modal.id));
+  });
   window.addEventListener('resize', () => { applySettings(); if (state.last) drawAllCharts(state.last.result.diagrams?.series || [], state.last.result.summary || {}); });
 }
 
@@ -680,13 +1407,22 @@ async function init() {
   initTabs();
   initLoads();
   bindEvents();
+  applyDefaultMetadata();
   $('projectDate') && ($('projectDate').value = new Date().toISOString().slice(0, 10));
+  if (shouldShowStartScreen()) showStartScreen();
   try {
+    const health = await api('/api/health');
+    await safeJson(health, '/api/health');
+    ensureStartBackendStatus('Calculation service connected.', 'ok');
     await loadSections();
-    await loadSources();
+    loadSources().catch((err) => {
+      const host = $('sectionSourceIndex');
+      if (host) host.innerHTML = `<h3>Section Data Sources</h3><p>${esc(err.message || 'Source index unavailable.')}</p>`;
+    });
     await calculate();
   } catch (err) {
     setSaveStatus(err.message || 'Calculation service unavailable. Please try again.', 'error');
+    ensureStartBackendStatus(`${err.message || 'Calculation service unavailable.'} Use the deployed site or an allowed local backend origin.`, 'error');
     renderUnavailable(err.message);
   }
 }
