@@ -2428,6 +2428,147 @@ body.layout-tablet .sticky-section-preview::before{
   max-height:100%!important;
   overflow:visible!important;
 }
+
+/* ===== v38 desktop shell: locked top regions and compact section facts ===== */
+.inputs-card > .dock-head{display:none!important}
+body.layout-desktop{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow:hidden!important;
+}
+body.layout-desktop .container{
+  height:calc(100dvh - 106px)!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+body.layout-desktop .layout{
+  height:100%!important;
+  min-height:0!important;
+  align-items:stretch!important;
+}
+body.layout-desktop .inputs-card{
+  position:relative!important;
+  top:auto!important;
+  height:100%!important;
+  max-height:100%!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  overflow-x:hidden!important;
+  padding:8px!important;
+}
+body.layout-desktop .sticky-section-preview{
+  flex:0 0 auto!important;
+  position:relative!important;
+  top:auto!important;
+  margin:0 0 8px!important;
+}
+body.layout-desktop #sectionProfilePreview{
+  height:240px!important;
+}
+body.layout-desktop .input-scroll-stack{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable;
+  padding-right:2px!important;
+}
+body.layout-desktop .main-workspace-card{
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+body.layout-desktop .workspace-header,
+body.layout-desktop #sponsorSlot{
+  flex:0 0 auto!important;
+  position:relative!important;
+  z-index:24!important;
+}
+body.layout-desktop #sponsorSlot{
+  display:flex!important;
+  margin-top:8px!important;
+  padding:8px 10px!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+}
+body.layout-desktop #sponsorSlot.hide{display:none!important}
+body.layout-desktop .workspace{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  margin-top:8px!important;
+  grid-template-columns:minmax(0,1fr) minmax(300px,clamp(300px,24vw,var(--right-panel-w)))!important;
+}
+body.layout-desktop .main-stage,
+body.layout-desktop .inspector-shell{
+  min-height:0!important;
+  height:100%!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable;
+}
+body.layout-desktop .main-stage{padding-right:12px!important}
+body.layout-desktop .inspector-shell{
+  position:static!important;
+  top:auto!important;
+  padding-left:12px!important;
+}
+body.layout-desktop .inspector-block{min-height:0!important}
+body.inputs-collapsed.layout-desktop .layout{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body.inputs-collapsed.layout-desktop .inputs-card{
+  display:none!important;
+}
+body.inputs-collapsed.layout-desktop .main-workspace-card{
+  padding-left:0!important;
+}
+body.inputs-collapsed.layout-desktop .workspace{
+  grid-template-columns:minmax(0,2fr) minmax(320px,1fr)!important;
+}
+body.inputs-collapsed.layout-desktop .main-stage{padding-right:14px!important}
+body.inputs-collapsed.layout-desktop .inspector-shell{padding-left:14px!important}
+.section-preview-facts{
+  gap:4px!important;
+  margin-top:6px!important;
+}
+.section-preview-facts .prop-chip{
+  min-height:0!important;
+  padding:5px 6px!important;
+  border-radius:6px!important;
+  display:grid!important;
+  gap:1px!important;
+  align-content:center!important;
+}
+.section-preview-facts .prop-chip strong{
+  margin-bottom:0!important;
+  font-size:9.5px!important;
+  line-height:1.1!important;
+}
+.section-preview-facts .prop-chip span{
+  font-size:12px!important;
+  line-height:1.18!important;
+  font-weight:850!important;
+}
+body.layout-mobile{
+  height:auto!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+body.layout-mobile .main-workspace-card,
+body.layout-mobile .workspace,
+body.layout-mobile .main-stage,
+body.layout-mobile .inspector-shell{
+  height:auto!important;
+  overflow:visible!important;
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -2571,6 +2712,7 @@ body.layout-tablet .sticky-section-preview::before{
     <div id="sectionPreviewFacts" class="section-preview-facts"></div>
   </aside>
 
+  <div class="input-scroll-stack">
   <details id="projectAccordion" class="accordion" open>
     <summary>Project / beam setup</summary>
     <div class="accordion-body">
@@ -2914,6 +3056,7 @@ body.layout-tablet .sticky-section-preview::before{
     </div>
   </details>
 
+  </div>
 </div>
 
 <div class="splitter" id="leftDockSplitter" role="separator" aria-orientation="vertical" aria-label="Resize input panel"></div>
@@ -5109,6 +5252,9 @@ function initSectionPreviewResizeObserver(){
     scheduleSectionPreviewRedraw();
   });
   window._sectionPreviewResizeObserver.observe(host);
+}
+function removeDuplicateInputHeader(){
+  document.querySelector('.inputs-card > .dock-head')?.remove();
 }
 function toggleInputs(force,{redraw=true}={}){
   const collapsed=typeof force==='boolean' ? force : !document.body.classList.contains('inputs-collapsed');
@@ -10384,6 +10530,7 @@ document.addEventListener('change', e=>{ if(e.target.closest('.file-menu,#settin
 
 function init(){
   applyDisplayScale();
+  removeDuplicateInputHeader();
   applyGeneralSettingsToSession(uiSettings);
   ensureChartModal();
   wireHelpModal();
