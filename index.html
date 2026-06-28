@@ -2348,6 +2348,86 @@ body.layout-mobile .sticky-section-preview{
   body.layout-mobile #reportFrame,
   body.layout-mobile #latexFrame{width:720px!important;min-width:720px!important}
 }
+
+/* ===== v37 focused polish: responsive section annotations and panel fit ===== */
+.info-tip{
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+  min-height:16px!important;
+  flex:0 0 16px!important;
+  font-size:9px!important;
+  line-height:1!important;
+}
+.field-label-with-help{gap:5px!important}
+.workspace-header{
+  padding:8px 10px!important;
+  border-radius:8px!important;
+}
+.workspace-kicker{
+  margin-bottom:4px!important;
+  font-size:12px!important;
+  line-height:1.15!important;
+}
+.summary-strip{gap:4px 8px!important;align-items:center!important}
+.summary-chip{
+  font-size:10px!important;
+  line-height:1.2!important;
+}
+.summary-chip::after{
+  height:10px!important;
+  margin-left:8px!important;
+}
+.deflection-control-title{
+  margin-bottom:6px!important;
+  color:var(--text)!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  line-height:1.25!important;
+  text-decoration:none!important;
+  text-transform:none!important;
+}
+.deflection-control-title .label{text-decoration:none!important}
+.deflection-control-equation{
+  color:var(--text)!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+body.layout-desktop .inputs-card,
+body.layout-desktop .inspector-shell{
+  height:calc(100dvh - 120px)!important;
+  max-height:calc(100dvh - 120px)!important;
+}
+body.layout-tablet .inputs-card{
+  height:calc(100dvh - 108px)!important;
+  max-height:calc(100dvh - 108px)!important;
+}
+body.layout-desktop .sticky-section-preview,
+body.layout-tablet .sticky-section-preview{
+  position:sticky!important;
+  top:0!important;
+  z-index:35!important;
+  margin:0 0 10px!important;
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  isolation:isolate;
+}
+body.layout-desktop .sticky-section-preview::before,
+body.layout-tablet .sticky-section-preview::before{
+  content:"";
+  position:absolute;
+  left:-10px;
+  right:-10px;
+  top:-14px;
+  height:14px;
+  background:var(--bg);
+  pointer-events:none;
+}
+.section-profile-preview .section-svg{
+  max-width:100%!important;
+  max-height:100%!important;
+  overflow:visible!important;
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -5010,6 +5090,26 @@ function initWorkspaceResizeObserver(){
   });
   window._workspaceResizeObserver.observe(host);
 }
+let sectionPreviewRedrawFrame=0;
+function scheduleSectionPreviewRedraw(){
+  cancelAnimationFrame(sectionPreviewRedrawFrame);
+  sectionPreviewRedrawFrame=requestAnimationFrame(()=>{
+    try{ renderSectionProfilePreview(getSelectedProfile()); }catch(err){}
+  });
+}
+function initSectionPreviewResizeObserver(){
+  const host=$('sectionProfilePreview');
+  if(!host || typeof ResizeObserver==='undefined' || window._sectionPreviewResizeObserver) return;
+  let previous={w:0,h:0};
+  window._sectionPreviewResizeObserver=new ResizeObserver(entries=>{
+    const rect=entries[0]?.contentRect || host.getBoundingClientRect();
+    const next={w:Math.round(rect.width||0),h:Math.round(rect.height||0)};
+    if(Math.abs(next.w-previous.w)<2 && Math.abs(next.h-previous.h)<2) return;
+    previous=next;
+    scheduleSectionPreviewRedraw();
+  });
+  window._sectionPreviewResizeObserver.observe(host);
+}
 function toggleInputs(force,{redraw=true}={}){
   const collapsed=typeof force==='boolean' ? force : !document.body.classList.contains('inputs-collapsed');
   document.body.classList.toggle('inputs-collapsed',collapsed);
@@ -6059,7 +6159,12 @@ function renderSectionProfilePreview(sec){
   }
   const geometry=sectionGeometryModel(sec);
   const mode=document.body.classList.contains('layout-mobile') ? 'compact' : 'full';
-  host.innerHTML=reportSectionSvg(sec,{width:760,height:500,mode});
+  const svgBounds=host.getBoundingClientRect();
+  const fallbackWidth=host.clientWidth || host.parentElement?.clientWidth || (mode==='compact'?360:430);
+  const fallbackHeight=host.clientHeight || (mode==='compact'?220:300);
+  const svgWidth=Math.round(clamp(svgBounds.width || fallbackWidth, 280, 760));
+  const svgHeight=Math.round(clamp(svgBounds.height || fallbackHeight, 190, 500));
+  host.innerHTML=reportSectionSvg(sec,{width:svgWidth,height:svgHeight,mode});
   drawSectionPreviewFacts(sec,!geometry.hasDetailed);
   return;
   const canvas = $('sectionProfilePreview');
@@ -6971,7 +7076,7 @@ function deflectionControlPanel(deflPeak, deflAllow_mm, deflIR, passDefl, peakX,
   const limitRatio=Math.max(1,+$('deflLimit').value||300);
   const title=document.createElement('div');
   title.className='deflection-control-title';
-  title.innerHTML=`<span class="label">DEFLECTION CONTROL:</span> (L/${limitRatio})`;
+  title.textContent=`Deflection Control (L/${limitRatio})`;
   wrap.appendChild(title);
   const result=document.createElement('div');
   result.className='deflection-control-equation';
@@ -7879,11 +7984,14 @@ function reportSectionSvg(sec, opts={}){
   const printMode=mode==='report';
   const W=opts.width||420, H=opts.height||250;
   const markerId=`sectionArrow_${String(sec?.name||'section').replace(/[^a-z0-9]+/gi,'_')}_${W}_${H}_${mode}`;
-  const font=compact?8.5:(printMode?8.8:9.4);
-  const leftBand=compact?68:76;
-  const rightBand=compact?78:132;
-  const topBand=compact?46:54;
-  const bottomBand=compact?72:82;
+  const minDim=Math.max(1,Math.min(W,H));
+  const font=compact
+    ? clamp(minDim*.034,7.2,8.8)
+    : (printMode ? clamp(minDim*.032,8.0,9.2) : clamp(minDim*.032,8.0,10.4));
+  const leftBand=compact ? clamp(W*.16,44,66) : clamp(W*.18,50,80);
+  const rightBand=compact ? clamp(W*.18,56,84) : (printMode ? clamp(W*.23,82,124) : clamp(W*.25,78,132));
+  const topBand=compact ? clamp(H*.14,34,46) : clamp(H*.14,40,58);
+  const bottomBand=compact ? clamp(H*.20,52,70) : clamp(H*.20,60,88);
   const overallH=Math.max(1,g.h||1), overallB=Math.max(1,g.b||1);
   const scale=Math.min((W-leftBand-rightBand)/overallB,(H-topBand-bottomBand)/overallH);
   const dw=overallB*scale, dh=overallH*scale;
@@ -7959,17 +8067,17 @@ function reportSectionSvg(sec, opts={}){
       `L ${sp(g.b,0)}`,
       `L ${sp(g.b,g.tf)}`,
       `L ${sp(wr+rr,g.tf)}`,
-      `A ${rpx} ${rpx} 0 0 0 ${sp(wr,g.tf+rr)}`,
+      `A ${rpx} ${rpx} 0 0 1 ${sp(wr,g.tf+rr)}`,
       `L ${sp(wr,g.h-g.tf-rr)}`,
-      `A ${rpx} ${rpx} 0 0 0 ${sp(wr+rr,g.h-g.tf)}`,
+      `A ${rpx} ${rpx} 0 0 1 ${sp(wr+rr,g.h-g.tf)}`,
       `L ${sp(g.b,g.h-g.tf)}`,
       `L ${sp(g.b,g.h)}`,
       `L ${sp(0,g.h)}`,
       `L ${sp(0,g.h-g.tf)}`,
       `L ${sp(wl-rr,g.h-g.tf)}`,
-      `A ${rpx} ${rpx} 0 0 0 ${sp(wl,g.h-g.tf-rr)}`,
+      `A ${rpx} ${rpx} 0 0 1 ${sp(wl,g.h-g.tf-rr)}`,
       `L ${sp(wl,g.tf+rr)}`,
-      `A ${rpx} ${rpx} 0 0 0 ${sp(wl-rr,g.tf)}`,
+      `A ${rpx} ${rpx} 0 0 1 ${sp(wl-rr,g.tf)}`,
       `L ${sp(0,g.tf)}`,
       'Z'
     ].join(' ');
@@ -7978,14 +8086,15 @@ function reportSectionSvg(sec, opts={}){
     const rr=Math.max(0,Math.min(g.r||0,g.tf*.9,g.tw*.9));
     if(!rr) return `M ${sp(0,0)} L ${sp(g.b,0)} L ${sp(g.b,g.tf)} L ${sp(g.tw,g.tf)} L ${sp(g.tw,g.h-g.tf)} L ${sp(g.b,g.h-g.tf)} L ${sp(g.b,g.h)} L ${sp(0,g.h)} Z`;
     const rpx=(rr*scale).toFixed(2);
-    return [`M ${sp(0,0)}`,`L ${sp(g.b,0)}`,`L ${sp(g.b,g.tf)}`,`L ${sp(g.tw+rr,g.tf)}`,`A ${rpx} ${rpx} 0 0 0 ${sp(g.tw,g.tf+rr)}`,`L ${sp(g.tw,g.h-g.tf-rr)}`,`A ${rpx} ${rpx} 0 0 0 ${sp(g.tw+rr,g.h-g.tf)}`,`L ${sp(g.b,g.h-g.tf)}`,`L ${sp(g.b,g.h)}`,`L ${sp(0,g.h)}`,'Z'].join(' ');
+    return [`M ${sp(0,0)}`,`L ${sp(g.b,0)}`,`L ${sp(g.b,g.tf)}`,`L ${sp(g.tw+rr,g.tf)}`,`A ${rpx} ${rpx} 0 0 1 ${sp(g.tw,g.tf+rr)}`,`L ${sp(g.tw,g.h-g.tf-rr)}`,`A ${rpx} ${rpx} 0 0 1 ${sp(g.tw+rr,g.h-g.tf)}`,`L ${sp(g.b,g.h-g.tf)}`,`L ${sp(g.b,g.h)}`,`L ${sp(0,g.h)}`,'Z'].join(' ');
   }
   let body='';
   let note=g.warning || '';
   if(g.shape==='i' && g.hasDetailed){
     const webX=(g.b-g.tw)/2;
     body=`<path class="steel" d="${iSectionPath()}"/>`;
-    const filletTarget={x:sx(webX+g.tw),y:sy(g.h-g.tf-(g.r||Math.min(g.tf,g.tw)/2))};
+    const filletR=g.r||Math.min(g.tf,g.tw)/2;
+    const filletTarget={x:sx(webX+g.tw+filletR*(1-Math.SQRT1_2)),y:sy(g.h-g.tf-filletR+filletR*Math.SQRT1_2)};
     addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
     addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'},{x:x0+4,y:y0-10,anchor:'start'}]);
     if(!compact) addDimension('tw',`tw=${fmt2(g.tw)} mm`,sx(webX),y0+dh+48,sx(webX+g.tw),y0+dh+48,[{x:sx(webX+g.tw/2),y:y0+dh+66,anchor:'middle'},{x:x0+dw+24,y:y0+dh-18,anchor:'start'}]);
@@ -10295,6 +10404,7 @@ function init(){
   renderSponsorSlot();
   runCalc(true);
   initWorkspaceResizeObserver();
+  initSectionPreviewResizeObserver();
   window._projectDirty=false;
   setProjectStatus('Not saved yet');
   let sessionStarted=false;
