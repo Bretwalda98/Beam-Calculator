@@ -4,6 +4,17 @@
 
 - `GET /api/health`
 
+Cloudflare Worker production response:
+
+```json
+{
+  "ok": true,
+  "service": "Beam Calculator API",
+  "version": "1.0.0",
+  "environment": "production"
+}
+```
+
 ## Authentication
 
 - `GET /api/auth/providers`

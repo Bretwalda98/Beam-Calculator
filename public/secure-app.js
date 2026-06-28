@@ -10,8 +10,16 @@ const num = (id, fallback = 0) => {
 const txt = (id, fallback = '') => String($(id)?.value ?? fallback).trim();
 const fmt = (value, dp = 2) => Number.isFinite(Number(value)) ? Number(value).toFixed(dp) : '-';
 
+const WORKER_API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
+
+function defaultApiBase() {
+  const host = window.location.hostname;
+  if (host === 'beam-calculator.pages.dev' || host === 'beamcalculatorstudio.com' || host === 'www.beamcalculatorstudio.com') return WORKER_API_BASE;
+  return '';
+}
+
 const state = {
-  apiBase: (window.BEAM_API_BASE_URL || document.querySelector('meta[name="beam-api-base-url"]')?.content || localStorage.getItem('beam_api_base_url') || '').replace(/\/$/, ''),
+  apiBase: (window.BEAM_API_BASE_URL || document.querySelector('meta[name="beam-api-base-url"]')?.content || localStorage.getItem('beam_api_base_url') || defaultApiBase()).replace(/\/$/, ''),
   sections: [],
   sectionPreviewCache: new Map(),
   last: null,
@@ -30,11 +38,31 @@ async function api(path, options = {}) {
     ...options
   });
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
+    let body = {};
+    try {
+      body = await safeJson(response, path);
+    } catch (err) {
+      throw err;
+    }
     const message = body.error?.message || (path.includes('/calculate') ? 'Calculation service unavailable. Please try again.' : `Request failed (${response.status}).`);
     throw new Error(message);
   }
   return response;
+}
+
+async function safeJson(response, endpoint) {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    const text = await response.text().catch(() => '');
+    console.error('API returned non-JSON response', {
+      endpoint,
+      status: response.status,
+      contentType,
+      preview: text.slice(0, 160)
+    });
+    throw new Error('Calculation service unavailable or misconfigured.');
+  }
+  return response.json();
 }
 
 function setSaveStatus(message, tone = 'ok') {
@@ -94,7 +122,7 @@ function selectedSectionId() {
 
 async function loadSections() {
   const res = await api('/api/sections');
-  const data = await res.json();
+  const data = await safeJson(res, '/api/sections');
   state.sections = data.sections || [];
   const familySelect = $('sec_series');
   familySelect.innerHTML = (data.families || []).map((family) => `<option value="${esc(family.family)}">${esc(family.family)} (${family.count})</option>`).join('');
@@ -117,7 +145,7 @@ async function getSectionPreview() {
   if (!id) return null;
   if (state.sectionPreviewCache.has(id)) return state.sectionPreviewCache.get(id);
   const res = await api(`/api/sections/${encodeURIComponent(id)}/preview`);
-  const body = await res.json();
+  const body = await safeJson(res, `/api/sections/${id}/preview`);
   state.sectionPreviewCache.set(id, body.section);
   return body.section;
 }
@@ -344,7 +372,7 @@ async function calculate() {
   setSaveStatus('Calculating on secure backend...', 'busy');
   const input = buildRequest();
   const response = await api('/api/calculate', { method: 'POST', body: JSON.stringify(input) });
-  const result = await response.json();
+  const result = await safeJson(response, '/api/calculate');
   state.last = { input, result };
   renderResult(input, result);
   setSaveStatus(`Server calculation complete: ${result.status}`, result.status === 'PASS' ? 'ok' : 'error');
@@ -641,7 +669,7 @@ function bindEvents() {
 
 async function loadSources() {
   const res = await api('/api/sections/sources');
-  const data = await res.json();
+  const data = await safeJson(res, '/api/sections/sources');
   const host = $('sectionSourceIndex');
   if (!host) return;
   host.innerHTML = `<h3>Section Data Sources</h3>${(data.sources || []).map((src) => `<div class="source-item"><strong>${esc(src.sourceName)}</strong><div>${esc(src.edition)} - ${esc(src.region)}</div><div>${esc((src.sectionTypes || []).join(', '))}</div><small>${esc(src.reference)}</small></div>`).join('')}`;

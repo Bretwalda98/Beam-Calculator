@@ -4,7 +4,8 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const publicRoots = [
   path.join(root, 'index.html'),
-  path.join(root, 'public')
+  path.join(root, 'public'),
+  path.join(root, 'dist')
 ];
 
 const forbidden = [

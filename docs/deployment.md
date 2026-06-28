@@ -37,7 +37,36 @@ Required for production:
 - Database connection variables for PostgreSQL
 - Object storage credentials for uploaded logos/files, if enabled
 
-For GitHub Pages, keep the frontend static and deploy the API separately on a Node-capable HTTPS host such as Render, Fly.io or Railway. Configure the backend `ALLOWED_ORIGINS` to include `https://bretwalda98.github.io`.
+## Cloudflare Worker API
+
+The Cloudflare Worker backend is configured by `wrangler.toml`:
+
+```toml
+name = "beam-calculator-api"
+main = "src/worker.mjs"
+compatibility_date = "2026-06-28"
+compatibility_flags = ["nodejs_compat"]
+```
+
+Run locally:
+
+```bash
+npm run worker:dev
+```
+
+Deploy:
+
+```bash
+npm run worker:deploy
+```
+
+Required live API URL:
+
+```text
+https://beam-calculator-api.harrynixon98.workers.dev
+```
+
+The Cloudflare Pages frontend defaults to this API base URL when hosted at `https://beam-calculator.pages.dev` or `https://beamcalculatorstudio.com`.
 
 ## HTTPS
 

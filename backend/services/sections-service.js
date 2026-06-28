@@ -67,6 +67,11 @@ function visibleNumber(value) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function areaFromMass(section) {
+  const mass = visibleNumber(section?.mass_kg_m);
+  return mass ? mass / 7850 * 1_000_000 : null;
+}
+
 function buildSectionPreview(section) {
   if (!section) return null;
   const family = String(section.family || '').toUpperCase();
@@ -109,7 +114,7 @@ function buildSectionPreview(section) {
       tf_mm: geometry.tf_mm,
       t_mm: geometry.t_mm,
       r_mm: geometry.r_mm,
-      A_mm2: visibleNumber(section.A_mm2 || section.area_mm2),
+      A_mm2: visibleNumber(section.A_mm2 || section.area_mm2) || areaFromMass(section),
       mass_kg_m: visibleNumber(section.mass_kg_m),
       Iy_mm4: visibleNumber(section.Iy_mm4),
       Iz_mm4: visibleNumber(section.Iz_mm4),
