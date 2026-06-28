@@ -1699,7 +1699,7 @@ body.layout-mobile .report-frame{min-height:calc(100dvh - 132px)}
 body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760px,94vw)!important}
 .section-selector-layout{
   display:grid!important;
-  grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr)!important;
+  grid-template-columns:minmax(0,1fr)!important;
   gap:12px!important;
   align-items:start!important;
 }
@@ -1711,6 +1711,45 @@ body.layout-tablet .modal-panel,body.layout-tablet .settings-panel{width:min(760
   background:var(--panel-2)!important;
   padding:10px!important;
   box-shadow:none!important;
+}
+.sticky-section-preview{
+  position:relative!important;
+  z-index:6!important;
+  margin:0 0 10px!important;
+}
+body.layout-desktop .inputs-card{
+  position:sticky!important;
+  top:86px!important;
+  max-height:calc(100dvh - 120px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable both-edges;
+}
+body.layout-desktop .sticky-section-preview{
+  position:sticky!important;
+  top:0!important;
+  z-index:10!important;
+  margin:-2px 0 10px!important;
+}
+body.layout-desktop #sectionProfilePreview{
+  height:300px!important;
+}
+body.layout-desktop .section-selector-layout{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body.layout-tablet .inputs-card{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+}
+body.layout-tablet .sticky-section-preview{
+  position:sticky!important;
+  top:0!important;
+  z-index:10!important;
+}
+body.layout-tablet .section-selector-layout{
+  grid-template-columns:minmax(0,1fr)!important;
 }
 .section-preview-header{
   display:flex!important;
@@ -2003,7 +2042,7 @@ body.layout-mobile .inspector-tabs .tab-btn{
 }
 body.layout-mobile .section-selector-layout{gap:8px!important}
 body.layout-mobile #sectionProfilePreview{height:220px!important}
-body.layout-mobile .section-preview-panel{padding:8px!important}
+body.layout-mobile .section-preview-panel{padding:8px!important;position:relative!important;top:auto!important}
 body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 @media(max-width:600px){
   body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
@@ -2265,6 +2304,19 @@ body.layout-mobile .ad-actions .btn{min-height:40px!important}
   background:linear-gradient(180deg,rgba(245,158,11,.10),rgba(245,158,11,.04))!important;
   border-color:rgba(245,158,11,.28)!important;
 }
+body.layout-desktop .section-selector-layout,
+body.layout-tablet .section-selector-layout{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body.layout-desktop .section-preview-panel,
+body.layout-tablet .section-preview-panel{
+  box-shadow:0 10px 24px rgba(15,23,42,.08)!important;
+}
+body.layout-mobile .sticky-section-preview{
+  position:relative!important;
+  top:auto!important;
+  max-height:none!important;
+}
 @media(max-width:600px){
   .source-index-table-wrap{overflow:visible!important}
   .source-index-table{min-width:0!important;width:100%!important;display:block!important}
@@ -2423,6 +2475,19 @@ body.layout-mobile .ad-actions .btn{min-height:40px!important}
     <div class="pill">Multi-open accordions</div>
     <button id="inputRailToggle" class="dock-collapse" type="button" aria-label="Collapse input panel" title="Collapse input panel"><i class="bi bi-chevron-left"></i></button>
   </div>
+
+  <aside id="sectionPreviewPanel" class="section-preview-panel sticky-section-preview" aria-label="Selected section preview">
+    <div class="section-preview-header">
+      <div>
+        <div class="mini-title">Section preview</div>
+        <div id="sectionPreviewName" class="section-preview-name">No section selected</div>
+      </div>
+      <div id="sectionPreviewType" class="section-preview-type">Library</div>
+    </div>
+    <div id="sectionProfilePreview" class="section-profile-preview" role="img" aria-label="True scaled section geometry preview"></div>
+    <div id="sectionPreviewWarning" class="section-preview-warning hide">Geometry not available for this section.</div>
+    <div id="sectionPreviewFacts" class="section-preview-facts"></div>
+  </aside>
 
   <details id="projectAccordion" class="accordion" open>
     <summary>Project / beam setup</summary>
@@ -2602,18 +2667,6 @@ body.layout-mobile .ad-actions .btn{min-height:40px!important}
         </div>
         <div id="sec_summary" class="micro-note full"></div>
       </div>
-      <aside id="sectionPreviewPanel" class="section-preview-panel" aria-label="Selected section preview">
-        <div class="section-preview-header">
-          <div>
-            <div class="mini-title">Section preview</div>
-            <div id="sectionPreviewName" class="section-preview-name">No section selected</div>
-          </div>
-          <div id="sectionPreviewType" class="section-preview-type">Library</div>
-        </div>
-        <div id="sectionProfilePreview" class="section-profile-preview" role="img" aria-label="True scaled section geometry preview"></div>
-        <div id="sectionPreviewWarning" class="section-preview-warning hide">Geometry not available for this section.</div>
-        <div id="sectionPreviewFacts" class="section-preview-facts"></div>
-      </aside>
       </div>
     </div>
   </details>
@@ -5974,7 +6027,18 @@ function drawSectionPreviewFacts(sec, warning){
     ['Wpl,y', `${mods.Wpl ? Math.round(mods.Wpl).toLocaleString('en-GB') : '-'} mm³`],
     ['Av,z', `${sec.Avz_mm2 ? Math.round(sec.Avz_mm2).toLocaleString('en-GB') : '-'} mm²`]
   ];
-  host.innerHTML=facts.map(([k,v])=>`<div class="prop-chip"><strong>${escHtml(k)}</strong><span>${escHtml(v)}</span></div>`).join('');
+  const dimText=value=>Number.isFinite(+value)?`${fmt2(+value)} mm`:'not available';
+  const previewFacts=[
+    ['h', dimText(geometry.h)],
+    ['b', dimText(geometry.b)],
+    ['tw', dimText(geometry.tw)],
+    ['tf/t', dimText(geometry.tf || geometry.t)],
+    ['r', geometry.r ? `${fmt2(geometry.r)} mm` : (geometry.isCustom ? 'welded/square' : 'not available')],
+    ['A', `${ars.A ? Math.round(ars.A).toLocaleString('en-GB') : '-'} mm2`],
+    ['Mass', `${sec.mass_kg_m ? fmt2(sec.mass_kg_m) : '-'} kg/m`],
+    ['Wel,y', `${mods.Wel ? Math.round(mods.Wel).toLocaleString('en-GB') : '-'} mm3`]
+  ];
+  host.innerHTML=previewFacts.map(([k,v])=>`<div class="prop-chip"><strong>${escHtml(k)}</strong><span>${escHtml(v)}</span></div>`).join('');
   const warningEl=$('sectionPreviewWarning');
   if(warningEl){
     warningEl.textContent=geometry.warning || 'Geometry not available for this section.';
@@ -5992,7 +6056,8 @@ function renderSectionProfilePreview(sec){
     return;
   }
   const geometry=sectionGeometryModel(sec);
-  host.innerHTML=reportSectionSvg(sec,{width:680,height:420});
+  const mode=document.body.classList.contains('layout-mobile') ? 'compact' : 'full';
+  host.innerHTML=reportSectionSvg(sec,{width:760,height:500,mode});
   drawSectionPreviewFacts(sec,!geometry.hasDetailed);
   return;
   const canvas = $('sectionProfilePreview');
@@ -7762,10 +7827,11 @@ function reportSourceWarning(sec, srcInfo){
   const warnings=[];
   if(!srcInfo?.title || /source to be confirmed/i.test(srcInfo.title) || /source to be confirmed/i.test(srcInfo.url||'')) warnings.push('Section source to be confirmed.');
   const fam=getFamilyKey(sec);
+  const isCustom=String(fam||'').startsWith('CUSTOM_') || sec?.source_type==='custom';
   const isI=['IPE','IPN','HEA','HEB','HEM','HEAA','UB','UC','UBP','J','CUSTOM_I','CUSTOM_PLATE_GIRDER'].includes(fam);
   const needsI=isI && !(sectionDim(sec,['tw_mm']) && sectionDim(sec,['tf_mm']));
   if(needsI) warnings.push('Geometry not available for true I/H profile: missing web/flange thickness.');
-  if(!sectionDim(sec,['r_mm','root_radius_mm','r1_mm'])) warnings.push('Radius not available.');
+  if(!isCustom && !sectionDim(sec,['r_mm','root_radius_mm','r1_mm'])) warnings.push('Radius not available.');
   return warnings;
 }
 function sectionGeometryModel(sec){
@@ -7785,6 +7851,7 @@ function sectionGeometryModel(sec){
   const isTee=['CUSTOM_TEE','TEE','T'].includes(fam);
   const isAngle=['CUSTOM_ANGLE','RSA','ANGLE','L'].includes(fam);
   const isSolidRect=['CUSTOM_RECT','RECT','SOLID_RECT'].includes(fam);
+  const isCustom=String(fam||'').startsWith('CUSTOM_') || sec?.source_type==='custom';
   const isKnownSteel=isI||isBox||isChs||isChannel||isTee||isAngle;
   const shape=isI?'i':isBox?'box':isChs?'chs':isChannel?'channel':isTee?'tee':isAngle?'angle':isSolidRect?'solid_rect':'unknown';
   const missing=[];
@@ -7794,79 +7861,195 @@ function sectionGeometryModel(sec){
   if(shape==='channel'||shape==='tee'){ if(!h) missing.push('h'); if(!b) missing.push('b'); if(!tw) missing.push('tw'); if(!tf) missing.push('tf'); }
   if(shape==='angle'){ if(!h) missing.push('a'); if(!b) missing.push('b'); if(!t) missing.push('t'); }
   if(shape==='solid_rect'){ if(!h) missing.push('h'); if(!b) missing.push('b'); }
-  if(isKnownSteel && !r) missing.push('r');
+  if(isKnownSteel && !isCustom && !r) missing.push('r');
   const geometryMissing=missing.filter(x=>x!=='r'&&x!=='r2');
   const hasDetailed=geometryMissing.length===0 && shape!=='unknown';
   const hasEnvelope=!!(h&&b);
   const warning=!hasDetailed
     ? (hasEnvelope ? `Section envelope only. True profile geometry not available: missing ${geometryMissing.join(', ') || 'profile detail'}.` : 'Geometry not available for this section.')
-    : (!r && isKnownSteel ? 'radius not available' : '');
-  return {fam,shape,h,b,tw,tf,t,r,r2,missing,geometryMissing,hasDetailed,hasEnvelope,isKnownSteel,isSolidRect,warning};
+    : (!isCustom && !r && isKnownSteel ? 'Radius not available from source data.' : '');
+  return {fam,shape,h,b,tw,tf,t,r,r2,missing,geometryMissing,hasDetailed,hasEnvelope,isKnownSteel,isSolidRect,isCustom,warning};
 }
 function reportSectionSvg(sec, opts={}){
   const g=sectionGeometryModel(sec);
+  const mode=opts.mode || 'report';
+  const compact=mode==='compact';
+  const printMode=mode==='report';
   const W=opts.width||420, H=opts.height||250;
-  const markerId=`sectionArrow_${String(sec?.name||'section').replace(/[^a-z0-9]+/gi,'_')}_${W}_${H}`;
-  const padX=70, padY=34;
+  const markerId=`sectionArrow_${String(sec?.name||'section').replace(/[^a-z0-9]+/gi,'_')}_${W}_${H}_${mode}`;
+  const font=compact?8.5:(printMode?8.8:9.4);
+  const leftBand=compact?68:76;
+  const rightBand=compact?78:132;
+  const topBand=compact?46:54;
+  const bottomBand=compact?72:82;
   const overallH=Math.max(1,g.h||1), overallB=Math.max(1,g.b||1);
-  const scale=Math.min((W-2*padX)/overallB,(H-2*padY)/overallH);
+  const scale=Math.min((W-leftBand-rightBand)/overallB,(H-topBand-bottomBand)/overallH);
   const dw=overallB*scale, dh=overallH*scale;
-  const x0=(W-dw)/2, y0=(H-dh)/2+2;
+  const x0=leftBand+(W-leftBand-rightBand-dw)/2;
+  const y0=topBand+(H-topBand-bottomBand-dh)/2;
   const sx=x=>x0+x*scale;
   const sy=y=>y0+dh-y*scale;
-  const rect=(x,y,w,h,cls='steel')=>`<rect class="${cls}" x="${sx(x).toFixed(2)}" y="${sy(y+h).toFixed(2)}" width="${(w*scale).toFixed(2)}" height="${(h*scale).toFixed(2)}"/>`;
-  const dim=(x1,y1,x2,y2,label)=>`<line class="dim" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/><text class="dimtext" x="${((x1+x2)/2).toFixed(2)}" y="${((y1+y2)/2-4).toFixed(2)}">${escHtml(label)}</text>`;
-  const axis=g.hasEnvelope ? `<line class="axis" x1="${(x0-18).toFixed(2)}" y1="${(y0+dh/2).toFixed(2)}" x2="${(x0+dw+18).toFixed(2)}" y2="${(y0+dh/2).toFixed(2)}"/><line class="axis" x1="${(x0+dw/2).toFixed(2)}" y1="${(y0-18).toFixed(2)}" x2="${(x0+dw/2).toFixed(2)}" y2="${(y0+dh+18).toFixed(2)}"/><circle class="centroid" cx="${(x0+dw/2).toFixed(2)}" cy="${(y0+dh/2).toFixed(2)}" r="3"/><text class="axislabel" x="${(x0+dw-18).toFixed(2)}" y="${(y0+dh/2-6).toFixed(2)}">y-y</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+16).toFixed(2)}">z-z / ENA</text><text class="axislabel" x="${(x0+dw/2+6).toFixed(2)}" y="${(y0+dh/2+14).toFixed(2)}">PNA</text>` : '';
-  const radiusNote=(x,y)=>{
-    const parts=[];
-    if(g.r) parts.push(`r=${fmt2(g.r)} mm`);
-    if(g.r2) parts.push(`r2=${fmt2(g.r2)} mm`);
-    return parts.length ? `<text class="note" x="${x.toFixed(2)}" y="${y.toFixed(2)}">${escHtml(parts.join('; '))}</text>` : '';
+  const sp=(x,y)=>[sx(x).toFixed(2),sy(y).toFixed(2)].join(' ');
+  const rect=(x,y,w,h,cls='steel')=>`<rect class="${cls}" x="${sx(x).toFixed(2)}" y="${sy(y+h).toFixed(2)}" width="${Math.max(0,w*scale).toFixed(2)}" height="${Math.max(0,h*scale).toFixed(2)}"/>`;
+  const geometryBox={x:x0-3,y:y0-3,w:dw+6,h:dh+6};
+  const placed=[];
+  const callouts=[];
+  let calloutIndex=1;
+  const textWidth=text=>Math.max(18,String(text).length*font*.56+9);
+  const makeBox=(text,x,y,anchor='start')=>{
+    const w=textWidth(text), h=font+7;
+    let bx=x;
+    if(anchor==='middle') bx=x-w/2;
+    if(anchor==='end') bx=x-w;
+    return {x:bx,y:y-font-4,w,h};
   };
+  const intersects=(a,b,pad=3)=>!(a.x+a.w+pad<b.x||b.x+b.w+pad<a.x||a.y+a.h+pad<b.y||b.y+b.h+pad<a.y);
+  const inBounds=box=>box.x>=4&&box.y>=4&&box.x+box.w<=W-4&&box.y+box.h<=H-4;
+  const clearFor=box=>inBounds(box)&&!placed.some(item=>intersects(box,item.box))&&!intersects(box,geometryBox,2);
+  const labelElements=[];
+  const leaderElements=[];
+  function placeLabel({id,text,target,candidates,priority='high',leader=true,avoidGeometry=true}){
+    if(!text) return;
+    if(compact && !['h','b','y','z','name'].includes(id||'')){
+      if(priority!=='high') callouts.push({id,text});
+      return;
+    }
+    for(const c of candidates){
+      const anchor=c.anchor||'start';
+      const box=makeBox(text,c.x,c.y,anchor);
+      const valid=inBounds(box)&&!placed.some(item=>intersects(box,item.box))&&(!avoidGeometry||!intersects(box,geometryBox,2));
+      if(valid){
+        placed.push({id,box});
+        const tx=anchor==='middle'?box.x+box.w/2:anchor==='end'?box.x+box.w-4:box.x+4;
+        const ty=box.y+font+3;
+        labelElements.push(`<g class="label ${priority}"><rect class="label-bg" x="${box.x.toFixed(2)}" y="${box.y.toFixed(2)}" width="${box.w.toFixed(2)}" height="${box.h.toFixed(2)}" rx="3"/><text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" text-anchor="${anchor}">${escHtml(text)}</text></g>`);
+        if(leader && target){
+          const lx=anchor==='end'?box.x+box.w:anchor==='middle'?box.x+box.w/2:box.x;
+          const ly=box.y+box.h/2;
+          leaderElements.push(`<line class="leader" x1="${target.x.toFixed(2)}" y1="${target.y.toFixed(2)}" x2="${lx.toFixed(2)}" y2="${ly.toFixed(2)}"/>`);
+        }
+        return;
+      }
+    }
+    if(compact) return;
+    if(priority==='high' || priority==='medium'){
+      const n=calloutIndex++;
+      callouts.push({id,text,n});
+      if(target) labelElements.push(`<g class="callout-dot"><circle cx="${target.x.toFixed(2)}" cy="${target.y.toFixed(2)}" r="7"/><text x="${target.x.toFixed(2)}" y="${(target.y+3).toFixed(2)}">${n}</text></g>`);
+    }
+  }
+  function dimLine(x1,y1,x2,y2){
+    return `<line class="dim" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+  }
+  function addDimension(id,text,x1,y1,x2,y2,candidates,priority='high'){
+    leaderElements.push(dimLine(x1,y1,x2,y2));
+    placeLabel({id,text,target:{x:(x1+x2)/2,y:(y1+y2)/2},candidates,priority,leader:false,avoidGeometry:true});
+  }
+  function iSectionPath(){
+    const webX=(g.b-g.tw)/2, wl=webX, wr=webX+g.tw;
+    const rr=Math.max(0,Math.min(g.r||0,g.tf*.9,(g.b-g.tw)/2*.9,(g.h-2*g.tf)/2*.9));
+    if(!rr){
+      return `M ${sp(0,0)} L ${sp(g.b,0)} L ${sp(g.b,g.tf)} L ${sp(wr,g.tf)} L ${sp(wr,g.h-g.tf)} L ${sp(g.b,g.h-g.tf)} L ${sp(g.b,g.h)} L ${sp(0,g.h)} L ${sp(0,g.h-g.tf)} L ${sp(wl,g.h-g.tf)} L ${sp(wl,g.tf)} L ${sp(0,g.tf)} Z`;
+    }
+    const rpx=(rr*scale).toFixed(2);
+    return [
+      `M ${sp(0,0)}`,
+      `L ${sp(g.b,0)}`,
+      `L ${sp(g.b,g.tf)}`,
+      `L ${sp(wr+rr,g.tf)}`,
+      `A ${rpx} ${rpx} 0 0 0 ${sp(wr,g.tf+rr)}`,
+      `L ${sp(wr,g.h-g.tf-rr)}`,
+      `A ${rpx} ${rpx} 0 0 0 ${sp(wr+rr,g.h-g.tf)}`,
+      `L ${sp(g.b,g.h-g.tf)}`,
+      `L ${sp(g.b,g.h)}`,
+      `L ${sp(0,g.h)}`,
+      `L ${sp(0,g.h-g.tf)}`,
+      `L ${sp(wl-rr,g.h-g.tf)}`,
+      `A ${rpx} ${rpx} 0 0 0 ${sp(wl,g.h-g.tf-rr)}`,
+      `L ${sp(wl,g.tf+rr)}`,
+      `A ${rpx} ${rpx} 0 0 0 ${sp(wl-rr,g.tf)}`,
+      `L ${sp(0,g.tf)}`,
+      'Z'
+    ].join(' ');
+  }
+  function channelPath(){
+    const rr=Math.max(0,Math.min(g.r||0,g.tf*.9,g.tw*.9));
+    if(!rr) return `M ${sp(0,0)} L ${sp(g.b,0)} L ${sp(g.b,g.tf)} L ${sp(g.tw,g.tf)} L ${sp(g.tw,g.h-g.tf)} L ${sp(g.b,g.h-g.tf)} L ${sp(g.b,g.h)} L ${sp(0,g.h)} Z`;
+    const rpx=(rr*scale).toFixed(2);
+    return [`M ${sp(0,0)}`,`L ${sp(g.b,0)}`,`L ${sp(g.b,g.tf)}`,`L ${sp(g.tw+rr,g.tf)}`,`A ${rpx} ${rpx} 0 0 0 ${sp(g.tw,g.tf+rr)}`,`L ${sp(g.tw,g.h-g.tf-rr)}`,`A ${rpx} ${rpx} 0 0 0 ${sp(g.tw+rr,g.h-g.tf)}`,`L ${sp(g.b,g.h-g.tf)}`,`L ${sp(g.b,g.h)}`,`L ${sp(0,g.h)}`,'Z'].join(' ');
+  }
   let body='';
   let note=g.warning || '';
   if(g.shape==='i' && g.hasDetailed){
     const webX=(g.b-g.tw)/2;
-    body=rect(0,0,g.b,g.tf)+rect(webX,g.tf,g.tw,g.h-2*g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
-    body+=radiusNote(x0+dw-94,y0+18);
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`);
-    body+=dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
-    body+=dim(sx(webX),y0+dh/2+18,sx(webX+g.tw),y0+dh/2+18,`tw=${fmt2(g.tw)}`);
-    body+=dim(x0+dw+18,y0,x0+dw+18,y0+g.tf*scale,`tf=${fmt2(g.tf)}`);
+    body=`<path class="steel" d="${iSectionPath()}"/>`;
+    const filletTarget={x:sx(webX+g.tw),y:sy(g.h-g.tf-(g.r||Math.min(g.tf,g.tw)/2))};
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'},{x:x0+4,y:y0-10,anchor:'start'}]);
+    if(!compact) addDimension('tw',`tw=${fmt2(g.tw)} mm`,sx(webX),y0+dh+48,sx(webX+g.tw),y0+dh+48,[{x:sx(webX+g.tw/2),y:y0+dh+66,anchor:'middle'},{x:x0+dw+24,y:y0+dh-18,anchor:'start'}]);
+    if(!compact) addDimension('tf',`tf=${fmt2(g.tf)} mm`,x0+dw+22,y0,x0+dw+22,y0+g.tf*scale,[{x:x0+dw+33,y:y0+g.tf*scale+font+7,anchor:'start'},{x:x0+dw+33,y:y0+20,anchor:'start'}]);
+    if(g.r && !compact) placeLabel({id:'r',text:`r=${fmt2(g.r)} mm`,target:filletTarget,candidates:[{x:x0+dw+34,y:y0+font+7,anchor:'start'},{x:x0+dw+34,y:y0+dh*.22,anchor:'start'},{x:x0+dw/2+24,y:y0-18,anchor:'start'}],priority:'high'});
   }else if(g.shape==='box' && g.hasDetailed){
     const rr=(g.r||0)*scale;
     body=`<rect class="steel" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${dw.toFixed(2)}" height="${dh.toFixed(2)}" rx="${rr.toFixed(2)}"/><rect class="void" x="${(x0+g.t*scale).toFixed(2)}" y="${(y0+g.t*scale).toFixed(2)}" width="${Math.max(0,dw-2*g.t*scale).toFixed(2)}" height="${Math.max(0,dh-2*g.t*scale).toFixed(2)}" rx="${Math.max(0,rr-g.t*scale).toFixed(2)}"/>`;
-    body+=radiusNote(x0+dw-94,y0+18);
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.t*scale,`t=${fmt2(g.t)}`);
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
+    if(!compact) addDimension('t',`t=${fmt2(g.t)} mm`,x0+dw+22,y0,x0+dw+22,y0+g.t*scale,[{x:x0+dw+33,y:y0+g.t*scale+font+7,anchor:'start'}]);
+    if(g.r && !compact) placeLabel({id:'r',text:`r=${fmt2(g.r)} mm`,target:{x:x0+dw-rr*.35,y:y0+rr*.35},candidates:[{x:x0+dw+33,y:y0+font+7,anchor:'start'}],priority:'high'});
   }else if(g.shape==='chs' && g.hasDetailed){
     const D=sectionDim(sec,['D_mm','h_mm','b_mm']);
     const rad=D*scale/2, cx=x0+dw/2, cy=y0+dh/2;
     body=`<circle class="steel" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${rad.toFixed(2)}"/><circle class="void" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${Math.max(0,rad-g.t*scale).toFixed(2)}"/>`;
-    body+=dim(cx-rad,y0+dh+24,cx+rad,y0+dh+24,`D=${fmt2(D)} mm`)+dim(cx+rad+18,cy-rad,cx+rad+18,cy-rad+g.t*scale,`t=${fmt2(g.t)}`);
+    addDimension('D',`D=${fmt2(D)} mm`,cx-rad,y0+dh+24,cx+rad,y0+dh+24,[{x:cx,y:y0+dh+43,anchor:'middle'}]);
+    if(!compact) addDimension('t',`t=${fmt2(g.t)} mm`,cx+rad+22,cy-rad,cx+rad+22,cy-rad+g.t*scale,[{x:cx+rad+34,y:cy-rad+g.t*scale+font+7,anchor:'start'}]);
   }else if(g.shape==='channel' && g.hasDetailed){
-    body=rect(0,0,g.tw,g.h)+rect(0,0,g.b,g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
-    body+=radiusNote(x0+dw-94,y0+18);
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0,x0+dw+18,y0+g.tf*scale,`tf=${fmt2(g.tf)}`)+dim(x0,y0+dh/2+18,x0+g.tw*scale,y0+dh/2+18,`tw=${fmt2(g.tw)}`);
+    body=`<path class="steel" d="${channelPath()}"/>`;
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
+    if(!compact) addDimension('tf',`tf=${fmt2(g.tf)} mm`,x0+dw+22,y0,x0+dw+22,y0+g.tf*scale,[{x:x0+dw+33,y:y0+g.tf*scale+font+7,anchor:'start'}]);
+    if(!compact) addDimension('tw',`tw=${fmt2(g.tw)} mm`,x0,y0+dh+48,x0+g.tw*scale,y0+dh+48,[{x:x0+g.tw*scale/2,y:y0+dh+66,anchor:'middle'}]);
+    if(g.r && !compact) placeLabel({id:'r',text:`r=${fmt2(g.r)} mm`,target:{x:sx(g.tw),y:sy(g.h-g.tf-(g.r||0))},candidates:[{x:x0+dw+33,y:y0+font+7,anchor:'start'}],priority:'high'});
   }else if(g.shape==='tee' && g.hasDetailed){
     body=rect((g.b-g.tw)/2,0,g.tw,g.h-g.tf)+rect(0,g.h-g.tf,g.b,g.tf);
-    body+=radiusNote(x0+dw-94,y0+18);
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
+    if(g.r && !compact) placeLabel({id:'r',text:`r=${fmt2(g.r)} mm`,target:{x:sx((g.b+g.tw)/2),y:sy(g.h-g.tf-(g.r||0))},candidates:[{x:x0+dw+33,y:y0+font+7,anchor:'start'}],priority:'high'});
   }else if(g.shape==='angle' && g.hasDetailed){
     body=rect(0,0,g.t,g.h)+rect(0,0,g.b,g.t);
-    body+=radiusNote(x0+dw-94,y0+18);
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`a=${fmt2(g.h)} mm`)+dim(x0+dw+18,y0+dh-g.t*scale,x0+dw+18,y0+dh,`t=${fmt2(g.t)}`);
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`a=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
+    if(!compact) addDimension('t',`t=${fmt2(g.t)} mm`,x0+dw+22,y0+dh-g.t*scale,x0+dw+22,y0+dh,[{x:x0+dw+33,y:y0+dh-g.t*scale/2+font/2,anchor:'start'}]);
+    if(g.r && !compact) placeLabel({id:'r',text:`r=${fmt2(g.r)} mm`,target:{x:sx(g.t),y:sy(g.t)},candidates:[{x:x0+dw+33,y:y0+font+7,anchor:'start'}],priority:'medium'});
   }else if(g.shape==='solid_rect' && g.hasDetailed){
     body=rect(0,0,g.b,g.h,'steel');
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(g.b)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(g.h)} mm`);
+    addDimension('b',`b=${fmt2(g.b)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(g.h)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
   }else if(g.hasEnvelope){
     body=`<rect class="envelope" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${dw.toFixed(2)}" height="${dh.toFixed(2)}"/>`;
-    body+=dim(x0,y0+dh+24,x0+dw,y0+dh+24,`b=${fmt2(overallB)} mm`)+dim(x0-26,y0,x0-26,y0+dh,`h=${fmt2(overallH)} mm`);
-    body+=`<text class="note" x="${(x0+8).toFixed(2)}" y="${(y0+18).toFixed(2)}">section envelope only</text>`;
+    addDimension('b',`b=${fmt2(overallB)} mm`,x0,y0+dh+24,x0+dw,y0+dh+24,[{x:x0+dw/2,y:y0+dh+43,anchor:'middle'}]);
+    addDimension('h',`h=${fmt2(overallH)} mm`,x0-28,y0,x0-28,y0+dh,[{x:x0-38,y:y0+dh/2,anchor:'end'}]);
+    placeLabel({id:'envelope',text:'section envelope only',target:null,candidates:[{x:x0+6,y:y0-12,anchor:'start'}],priority:'high',leader:false,avoidGeometry:false});
   }else{
     body=`<text class="missing-title" x="${(W/2).toFixed(2)}" y="${(H/2-8).toFixed(2)}">Geometry not available for this section.</text><text class="missing-note" x="${(W/2).toFixed(2)}" y="${(H/2+14).toFixed(2)}">Tabulated properties are still shown separately.</text>`;
     note='';
   }
-  return `<svg class="section-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Section drawing ${escHtml(sec?.name||'section')}"><defs><marker id="${markerId}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text,#334155)"/></marker></defs><style>.section-svg{background:var(--panel,#fff)}.steel{fill:var(--section-steel,#e5e7eb);stroke:var(--text,#111827);stroke-width:1.4}.envelope{fill:none;stroke:#b45309;stroke-width:1.6;stroke-dasharray:7 4}.void{fill:var(--panel,#fff);stroke:var(--text,#111827);stroke-width:1}.dim{stroke:var(--muted,#334155);stroke-width:1;marker-start:url(#${markerId});marker-end:url(#${markerId})}.axis{stroke:#2563eb;stroke-width:1;stroke-dasharray:5 4}.centroid{fill:#dc2626}.dimtext,.axislabel,.note,.missing-title,.missing-note{font:700 10px Segoe UI,Arial,sans-serif;fill:var(--text,#111827)}.note{fill:#b45309}.missing-title{text-anchor:middle;font-size:13px}.missing-note{text-anchor:middle;fill:var(--muted,#475569)}</style>${body}${axis}${note?`<text class="note" x="12" y="${H-10}">${escHtml(note)}</text>`:''}</svg>`;
+  if(g.hasEnvelope){
+    const cx=x0+dw/2, cy=y0+dh/2;
+    leaderElements.push(`<line class="axis yy" x1="${(x0-15).toFixed(2)}" y1="${cy.toFixed(2)}" x2="${(x0+dw+15).toFixed(2)}" y2="${cy.toFixed(2)}"/>`);
+    leaderElements.push(`<line class="axis zz" x1="${cx.toFixed(2)}" y1="${(y0-15).toFixed(2)}" x2="${cx.toFixed(2)}" y2="${(y0+dh+15).toFixed(2)}"/>`);
+    labelElements.push(`<circle class="centroid" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${compact?2.5:3.2}"/>`);
+    placeLabel({id:'y',text:'y-y',target:{x:x0+dw+12,y:cy},candidates:[{x:x0+dw+28,y:cy-font*.2,anchor:'start'},{x:x0+dw-36,y:cy-12,anchor:'middle'}],priority:'high',leader:false,avoidGeometry:true});
+    placeLabel({id:'z',text:'z-z',target:{x:cx,y:y0-12},candidates:[{x:cx+18,y:y0-20,anchor:'start'},{x:cx,y:y0-20,anchor:'middle'}],priority:'high',leader:false,avoidGeometry:true});
+    if(!compact) placeLabel({id:'centroid',text:'centroid',target:{x:cx,y:cy},candidates:[{x:x0+dw+28,y:cy+font+14,anchor:'start'},{x:x0-10,y:cy+font+16,anchor:'end'}],priority:'high'});
+    if(!compact) callouts.push({text:'ENA/PNA pass through centroid unless separately calculated.'});
+  }
+  const legendItems=callouts.filter(item=>item.text).slice(0,5);
+  const legend=(!compact && legendItems.length)?`<g class="callout-legend">${legendItems.map((item,i)=>`<text x="12" y="${(H-8-(legendItems.length-1-i)*12).toFixed(2)}">${item.n?item.n+'. ':''}${escHtml(item.text)}</text>`).join('')}</g>`:'';
+  const warningText=note&&!compact?`<text class="note" x="12" y="18">${escHtml(note)}</text>`:'';
+  const style=printMode
+    ? `.section-svg{background:#fff}.steel{fill:#f8fafc;stroke:#111827;stroke-width:1.15}.envelope{fill:none;stroke:#92400e;stroke-width:1.2;stroke-dasharray:7 4}.void{fill:#fff;stroke:#111827;stroke-width:.9}.dim,.leader{stroke:#374151;stroke-width:.85;marker-start:url(#${markerId});marker-end:url(#${markerId})}.leader{marker-start:none}.axis{stroke:#4b5563;stroke-width:.75;stroke-dasharray:5 4}.centroid{fill:#111827;stroke:#fff;stroke-width:.75}.label-bg{fill:#fff;stroke:#d1d5db;stroke-width:.5}.label text,.callout-legend text{font:700 ${font}px Segoe UI,Arial,sans-serif;fill:#111827}.callout-dot circle{fill:#fff;stroke:#111827}.callout-dot text{font:800 8px Segoe UI,Arial,sans-serif;fill:#111827;text-anchor:middle}.note{font:800 ${font}px Segoe UI,Arial,sans-serif;fill:#92400e}.missing-title{text-anchor:middle;font:800 13px Segoe UI,Arial,sans-serif;fill:#111827}.missing-note{text-anchor:middle;font:700 10px Segoe UI,Arial,sans-serif;fill:#4b5563}`
+    : `.section-svg{background:var(--panel,#fff)}.steel{fill:var(--section-steel,#dbe4ef);stroke:var(--text,#111827);stroke-width:1.35}.envelope{fill:none;stroke:#b45309;stroke-width:1.35;stroke-dasharray:7 4}.void{fill:var(--panel,#fff);stroke:var(--text,#111827);stroke-width:1}.dim,.leader{stroke:var(--muted,#334155);stroke-width:.95;marker-start:url(#${markerId});marker-end:url(#${markerId})}.leader{marker-start:none}.axis{stroke:var(--accent,#2563eb);stroke-width:.9;stroke-dasharray:5 4}.centroid{fill:var(--danger,#dc2626);stroke:var(--panel,#fff);stroke-width:.8}.label-bg{fill:var(--panel,#fff);stroke:var(--border,#d1d5db);stroke-width:.7}.label text,.callout-legend text{font:800 ${font}px Segoe UI,Arial,sans-serif;fill:var(--text,#111827)}.callout-dot circle{fill:var(--panel,#fff);stroke:var(--text,#111827)}.callout-dot text{font:900 8px Segoe UI,Arial,sans-serif;fill:var(--text,#111827);text-anchor:middle}.note{font:900 ${font}px Segoe UI,Arial,sans-serif;fill:#b45309}.missing-title{text-anchor:middle;font:900 13px Segoe UI,Arial,sans-serif;fill:var(--text,#111827)}.missing-note{text-anchor:middle;font:700 10px Segoe UI,Arial,sans-serif;fill:var(--muted,#475569)}`;
+  return `<svg class="section-svg section-svg-${escHtml(mode)}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Section drawing ${escHtml(sec?.name||'section')}"><defs><marker id="${markerId}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${printMode?'#374151':'var(--muted,#334155)'}"/></marker></defs><style>${style}</style>${body}${leaderElements.join('')}${labelElements.join('')}${warningText}${legend}</svg>`;
 }
 function buildReportLoadObjects(rawLoads, unit){
   const out=[];
