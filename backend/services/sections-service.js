@@ -2,6 +2,15 @@ const { PROFILE_DB } = require('../data/sections-database');
 
 const FAMILY_ORDER = ['UB', 'UC', 'UBP', 'J', 'PFC', 'CH', 'RHS', 'HEA', 'HEB', 'HEM', 'HEAA', 'IPE', 'IPN', 'UPE', 'UPN'];
 
+function sectionId(family, name) {
+  return `${String(family || '').toUpperCase()}|${String(name || '')}`;
+}
+
+function parseSectionId(id) {
+  const [family, ...nameParts] = String(id || '').split('|');
+  return { family: family || '', name: nameParts.join('|') };
+}
+
 function familyKeys() {
   const keys = Object.keys(PROFILE_DB || {});
   return [
@@ -17,9 +26,27 @@ function listSectionFamilies() {
   }));
 }
 
+function listPublicSections() {
+  return familyKeys().flatMap((family) => (PROFILE_DB[family] || []).map((row) => ({
+    id: sectionId(family, row.name),
+    family,
+    designation: row.name,
+    mass_kg_m: Number(row.mass_kg_m || 0),
+    sourceName: row.ltb_source_name || row.ltb_data_source || 'Source to be confirmed',
+    sourceEdition: row.ltb_source_edition || '',
+    hasPreviewGeometry: Boolean((row.h_mm || row.d_mm) && (row.b_mm || row.D_mm || row.diameter_mm))
+  })));
+}
+
 function listSectionNames(family) {
   const rows = PROFILE_DB[String(family || '').toUpperCase()] || [];
-  return rows.map((row) => row.name).filter(Boolean);
+  return rows.map((row) => ({
+    id: sectionId(family, row.name),
+    name: row.name,
+    designation: row.name,
+    mass_kg_m: Number(row.mass_kg_m || 0),
+    sourceName: row.ltb_source_name || row.ltb_data_source || 'Source to be confirmed'
+  })).filter((row) => row.name);
 }
 
 function getSection(family, name) {
@@ -28,6 +55,70 @@ function getSection(family, name) {
   const section = rows.find((row) => row.name === name);
   if (!section) return null;
   return { ...section, family: key };
+}
+
+function getSectionById(id) {
+  const parsed = parseSectionId(decodeURIComponent(String(id || '')));
+  return getSection(parsed.family, parsed.name);
+}
+
+function visibleNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function buildSectionPreview(section) {
+  if (!section) return null;
+  const family = String(section.family || '').toUpperCase();
+  const isHollow = ['RHS', 'SHS', 'CFRHS'].includes(family);
+  const isChannel = ['PFC', 'CH', 'UPE', 'UPN'].includes(family);
+  const isCircular = ['CHS', 'PIPE'].includes(family);
+  const h = visibleNumber(section.h_mm || section.d_mm || section.depth_mm);
+  const b = visibleNumber(section.b_mm || section.width_mm);
+  const geometry = {
+    type: isCircular ? 'chs' : isHollow ? 'rhs' : isChannel ? 'channel' : 'i',
+    family,
+    h_mm: h,
+    b_mm: b,
+    diameter_mm: visibleNumber(section.D_mm || section.diameter_mm),
+    tw_mm: visibleNumber(section.tw_mm),
+    tf_mm: visibleNumber(section.tf_mm || section.t_mm),
+    t_mm: visibleNumber(section.t_mm || section.thickness_mm),
+    r_mm: visibleNumber(section.r_mm || section.r1_mm),
+    r2_mm: visibleNumber(section.r2_mm),
+    centroid: {
+      y_mm: visibleNumber(section.cy_mm),
+      z_mm: visibleNumber(section.cz_mm)
+    }
+  };
+  const warnings = [];
+  if (!geometry.h_mm && !geometry.diameter_mm) warnings.push('Overall section depth/diameter is not available.');
+  if (!isCircular && !geometry.b_mm) warnings.push('Overall section width is not available.');
+  if (geometry.type === 'i' && (!geometry.tw_mm || !geometry.tf_mm)) warnings.push('tw/tf missing - true I/H profile cannot be drawn.');
+  if (['i', 'channel', 'rhs'].includes(geometry.type) && !geometry.r_mm) warnings.push('Radius not available from source data.');
+  return {
+    id: sectionId(family, section.name),
+    designation: section.name,
+    family,
+    source: getSectionSourceInfo(section),
+    geometry,
+    visibleProperties: {
+      h_mm: geometry.h_mm,
+      b_mm: geometry.b_mm,
+      tw_mm: geometry.tw_mm,
+      tf_mm: geometry.tf_mm,
+      t_mm: geometry.t_mm,
+      r_mm: geometry.r_mm,
+      A_mm2: visibleNumber(section.A_mm2 || section.area_mm2),
+      mass_kg_m: visibleNumber(section.mass_kg_m),
+      Iy_mm4: visibleNumber(section.Iy_mm4),
+      Iz_mm4: visibleNumber(section.Iz_mm4),
+      Wel_y_mm3: visibleNumber(section.Wel_y_mm3),
+      Wpl_y_mm3: visibleNumber(section.Wpl_y_mm3),
+      Avz_mm2: visibleNumber(section.Avz_mm2)
+    },
+    geometryWarnings: warnings
+  };
 }
 
 function getSectionSourceInfo(section) {
@@ -106,9 +197,14 @@ function inferRegion(sourceName, family) {
 }
 
 module.exports = {
+  sectionId,
+  parseSectionId,
   listSectionFamilies,
+  listPublicSections,
   listSectionNames,
   getSection,
+  getSectionById,
+  buildSectionPreview,
   getSectionSourceInfo,
   buildSectionSourceIndex
 };

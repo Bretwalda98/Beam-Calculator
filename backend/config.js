@@ -8,7 +8,7 @@ const config = {
   publicDir: rootDir,
   storageDir: process.env.BEAM_STORAGE_DIR || path.join(rootDir, 'storage'),
   sessionSecret: process.env.SESSION_SECRET || '',
-  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://127.0.0.1:4173,http://localhost:4173')
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:8765,http://localhost:8765,https://bretwalda98.github.io')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean),
@@ -27,6 +27,9 @@ const config = {
 function requireProductionSecret() {
   if (config.env === 'production' && config.sessionSecret.length < 32) {
     throw new Error('SESSION_SECRET must be at least 32 characters in production.');
+  }
+  if (config.env === 'production' && config.allowedOrigins.some((origin) => origin === '*')) {
+    throw new Error('Wildcard ALLOWED_ORIGINS is not permitted in production.');
   }
 }
 

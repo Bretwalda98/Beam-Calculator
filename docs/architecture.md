@@ -4,13 +4,13 @@
 
 The application is now structured as a backend-first web app.
 
-- Frontend: `index.html`, `public/app.js`, `public/styles.css`
+- Frontend: `index.html`, `public/secure-app.js`, `public/styles.css`
 - Backend API: `server.js`, `backend/**`
 - Server data: `backend/data/sections-database.js`, `backend/data/materials.js`
 - Legacy parity source: `backend/legacy/legacy-index.html`
 - Database design: `backend/db/schema.sql`
 
-The public frontend is only a presentation layer. It handles forms, theme/layout preferences, diagram drawing from returned arrays, and report/download actions. It does not contain engineering equations, design rules, material tables, or section properties.
+The public frontend is only a presentation layer. It handles forms, theme/layout preferences, diagram drawing from returned arrays, and report/download actions. It does not contain engineering equations, design rules, material tables, section properties, or the full section database.
 
 ## Request Flow
 
@@ -18,7 +18,7 @@ The public frontend is only a presentation layer. It handles forms, theme/layout
 2. Browser sends normalized JSON to `POST /api/calculate`.
 3. Server validates inputs, loads the section/material from server files, runs the finite element solver and design checks, and returns result data.
 4. Browser renders the returned summary, checks, and graph series.
-5. Server-generated reports are requested through `POST /api/report/html`, `POST /api/report/latex`, or the lightweight fallback `POST /api/pdf`.
+5. Server-generated reports are requested through `POST /api/report`, `POST /api/hand-calculation`, compatibility aliases under `/api/report/*`, or the lightweight fallback `POST /api/pdf`.
 
 ## Backend Modules
 
@@ -32,7 +32,11 @@ The public frontend is only a presentation layer. It handles forms, theme/layout
 
 ## Legacy Parity
 
-The previous monolithic browser app has been moved to `backend/legacy/legacy-index.html`. It is not served by `server.js`. It remains in the repository only as a parity reference while the server engine is expanded and regression-tested.
+The previous monolithic browser app is stored at `backend/legacy/legacy-index.html`. It is not served by `server.js`. It remains in the repository only as a parity reference while the server engine is expanded and regression-tested.
+
+## Public Bundle Guard
+
+`scripts/check-public-bundle.js` scans the production static surface and fails if protected tokens such as `PROFILE_DB`, the old section database script, solver functions, or report-generation functions appear in `index.html` or `public/**`.
 
 ## Production Target
 

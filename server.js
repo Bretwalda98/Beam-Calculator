@@ -14,7 +14,15 @@ const {
   requireAuth
 } = require('./backend/middleware/http');
 const { calculateBeam } = require('./backend/services/calculation-service');
-const { listSectionFamilies, listSectionNames, buildSectionSourceIndex } = require('./backend/services/sections-service');
+const {
+  listSectionFamilies,
+  listPublicSections,
+  listSectionNames,
+  getSectionById,
+  buildSectionPreview,
+  buildSectionSourceIndex
+} = require('./backend/services/sections-service');
+const { validateCalculationRequest } = require('./backend/services/validation-service');
 const { providers, oauthStart, unauthenticatedSession } = require('./backend/auth/auth-service');
 const { listProjects, readProject, saveProject, archiveProject } = require('./backend/services/project-service');
 const { resultToPdf, buildReportHtml, buildLatexReport } = require('./backend/services/report-service');
@@ -95,10 +103,16 @@ async function routeApi(req, res, url) {
       return sendJson(res, 202, { ok: true, message: 'Account deletion request accepted. Production deployment must queue verified data deletion and audit logging.' });
     }
     if (req.method === 'GET' && pathname === '/api/sections') {
-      return sendJson(res, 200, { families: listSectionFamilies() });
+      return sendJson(res, 200, { families: listSectionFamilies(), sections: listPublicSections() });
     }
     if (req.method === 'GET' && pathname === '/api/sections/sources') {
       return sendJson(res, 200, { sources: buildSectionSourceIndex() });
+    }
+    const previewMatch = pathname.match(/^\/api\/sections\/(.+)\/preview$/);
+    if (req.method === 'GET' && previewMatch) {
+      const section = getSectionById(previewMatch[1]);
+      if (!section) return sendError(res, 404, 'Selected section was not found.', 'section_not_found');
+      return sendJson(res, 200, { section: buildSectionPreview(section) });
     }
     const familyMatch = pathname.match(/^\/api\/sections\/([A-Za-z0-9_-]+)$/);
     if (req.method === 'GET' && familyMatch) {
@@ -106,12 +120,14 @@ async function routeApi(req, res, url) {
     }
     if (req.method === 'POST' && pathname === '/api/calculate') {
       const body = await parseJsonBody(req);
+      validateCalculationRequest(body);
       const result = calculateBeam(body);
       return sendJson(res, 200, result);
     }
     if (req.method === 'POST' && pathname === '/api/pdf') {
       const body = await parseJsonBody(req);
       const input = body.input || {};
+      if (input.section) validateCalculationRequest(input);
       const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
       const pdf = resultToPdf(result, body.metadata || input.metadata || {}, input);
       res.writeHead(200, {
@@ -121,9 +137,10 @@ async function routeApi(req, res, url) {
       });
       return res.end(pdf);
     }
-    if (req.method === 'POST' && pathname === '/api/report/html') {
+    if (req.method === 'POST' && (pathname === '/api/report/html' || pathname === '/api/report')) {
       const body = await parseJsonBody(req);
       const input = body.input || {};
+      if (input.section) validateCalculationRequest(input);
       const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
       const html = buildReportHtml(input, result, body.metadata || input.metadata || {});
       res.writeHead(200, {
@@ -133,9 +150,10 @@ async function routeApi(req, res, url) {
       });
       return res.end(html);
     }
-    if (req.method === 'POST' && pathname === '/api/report/latex') {
+    if (req.method === 'POST' && (pathname === '/api/report/latex' || pathname === '/api/hand-calculation')) {
       const body = await parseJsonBody(req);
       const input = body.input || {};
+      if (input.section) validateCalculationRequest(input);
       const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
       const latex = buildLatexReport(input, result, body.metadata || input.metadata || {});
       res.writeHead(200, {
