@@ -23,6 +23,7 @@ const LOAD_TYPES = {
 };
 
 function defaultApiBase() {
+  if ((window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') && window.location.port === '4173') return '';
   return WORKER_API_BASE;
 }
 
