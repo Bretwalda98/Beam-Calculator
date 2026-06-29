@@ -510,6 +510,13 @@ function calculationHtml(calc) {
   const variables = calc.variables?.length
     ? rowsToHtml(['Symbol', 'Value'], calc.variables.map((row) => [row.symbol, row.value]), 'compact')
     : '<p class="muted">No variables recorded.</p>';
+  const derivations = calc.derivations?.length
+    ? rowsToHtml(
+      ['Variable', 'How it is derived', 'Formula', 'Substitution', 'Result', 'Source'],
+      calc.derivations.map((row) => [row.symbol, row.description, row.formula, row.substitution, row.result, row.source || '-']),
+      'compact derivations'
+    )
+    : '';
   const warnings = calc.warnings?.length
     ? `<div class="warning-box">${calc.warnings.map((warning) => `<p>${escHtml(warning)}</p>`).join('')}</div>`
     : '';
@@ -521,6 +528,7 @@ function calculationHtml(calc) {
     <p class="code-ref">${escHtml(calc.codeReference || 'Reference to be confirmed')}</p>
     <div class="equation">${escHtml(calc.equation || '-')}</div>
     ${variables}
+    ${derivations ? `<h4>Variable derivation</h4>${derivations}` : ''}
     <dl class="calc-steps">
       <dt>Numerical substitution</dt><dd>${escHtml(calc.substitution || '-')}</dd>
       <dt>Unit conversion</dt><dd>${escHtml(calc.unitConversion || '-')}</dd>
@@ -632,11 +640,13 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
     .caption { margin-top: 1.5mm; color: #475569; font-size: 9pt; }
     .calc-block { border: 1px solid #cbd5e1; padding: 4mm; margin: 0 0 5mm; page-break-inside: avoid; }
     .calc-head { display: flex; justify-content: space-between; gap: 4mm; align-items: center; margin-bottom: 1.5mm; }
+    .calc-block h4 { margin: 3mm 0 1.5mm; font-size: 9.5pt; color: #1e3a8a; }
     .status-pill { display: inline-block; min-width: 62px; text-align: center; border: 1px solid #64748b; padding: 1mm 2mm; font-size: 8.5pt; font-weight: 700; }
     .status-pill.pass { color: #166534; border-color: #15803d; background: #f0fdf4; }
     .status-pill.fail { color: #991b1b; border-color: #dc2626; background: #fef2f2; }
     .status-pill.warning { color: #92400e; border-color: #b45309; background: #fffbeb; }
     .equation { font-family: "Courier New", monospace; background: #f8fafc; border: 1px solid #cbd5e1; padding: 2.5mm; margin: 2mm 0; }
+    .derivations th, .derivations td { font-size: 8.5pt; padding: 1.3mm 1.6mm; }
     .calc-steps { display: grid; grid-template-columns: 38mm 1fr; gap: 1mm 3mm; margin: 3mm 0 0; }
     .calc-steps dt { font-weight: 700; color: #334155; }
     .calc-steps dd { margin: 0; }
@@ -784,6 +794,14 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
 
 function calculationLatex(calc) {
   const variables = (calc.variables || []).map((row) => `${escLatex(row.symbol)} & ${escLatex(row.value)} \\\\`).join('\n');
+  const derivations = (calc.derivations || []).map((row) => [
+    row.symbol,
+    row.description,
+    row.formula,
+    row.substitution,
+    row.result,
+    row.source || '-'
+  ].map(escLatex).join(' & ') + ' \\\\').join('\n');
   const warnings = (calc.warnings || []).length ? `\\textbf{Warnings:} ${escLatex(calc.warnings.join('; '))}\n` : '';
   return `\\subsection{${escLatex(calc.title)}}
 \\textbf{Code reference:} ${escLatex(calc.codeReference || 'Reference to be confirmed')}\\\\
@@ -796,6 +814,12 @@ ${escLatex(calc.equation || '-')}
 \\begin{longtable}{p{0.28\\linewidth}p{0.62\\linewidth}}
 \\textbf{Variable} & \\textbf{Value} \\\\
 ${variables || '- & - \\\\'}
+\\end{longtable}
+
+\\textbf{Variable derivation trail}
+\\begin{longtable}{p{0.12\\linewidth}p{0.21\\linewidth}p{0.20\\linewidth}p{0.20\\linewidth}p{0.13\\linewidth}p{0.10\\linewidth}}
+\\textbf{Variable} & \\textbf{Derived from} & \\textbf{Formula} & \\textbf{Substitution} & \\textbf{Result} & \\textbf{Source} \\\\
+${derivations || '- & - & - & - & - & - \\\\'}
 \\end{longtable}
 
 \\textbf{Numerical substitution:} ${escLatex(calc.substitution || '-')}\\\\
@@ -1416,6 +1440,29 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
     });
     y -= 8;
   };
+  const drawCalculationDerivations = () => {
+    const calculations = (model.packageData?.calculations || []).filter((calc) => (calc.derivations || []).length);
+    section('Detailed variable derivations');
+    if (!calculations.length) {
+      table(['Item', 'Note'], [['Variable derivations', 'No derivation objects were recorded. Recalculate the project with the current backend.']], [130, 404], { size: 7.5 });
+      return;
+    }
+    calculations.forEach((calc) => {
+      ensure(70);
+      text(`${calc.title || 'Code check'} - ${calc.status || 'INFO'}`, margin, y, { size: 9, bold: true, color: '#0f172a' });
+      y -= 11;
+      paragraph(`Reference: ${calc.codeReference || 'Reference to be confirmed'}; control formula: ${calc.equation || '-'}`, margin, y, contentWidth, { size: 6.8, color: '#475569', lineHeight: 8.5 });
+      y -= Math.max(10, wrapPdfText(`Reference: ${calc.codeReference || 'Reference to be confirmed'}; control formula: ${calc.equation || '-'}`, contentWidth, 6.8, false).length * 8.5) + 2;
+      const rows = (calc.derivations || []).map((row) => [
+        row.symbol || '-',
+        `${row.description || '-'}${row.source ? ` Source: ${row.source}` : ''}`,
+        row.formula || '-',
+        row.substitution || '-',
+        String(row.result ?? '-')
+      ]);
+      table(['Variable', 'How derived', 'Formula', 'Substitution', 'Result'], rows, [58, 134, 126, 132, 84], { size: 6.25, headerFill: '#eef2ff' });
+    });
+  };
   const titleBlock = () => {
     rect(margin, y, contentWidth, 82, { fill: '#ffffff', stroke: '#94a3b8' });
     text('Structural Engineering Beam Calculation', margin + 10, y - 18, { size: 15, bold: true, color: '#0f172a' });
@@ -1541,6 +1588,7 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
   drawChart('deflection', 'Deflection diagram', 'mm', '#15803d');
   section('Eurocode checks');
   table(['Check', 'Expression', 'Clause', 'Utilisation', 'Status'], buildPdfCheckRows(result), [96, 238, 78, 62, 60], { size: 6.9 });
+  drawCalculationDerivations();
   section('Notes and assumptions');
   const notes = [
     ...(model.packageData?.assumptions || []),

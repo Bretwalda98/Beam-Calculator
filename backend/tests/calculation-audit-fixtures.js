@@ -77,6 +77,10 @@ function runFixture(fixture) {
       assert.ok(headings.includes(heading), `${fixture.id}.codeCheckControls should include heading ${heading}`);
     });
   }
+  const calculations = result.calculationPackage?.calculations || [];
+  assert.ok(calculations.length > 0, `${fixture.id}.calculationPackage.calculations should be populated`);
+  const derivationCount = calculations.reduce((sum, calculation) => sum + (calculation.derivations || []).length, 0);
+  assert.ok(derivationCount > 0, `${fixture.id}.calculationPackage should include variable derivations`);
 
   return {
     id: fixture.id,

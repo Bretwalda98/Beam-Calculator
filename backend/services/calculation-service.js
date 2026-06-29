@@ -590,7 +590,7 @@ function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sec
   const ratio = VzRd > 0 ? VzEd / VzRd : Infinity;
   const trigger = ratio > 0.5 + 1e-9;
   const baseMyRd = (Wsel.W * material.fy / gammaM0) / 1e6;
-  const out = { trigger, available: false, ratio, rho: 0, MvRd: baseMyRd, label: 'My,Rd', note: 'Shear reduction not active' };
+  const out = { trigger, available: false, ratio, rho: 0, webWpl: 0, reducedW: Wsel.W, MvRd: baseMyRd, label: 'My,Rd', note: 'Shear reduction not active' };
   if (!trigger || sectionClass > 2) return out;
   const family = getFamilyKey(section);
   if (!['IPE', 'HEA', 'HEB', 'HEM', 'HEAA', 'UB', 'UC', 'UBP', 'J'].includes(family)) {
@@ -603,6 +603,7 @@ function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sec
   const tf = Number(section?.tf_mm || 0);
   const hw = Math.max(0, h - 2 * tf);
   const webWpl = h > 0 && tw > 0 && tf >= 0 && hw > 0 ? tw * hw * hw / 4 : 0;
+  out.webWpl = webWpl;
   if (!(webWpl > 0) || !(Wsel.W > webWpl)) {
     out.available = true;
     out.MvRd = baseMyRd;
@@ -611,6 +612,7 @@ function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sec
     return out;
   }
   const reducedW = Math.max(0, Wsel.W - webWpl) + (1 - rho) * webWpl;
+  out.reducedW = reducedW;
   out.available = true;
   out.rho = rho;
   out.MvRd = (reducedW * material.fy / gammaM0) / 1e6;
@@ -740,6 +742,9 @@ function evaluateLTB(section, material, L, MyEd, Wsel, settings) {
     lambdaLT,
     phiLT,
     chiLT,
+    alphaLT: imperfection.alpha,
+    lambda0: imperfection.lambda0,
+    beta: imperfection.beta,
     gammaM1,
     MbRd,
     IR_LT,
@@ -823,6 +828,9 @@ function evaluateMemberBuckling(section, material, check, L, ltb, settings) {
     curveZ,
     NcrY,
     NcrZ,
+    NplRd,
+    lambdaY,
+    lambdaZ,
     chiY,
     chiZ,
     NbYRd,
@@ -985,13 +993,14 @@ function getFullSectionProperties(section, check) {
   };
 }
 
-function buildCalculationObject({ id, title, codeReference, equation, variables, substitution, unitConversion, result, resistance, utilisation, status, warnings = [] }) {
+function buildCalculationObject({ id, title, codeReference, equation, variables, derivations = [], substitution, unitConversion, result, resistance, utilisation, status, warnings = [] }) {
   return {
     id,
     title,
     codeReference,
     equation,
     variables,
+    derivations,
     substitution,
     unitConversion,
     result,
@@ -1000,6 +1009,10 @@ function buildCalculationObject({ id, title, codeReference, equation, variables,
     status,
     warnings
   };
+}
+
+function buildDerivation(symbol, description, formula, substitution, result, source = '') {
+  return { symbol, description, formula, substitution, result, source };
 }
 
 function buildCalculationPackage(context) {
@@ -1012,6 +1025,8 @@ function buildCalculationPackage(context) {
     L,
     supportType,
     lc,
+    ulsNote,
+    ulsCoeff,
     rawLoads,
     uls,
     sls,
@@ -1046,12 +1061,13 @@ function buildCalculationPackage(context) {
       equation: 'ULS and SLS combinations selected by project input.',
       variables: [
         { symbol: 'Combination', value: lc.name },
+        { symbol: 'ULS selected', value: ulsNote || lc.uls.note },
         { symbol: 'Design code', value: input.metadata?.designCode || 'EN 1993-1-1' },
         { symbol: 'National Annex', value: input.metadata?.nationalAnnex || 'UK National Annex / project default' }
       ],
-      substitution: `${lc.uls.note}; ${lc.sls.note}`,
+      substitution: `${ulsNote || lc.uls.note}; ${lc.sls.note}`,
       unitConversion: 'Loads entered in project units are converted to kN and kN m internally before design checks.',
-      result: `ULS: ${lc.uls.note}`,
+      result: `ULS: ${ulsNote || lc.uls.note}`,
       resistance: 'Not applicable',
       utilisation: 'Not applicable',
       status: 'INFO',
@@ -1066,6 +1082,10 @@ function buildCalculationPackage(context) {
         { symbol: 'L', value: valueUnit(L, 'm') },
         { symbol: 'Support condition', value: SUPPORT_LABELS[supportType] || supportType },
         { symbol: 'Max |R|', value: valueUnit(unit.fromBaseForce(maxReaction), unit.forceShort) }
+      ],
+      derivations: [
+        buildDerivation('Load model', 'Entered permanent, variable and moment actions are converted to kN/kN m and assembled into the server beam model.', 'F_ULS = cG G + cQ1 Q1 + cQ2 Q2', ulsNote || lc.uls.note, 'ULS load vector assembled', 'Backend finite-element beam analysis'),
+        buildDerivation('R', 'Support reactions are recovered after solving the beam stiffness equations.', 'R = Kd - F', 'Solve Kd = F using the selected support condition and active loads.', `Max |R| = ${valueUnit(unit.fromBaseForce(maxReaction), unit.forceShort)}`, 'Elastic beam analysis')
       ],
       substitution: 'Server finite-element beam model assembled from entered loads and supports.',
       unitConversion: `R[kN] converted to ${unit.forceShort} for display.`,
@@ -1085,6 +1105,17 @@ function buildCalculationPackage(context) {
         { symbol: 'f_y', value: valueUnit(material.fy, 'MPa', 0) },
         { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
         { symbol: 'M_y,Ed', value: valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort) }
+      ],
+      derivations: [
+        buildDerivation('M_y,Ed', 'Design bending action used in the code-check controls.', 'M_y,Ed = max |M_y(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakM.x, 5)} m`, valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort), 'Server beam analysis'),
+        buildDerivation('W_y', 'Section modulus selected from the section class.', 'Class 1-2: Wpl,y; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
+        buildDerivation('M_y,Rd', 'Major-axis cross-section bending resistance before high-shear reduction.', 'M_y,Rd = W_y f_y / gamma_M0', `${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(check.MyRd), unit.momentShort), 'EN 1993-1-1 6.2.5'),
+        ...(check.mv?.trigger ? [
+          buildDerivation('rho', 'High shear reduction factor because VEd exceeds 0.5 VRd.', 'rho = (2 VEd / VRd - 1)^2', `(2 x ${round(check.mv.ratio, 5)} - 1)^2`, round(check.mv.rho, 5), 'EN 1993-1-1 6.2.8'),
+          buildDerivation('W_web', 'Plastic modulus contribution of the web used for shear-reduced bending resistance.', 'W_web = tw hw^2 / 4', `${round(check.mv.webWpl || 0, 0)} mm^3`, valueUnit(check.mv.webWpl || 0, 'mm^3', 0), 'Section geometry'),
+          buildDerivation('M_v,y,Rd', 'Bending resistance reduced for high shear.', 'M_v,y,Rd = W_v,y f_y / gamma_M0', `${round(check.mv.reducedW || check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(check.MvRd), unit.momentShort), 'EN 1993-1-1 6.2.8')
+        ] : []),
+        buildDerivation('IR_M', 'Utilisation ratio shown in Section Control.', `IR_M = M_y,Ed / ${check.momentLabelForCheck}`, `${round(unit.fromBaseMoment(check.MyEd), 5)} / ${round(unit.fromBaseMoment(check.momentRdForCheck), 5)}`, round(check.IR_M, 5), 'Code-check controls')
       ],
       substitution: `${round(check.Wsel.W, 0)} mm^3 x ${material.fy} N/mm^2 / ${round(settings.gammaM0, 3)}`,
       unitConversion: 'N mm converted to kN m by dividing by 1,000,000, then to display units.',
@@ -1108,6 +1139,12 @@ function buildCalculationPackage(context) {
         { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
         { symbol: 'V_z,Ed', value: valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort) }
       ],
+      derivations: [
+        buildDerivation('V_z,Ed', 'Design shear action used in the code-check controls.', 'V_z,Ed = max |V_z(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakV.x, 5)} m`, valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort), 'Server beam analysis'),
+        buildDerivation('A_v,z', 'Published shear area used for vertical shear resistance.', 'A_v,z = tabulated section shear area', valueUnit(section.Avz_mm2 || 0, 'mm^2', 0), valueUnit(section.Avz_mm2 || 0, 'mm^2', 0), 'Section database'),
+        buildDerivation('V_z,Rd', 'Plastic shear resistance.', 'V_z,Rd = A_v,z f_y / (sqrt(3) gamma_M0)', `${round(section.Avz_mm2 || 0, 0)} x ${round(material.fy, 0)} / (sqrt(3) x ${round(settings.gammaM0, 3)}) / 1000`, valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort), 'EN 1993-1-1 6.2.6'),
+        buildDerivation('IR_V', 'Utilisation ratio shown in Section Control.', 'IR_V = V_z,Ed / V_z,Rd', `${round(unit.fromBaseForce(check.VzEd), 5)} / ${round(unit.fromBaseForce(check.VzRd), 5)}`, round(check.IR_V, 5), 'Code-check controls')
+      ],
       substitution: `${round(section.Avz_mm2 || 0, 0)} mm^2 x ${material.fy} N/mm^2 / (sqrt(3) x ${round(settings.gammaM0, 3)})`,
       unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
       result: `V_z,Rd = ${valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort)}`,
@@ -1125,6 +1162,12 @@ function buildCalculationPackage(context) {
         { symbol: 'A', value: valueUnit(check.areas.A || 0, 'mm^2', 0) },
         { symbol: 'A_eff', value: valueUnit(check.areas.Aeff || check.areas.A || 0, 'mm^2', 0) },
         { symbol: 'N_Ed', value: valueUnit(unit.fromBaseForce(check.axialEd), unit.forceShort) }
+      ],
+      derivations: [
+        buildDerivation('N_Ed', 'Design axial action used in the axial and interaction checks.', 'N_Ed = cG N_G + cQ1 N_Q1 + cQ2 N_Q2', `${round(ulsCoeff?.cG ?? 0, 5)} x ${round(input.axial?.G || 0, 5)} + ${round(ulsCoeff?.cQ1 ?? 0, 5)} x ${round(input.axial?.Q1 || 0, 5)} + ${round(ulsCoeff?.cQ2 ?? 0, 5)} x ${round(input.axial?.Q2 || 0, 5)}`, valueUnit(unit.fromBaseForce(check.axialEd), unit.forceShort), ulsNote || lc.uls.note),
+        buildDerivation('A / A_eff', 'Compression uses effective area for Class 4 where available; otherwise gross area is used.', 'Class 4: A_eff; Classes 1-3: A', `Class ${check.cls}; A = ${round(check.areas.A || 0, 0)} mm^2; A_eff = ${round(check.areas.Aeff || check.areas.A || 0, 0)} mm^2`, valueUnit(check.axialEd >= 0 ? (check.cls === 4 ? check.areas.Aeff : check.areas.A) : check.areas.A, 'mm^2', 0), 'Section database'),
+        buildDerivation('N_Rd', 'Axial compression/tension resistance.', 'N_Rd = A f_y / gamma_M0', `${round((check.axialEd >= 0 ? (check.cls === 4 ? check.areas.Aeff : check.areas.A) : check.areas.A) || 0, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 1000`, valueUnit(unit.fromBaseForce(check.axialEd >= 0 ? check.NcRd : check.NtRd), unit.forceShort), 'EN 1993-1-1 6.2.3/6.2.4'),
+        buildDerivation('IR_N', 'Axial utilisation ratio.', 'IR_N = |N_Ed| / N_Rd', `${round(Math.abs(unit.fromBaseForce(check.axialEd)), 5)} / ${round(unit.fromBaseForce(check.axialEd >= 0 ? check.NcRd : check.NtRd), 5)}`, round(check.IR_N, 5), 'Code-check controls')
       ],
       substitution: `${round(check.areas.A || 0, 0)} mm^2 x ${material.fy} N/mm^2 / ${round(settings.gammaM0, 3)}`,
       unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
@@ -1144,6 +1187,11 @@ function buildCalculationPackage(context) {
         { symbol: 'Limit', value: `L/${settings.deflectionLimit}` },
         { symbol: 'delta_max', value: valueUnit(deflPeak, 'mm') }
       ],
+      derivations: [
+        buildDerivation('delta_max', 'Maximum serviceability deflection from the SLS beam analysis.', 'delta_max = max |delta(x)| from SLS analysis', lc.sls.note, valueUnit(deflPeak, 'mm'), 'Server beam analysis'),
+        buildDerivation('delta_allow / dzMax', 'Allowable deflection used in the code-check controls.', 'dzMax = L / limit', `${round(L * 1000, 0)} / ${round(settings.deflectionLimit, 0)}`, valueUnit(deflAllow_mm, 'mm'), 'Project deflection limit'),
+        buildDerivation('IR_defl', 'Deflection utilisation ratio shown in Deflection Control.', 'IR = dz / dzMax', `${round(deflPeak, 5)} / ${round(deflAllow_mm, 5)}`, round(deflIR, 5), 'Code-check controls')
+      ],
       substitution: `delta_allow = ${round(L * 1000, 0)} mm / ${round(settings.deflectionLimit, 0)}`,
       unitConversion: 'Finite element deflection is calculated in mm.',
       result: `delta_allow = ${valueUnit(deflAllow_mm, 'mm')}`,
@@ -1160,6 +1208,10 @@ function buildCalculationPackage(context) {
       variables: [
         { symbol: 'Selected class', value: `Class ${check.cls}` },
         { symbol: 'Resistance modulus', value: check.Wsel.label }
+      ],
+      derivations: [
+        buildDerivation('Class', 'Section class currently comes from the project input.', 'Designer-selected EC3 section class', `sectionClass = ${check.cls}`, `Class ${check.cls}`, 'Project input'),
+        buildDerivation('W selection', 'The selected class controls the resistance modulus used for My,Rd.', 'Class 1-2 -> Wpl,y; Class 3 -> Wel,y; Class 4 -> Weff,y', `Class ${check.cls} selects ${check.Wsel.label}`, check.Wsel.label, 'EN 1993-1-1 5.5')
       ],
       substitution: `Class ${check.cls} uses ${check.Wsel.label}.`,
       unitConversion: 'Not applicable.',
@@ -1180,6 +1232,17 @@ function buildCalculationPackage(context) {
         { symbol: 'chi_LT', value: round(ltb.chiLT, 5) },
         { symbol: 'L_b', value: valueUnit(ltb.Lb_mm, 'mm', 0) }
       ] : [{ symbol: 'LTB', value: ltb.enabled ? (ltb.notRequired ? 'Not required' : 'Unavailable') : 'Disabled' }],
+      derivations: ltb.enabled && ltb.available ? [
+        buildDerivation('L_b', 'Unrestrained length for LTB.', 'L_b = k L_segment', `${round(ltb.k, 5)} x ${round(ltb.Lsegment_mm, 0)} mm`, valueUnit(ltb.Lb_mm, 'mm', 0), 'LTB restraints input'),
+        buildDerivation('M_cr', 'Elastic critical moment used for LTB slenderness.', 'M_cr = C1 pi^2 E Iz / L_b^2 x (sqrt(Iw/Iz + L_b^2 G It/(pi^2 E Iz) + (C2 zg)^2) - C2 zg)', `C1=${round(ltb.C1, 3)}, C2=${round(ltb.C2, 3)}, zg=${round(ltb.zg, 3)} mm, L_b=${round(ltb.Lb_mm, 0)} mm`, valueUnit(unit.fromBaseMoment(ltb.Mcr), unit.momentShort), 'EN 1993-1-1 6.3.2 / NCCI Mcr expression'),
+        buildDerivation('lambda_LT', 'Non-dimensional LTB slenderness.', 'lambda_LT = sqrt(W_y f_y / M_cr)', `sqrt(${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / (${round(ltb.Mcr, 5)} x 10^6))`, round(ltb.lambdaLT, 5), 'EN 1993-1-1 6.3.2'),
+        buildDerivation('phi_LT', 'LTB reduction curve helper term.', 'phi_LT = 0.5[1 + alpha_LT(lambda_LT - lambda_0) + beta lambda_LT^2]', `alpha=${round(ltb.alphaLT, 3)}, lambda0=${round(ltb.lambda0, 3)}, beta=${round(ltb.beta, 3)}`, round(ltb.phiLT, 5), `LTB curve ${ltb.curveLT}`),
+        buildDerivation('chi_LT', 'LTB reduction factor used in the code-check controls.', 'chi_LT = 1 / (phi_LT + sqrt(phi_LT^2 - lambda_LT^2))', `1 / (${round(ltb.phiLT, 5)} + sqrt(${round(ltb.phiLT, 5)}^2 - ${round(ltb.lambdaLT, 5)}^2))`, round(ltb.chiLT, 5), 'EN 1993-1-1 6.3.2'),
+        buildDerivation('M_b,Rd', 'LTB bending resistance.', 'M_b,Rd = chi_LT W_y f_y / gamma_M1', `${round(ltb.chiLT, 5)} x ${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM1, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort), 'EN 1993-1-1 6.3.2'),
+        buildDerivation('IR_LT', 'LTB utilisation ratio shown in Buckling Control.', 'IR_LT = M_y,Ed / M_b,Rd', `${round(unit.fromBaseMoment(check.MyEd), 5)} / ${round(unit.fromBaseMoment(ltb.MbRd), 5)}`, round(ltb.IR_LT, 5), 'Code-check controls')
+      ] : [
+        buildDerivation('LTB', 'LTB status used in the code-check controls.', 'Not applicable', ltb.message || 'LTB disabled by input.', ltb.enabled ? (ltb.notRequired ? 'Not required' : 'Unavailable') : 'Disabled', 'Backend check selection')
+      ],
       substitution: ltb.enabled && ltb.available ? `${round(ltb.chiLT, 5)} x ${round(check.Wsel.W, 0)} mm^3 x ${material.fy} N/mm^2 / ${round(settings.gammaM1, 3)}` : (ltb.message || 'LTB disabled by input.'),
       unitConversion: 'N mm converted to kN m by dividing by 1,000,000, then to display units.',
       result: ltb.enabled && ltb.available ? `M_b,Rd = ${valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort)}` : (ltb.message || 'LTB disabled'),
@@ -1196,6 +1259,11 @@ function buildCalculationPackage(context) {
       variables: [
         { symbol: 'V_Ed', value: valueUnit(unit.fromBaseForce(endSupport.Ved), unit.forceShort) },
         { symbol: 'V_b,z,Rd', value: valueUnit(unit.fromBaseForce(endSupport.VbRd), unit.forceShort) }
+      ],
+      derivations: [
+        buildDerivation('V_Ed', 'Maximum support reaction used for support/web screening.', 'V_Ed = max |R_support|', `max support reaction from ULS analysis`, valueUnit(unit.fromBaseForce(endSupport.Ved), unit.forceShort), 'Server beam analysis'),
+        buildDerivation('V_b,z,Rd', 'Screening resistance derived from shear resistance and end-post/stiffener settings.', 'V_b,z,Rd = factor x V_z,Rd', `${round(endSupport.factor, 5)} x ${round(unit.fromBaseForce(check.VzRd), 5)}`, valueUnit(unit.fromBaseForce(endSupport.VbRd), unit.forceShort), 'Backend support/web screening model'),
+        buildDerivation('IR_support', 'Support/web screening utilisation.', 'IR = V_Ed / V_b,z,Rd', `${round(unit.fromBaseForce(endSupport.Ved), 5)} / ${round(unit.fromBaseForce(endSupport.VbRd), 5)}`, round(supportIR, 5), 'Code-check controls')
       ],
       substitution: `${round(unit.fromBaseForce(endSupport.Ved), 5)} / ${round(unit.fromBaseForce(endSupport.VbRd), 5)}`,
       unitConversion: `kN converted to ${unit.forceShort} for display.`,
@@ -1216,6 +1284,18 @@ function buildCalculationPackage(context) {
         { symbol: 'N_b,y,Rd', value: valueUnit(unit.fromBaseForce(memberBuckling.NbYRd), unit.forceShort) },
         { symbol: 'N_b,z,Rd', value: valueUnit(unit.fromBaseForce(memberBuckling.NbZRd), unit.forceShort) }
       ] : [{ symbol: 'Member buckling', value: memberBuckling.active ? 'Unavailable' : 'Not active' }],
+      derivations: memberBuckling.active && memberBuckling.available ? [
+        buildDerivation('N_cr,y', 'Elastic critical buckling load about the y axis.', 'N_cr,y = pi^2 E Iy / L_ey^2', `Le,y = ${round(memberBuckling.ky, 5)} x ${round(L * 1000, 0)} mm`, valueUnit(unit.fromBaseForce(memberBuckling.NcrY), unit.forceShort), 'EN 1993-1-1 6.3.1'),
+        buildDerivation('N_cr,z', 'Elastic critical buckling load about the z axis.', 'N_cr,z = pi^2 E Iz / L_ez^2', `Le,z = ${round(memberBuckling.kz, 5)} x ${round(L * 1000, 0)} mm`, valueUnit(unit.fromBaseForce(memberBuckling.NcrZ), unit.forceShort), 'EN 1993-1-1 6.3.1'),
+        buildDerivation('lambda_y', 'Non-dimensional y-axis buckling slenderness.', 'lambda_y = sqrt(N_pl,Rd / N_cr,y)', `sqrt(${round(unit.fromBaseForce(memberBuckling.NplRd), 5)} / ${round(unit.fromBaseForce(memberBuckling.NcrY), 5)})`, round(memberBuckling.lambdaY, 5), `Buckling curve ${memberBuckling.curveY}`),
+        buildDerivation('lambda_z', 'Non-dimensional z-axis buckling slenderness.', 'lambda_z = sqrt(N_pl,Rd / N_cr,z)', `sqrt(${round(unit.fromBaseForce(memberBuckling.NplRd), 5)} / ${round(unit.fromBaseForce(memberBuckling.NcrZ), 5)})`, round(memberBuckling.lambdaZ, 5), `Buckling curve ${memberBuckling.curveZ}`),
+        buildDerivation('chi_y / chi_z', 'Buckling reduction factors from the selected curves.', 'chi = 1 / (phi + sqrt(phi^2 - lambda^2))', `chi_y=${round(memberBuckling.chiY, 5)}, chi_z=${round(memberBuckling.chiZ, 5)}`, `${round(memberBuckling.chiY, 5)} / ${round(memberBuckling.chiZ, 5)}`, 'EN 1993-1-1 6.3.1'),
+        buildDerivation('N_b,y,Rd / N_b,z,Rd', 'Axis-specific compression member buckling resistances.', 'N_b,Rd = chi N_pl,Rd', `${round(memberBuckling.chiY, 5)} x ${round(unit.fromBaseForce(memberBuckling.NplRd), 5)}; ${round(memberBuckling.chiZ, 5)} x ${round(unit.fromBaseForce(memberBuckling.NplRd), 5)}`, `${valueUnit(unit.fromBaseForce(memberBuckling.NbYRd), unit.forceShort)} / ${valueUnit(unit.fromBaseForce(memberBuckling.NbZRd), unit.forceShort)}`, 'EN 1993-1-1 6.3.1'),
+        buildDerivation('IR_y', 'y-axis member interaction shown in Buckling Control.', 'IR_y = N_Ed/N_b,y,Rd + kyy M_y,Ed/(chi_LT M_y,Rd)', `${round(unit.fromBaseForce(check.axialEd), 5)} / ${round(unit.fromBaseForce(memberBuckling.NbYRd), 5)} + ${round(memberBuckling.kyy, 3)} x ${round(unit.fromBaseMoment(check.MyEd), 5)} / (${round(ltb.enabled && ltb.available ? ltb.chiLT : 1, 5)} x ${round(unit.fromBaseMoment(check.MyRd), 5)})`, round(memberBuckling.IRy, 5), 'EN 1993-1-1 6.3.3'),
+        buildDerivation('IR_z', 'z-axis member interaction shown in Buckling Control.', 'IR_z = N_Ed/N_b,z,Rd + kzy M_y,Ed/(chi_LT M_y,Rd)', `${round(unit.fromBaseForce(check.axialEd), 5)} / ${round(unit.fromBaseForce(memberBuckling.NbZRd), 5)} + ${round(memberBuckling.kzy, 3)} x ${round(unit.fromBaseMoment(check.MyEd), 5)} / (${round(ltb.enabled && ltb.available ? ltb.chiLT : 1, 5)} x ${round(unit.fromBaseMoment(check.MyRd), 5)})`, round(memberBuckling.IRz, 5), 'EN 1993-1-1 6.3.3')
+      ] : [
+        buildDerivation('Member buckling', 'Compression member buckling status used in the code-check controls.', 'Active only for compression axial force', memberBuckling.message || 'No compression force applied.', memberBuckling.active ? 'Unavailable' : 'Not active', 'Backend check selection')
+      ],
       substitution: memberBuckling.active && memberBuckling.available ? `max(IR_y=${round(memberBuckling.IRy, 5)}, IR_z=${round(memberBuckling.IRz, 5)})` : (memberBuckling.message || 'No compression force applied.'),
       unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
       result: memberBuckling.active && memberBuckling.available ? `Governing member buckling IR = ${round(memberBuckling.governing, 5)}` : (memberBuckling.message || 'Not active'),
@@ -1232,6 +1312,11 @@ function buildCalculationPackage(context) {
       variables: [
         { symbol: 'N_Ed/N_Rd', value: round(check.IR_N, 5) },
         { symbol: 'M_y,Ed/M_y,Rd', value: round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5) }
+      ],
+      derivations: [
+        buildDerivation('N_Ed/N_Rd', 'Axial part of the combined cross-section interaction.', 'N_Ed/N_Rd', `${round(Math.abs(unit.fromBaseForce(check.axialEd)), 5)} / ${round(unit.fromBaseForce(check.axialEd >= 0 ? check.NcRd : check.NtRd), 5)}`, round(check.IR_N, 5), 'Axial resistance check'),
+        buildDerivation('M_y,Ed/M_y,Rd', 'Bending part of the combined cross-section interaction.', `M_y,Ed/${check.momentLabelForCheck}`, `${round(unit.fromBaseMoment(check.MyEd), 5)} / ${round(unit.fromBaseMoment(check.momentRdForCheck), 5)}`, round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5), 'Bending resistance check'),
+        buildDerivation('IR_NM', 'Combined interaction ratio shown in Section Control when axial force is present.', 'IR_NM = N_Ed/N_Rd + M_y,Ed/M_y,Rd', `${round(check.IR_N, 5)} + ${round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5)}`, round(IR_NM, 5), 'Code-check controls')
       ],
       substitution: `${round(check.IR_N, 5)} + ${round(check.MyEd / Math.max(check.momentRdForCheck, 1e-9), 5)}`,
       unitConversion: 'Dimensionless utilisation ratio.',
@@ -1532,6 +1617,8 @@ function calculateBeam(input) {
     L,
     supportType,
     lc,
+    ulsNote,
+    ulsCoeff,
     rawLoads,
     uls,
     sls,
