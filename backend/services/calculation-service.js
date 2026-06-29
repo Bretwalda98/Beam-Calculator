@@ -63,6 +63,27 @@ function round(value, dp = 6) {
   return Number.isFinite(value) ? Number(value.toFixed(dp)) : value;
 }
 
+function fmtControl(value, dp = 1) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '-';
+  return n.toFixed(dp);
+}
+
+function fmtControlRatio(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '-';
+  return n.toFixed(2);
+}
+
+function fmtXL(x, L) {
+  const ratio = L > 0 ? x / L : 0;
+  return `${fmtControl(ratio, 2)}L`;
+}
+
+function comparisonText(ir) {
+  return Number(ir) < 1 ? '< 1.0' : '> 1.0';
+}
+
 function getUnit(key) {
   return UNIT_DEFS[key] || UNIT_DEFS.tonne;
 }
@@ -1240,6 +1261,122 @@ function buildCalculationPackage(context) {
   };
 }
 
+function buildCodeCheckControls({
+  unit,
+  L,
+  uls,
+  check,
+  ltb,
+  memberBuckling,
+  deflPeak,
+  deflAllow_mm,
+  deflIR,
+  passDefl,
+  IR_NM,
+  passNM
+}) {
+  const force = (value) => fmtControl(unit.fromBaseForce(value), 1);
+  const moment = (value) => fmtControl(unit.fromBaseMoment(value), 1);
+  const ratioLine = (prefix, ratio, pass, suffix) => ({
+    kind: 'ratio',
+    prefix,
+    ratio: fmtControlRatio(ratio),
+    pass: Boolean(pass),
+    suffix
+  });
+  const infoLine = (text) => ({ kind: 'info', text });
+
+  const sectionLines = [
+    ratioLine(
+      `IR = My,Ed/My,Rd = ${moment(check.MyEd)}/${moment(check.MyRd)} = `,
+      check.IR_My,
+      check.IR_My < 1,
+      ` ${comparisonText(check.IR_My)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.5)`
+    )
+  ];
+
+  if (check.mv?.trigger) {
+    const mvDen = check.mv.available ? check.MvRd : check.MyRd;
+    const mvIr = check.MyEd / Math.max(mvDen, 1e-9);
+    sectionLines.push(ratioLine(
+      `IR = My,Ed/Mv,y,Rd = ${moment(check.MyEd)}/${moment(mvDen)} = `,
+      mvIr,
+      mvIr < 1,
+      ` ${comparisonText(mvIr)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.8)`
+    ));
+  }
+
+  if (Math.abs(check.axialEd) > 1e-9) {
+    const axialDen = check.axialEd >= 0 ? check.NcRd : check.NtRd;
+    sectionLines.push(ratioLine(
+      `IR = NEd/NRd+My,Ed/My,Rd = ${force(Math.abs(check.axialEd))}/${force(axialDen)}+${moment(check.MyEd)}/${moment(check.momentRdForCheck)} = `,
+      IR_NM,
+      passNM,
+      ` ${comparisonText(IR_NM)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.1/6.2.9)`
+    ));
+  }
+
+  sectionLines.push(ratioLine(
+    `IR = Vz,Ed/Vz,Rd = ${force(check.VzEd)}/${force(check.VzRd)} = `,
+    check.IR_V,
+    check.passV,
+    ` ${comparisonText(check.IR_V)} (${fmtXL(uls.peakV.x, L)}; Ch 6.2.6)`
+  ));
+
+  const bucklingLines = [];
+  const chiLT = ltb.enabled && ltb.available ? ltb.chiLT : 1;
+  if (memberBuckling.active && memberBuckling.available) {
+    bucklingLines.push(ratioLine(
+      `IR = NEd/Nb,y,Rd + kyy*My,Ed/(χLT*My,Rd) = ${force(check.axialEd)}/${force(memberBuckling.NbYRd)}+${fmtControl(memberBuckling.kyy, 2)}*${moment(check.MyEd)}/(${fmtControl(chiLT, 2)}*${moment(check.MyRd)}) = `,
+      memberBuckling.IRy,
+      memberBuckling.IRy < 1,
+      ` ${comparisonText(memberBuckling.IRy)} (Ch 6.3.3)`
+    ));
+    bucklingLines.push(ratioLine(
+      `IR = NEd/Nb,z,Rd + kzy*My,Ed/(χLT*My,Rd) = ${force(check.axialEd)}/${force(memberBuckling.NbZRd)}+${fmtControl(memberBuckling.kzy, 2)}*${moment(check.MyEd)}/(${fmtControl(chiLT, 2)}*${moment(check.MyRd)}) = `,
+      memberBuckling.IRz,
+      memberBuckling.IRz < 1,
+      ` ${comparisonText(memberBuckling.IRz)} (Ch 6.3.3)`
+    ));
+  } else if (memberBuckling.active) {
+    bucklingLines.push(infoLine(memberBuckling.message || 'Member buckling interaction is unavailable for this section/loading.'));
+  } else {
+    bucklingLines.push(infoLine('No axial compression applied, so compression member buckling interaction is not required.'));
+  }
+
+  if (ltb.enabled && ltb.available) {
+    bucklingLines.push(ratioLine(
+      `IR = My,Ed/(χLT*My,Rd) = ${moment(check.MyEd)}/(${fmtControl(ltb.chiLT, 2)}*${moment(check.MyRd)}) = `,
+      ltb.IR_LT,
+      ltb.pass,
+      ` ${comparisonText(ltb.IR_LT)} (Ch 6.3.2)`
+    ));
+  } else if (ltb.enabled) {
+    bucklingLines.push(infoLine(ltb.message || 'Lateral torsional buckling check is unavailable for this section/loading.'));
+  } else {
+    bucklingLines.push(infoLine('Lateral torsional buckling check disabled.'));
+  }
+
+  return {
+    title: 'Results',
+    sections: [
+      { heading: 'SECTION CONTROL:', lines: sectionLines },
+      { heading: 'BUCKLING CONTROL: (incl Lateral Torsional Buckling)', lines: bucklingLines },
+      {
+        heading: `DEFLECTION CONTROL: (L/${Math.round(L * 1000 / Math.max(deflAllow_mm, 1e-9))})`,
+        lines: [
+          ratioLine(
+            `IR = dz/dzMax = ${fmtControl(deflPeak, 1)}/${fmtControl(deflAllow_mm, 1)} = `,
+            deflIR,
+            passDefl,
+            ` ${comparisonText(deflIR)}`
+          )
+        ]
+      }
+    ]
+  };
+}
+
 function calculateBeam(input) {
   const sectionRef = input.section || {};
   const section = getSection(sectionRef.family, sectionRef.name);
@@ -1411,6 +1548,20 @@ function calculateBeam(input) {
       combined: { ir: round(IR_NM, 5), pass: passNM },
       memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false }
     },
+    codeCheckControls: buildCodeCheckControls({
+      unit,
+      L,
+      uls,
+      check,
+      ltb,
+      memberBuckling,
+      deflPeak,
+      deflAllow_mm,
+      deflIR,
+      passDefl,
+      IR_NM,
+      passNM
+    }),
     loads: {
       raw: rawLoads,
       units: {

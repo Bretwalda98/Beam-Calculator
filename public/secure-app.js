@@ -886,34 +886,74 @@ function irLine(label, check, extra = '') {
   return `<strong>${esc(label)}</strong>: IR = ${esc(irText)} ${extra} <strong>${status}</strong>`;
 }
 
-function renderChecks(result) {
+function comparisonForIr(ir) {
+  const n = Number(ir);
+  if (!Number.isFinite(n)) return '';
+  return n < 1 ? '< 1.0' : '> 1.0';
+}
+
+function fallbackCodeCheckControls(result) {
   const c = result.checks || {};
   const s = result.summary || {};
-  const deflLimit = Number(s.deflectionLimit || 0) > 0 ? Math.round((state.last?.input?.model?.span || 0) * 1000 / s.deflectionLimit) : num('deflLimit', 300);
-  const sectionRows = [
-    irLine(c.moment?.label || 'Bending resistance', c.moment, c.moment?.resistance ? `&lt; ${fmt(c.moment.resistance, 1)} ${s.momentUnit || ''}` : ''),
-    irLine('Shear resistance', c.shear, c.shear?.resistance ? `&lt; ${fmt(c.shear.resistance, 1)} ${s.forceUnit || ''}` : ''),
-    irLine('Axial resistance', c.axial, `N,Ed = ${fmt(c.axial?.axialEd || 0, 2)} ${s.forceUnit || ''}`),
-    irLine('Combined interaction', c.combined)
+  const span = Number(state.last?.input?.model?.span || 0);
+  const deflectionRatio = Number(s.deflectionLimit || 0) > 0 ? Math.round(span * 1000 / Number(s.deflectionLimit)) : num('deflLimit', 300);
+  const f1 = (value) => fmt(value, 1);
+  const r2 = (value) => fmt(value, 2);
+  const ratioLine = (prefix, ir, pass, suffix) => ({
+    kind: 'ratio',
+    prefix,
+    ratio: r2(ir),
+    pass: Boolean(pass),
+    suffix
+  });
+  const sectionLines = [
+    ratioLine(`IR = My,Ed/My,Rd = ${f1(s.maxMoment)}/${f1(c.moment?.resistance)} = `, c.moment?.ir, c.moment?.pass, ` ${comparisonForIr(c.moment?.ir)} (Ch 6.2.5)`)
   ];
-  const bucklingRows = [
-    c.memberBuckling?.active ? irLine('Member buckling', c.memberBuckling, c.memberBuckling?.message || '') : '<strong>Member buckling</strong>: no axial compression applied, member buckling interaction is not required.',
-    c.ltb?.enabled === false ? '<strong>LTB</strong>: lateral torsional buckling check disabled.' : irLine('LTB', c.ltb, c.ltb?.message || '')
-  ];
-  const deflectionRows = [
-    `IR = dz/dzMax = ${fmt(s.deflection, 2)} / ${fmt(s.deflectionLimit, 2)} = <strong>${fmt(c.deflection?.ir, 3)}</strong>`,
-    `<strong>${checkStatus(c.deflection)}</strong>`
-  ];
-  const supportRows = [
-    irLine('Support / bearing', c.support),
-    result.actions?.ulsNote ? esc(result.actions.ulsNote) : ''
-  ];
-  $('codeChecks').innerHTML = [
-    checkPanel('Section Control (Eurocode 3)', sectionRows, [c.moment, c.shear, c.axial, c.combined].some((x) => x?.pass === false) ? 'FAIL' : 'PASS'),
-    checkPanel('Buckling Control', bucklingRows, [c.memberBuckling, c.ltb].some((x) => x?.pass === false) ? 'FAIL' : 'PASS'),
-    checkPanel(`Deflection Control (L/${deflLimit || num('deflLimit', 300)})`, deflectionRows, checkStatus(c.deflection)),
-    checkPanel('Support / Stiffener Control', supportRows, checkStatus(c.support))
-  ].join('');
+  if (Math.abs(Number(c.axial?.axialEd || 0)) > 1e-9) {
+    sectionLines.push(ratioLine(`IR = NEd/NRd+My,Ed/My,Rd = ${f1(c.axial?.axialEd)}/NRd+${f1(s.maxMoment)}/${f1(c.moment?.resistance)} = `, c.combined?.ir, c.combined?.pass, ` ${comparisonForIr(c.combined?.ir)} (Ch 6.2.1/6.2.9)`));
+  }
+  sectionLines.push(ratioLine(`IR = Vz,Ed/Vz,Rd = ${f1(s.maxShear)}/${f1(c.shear?.resistance)} = `, c.shear?.ir, c.shear?.pass, ` ${comparisonForIr(c.shear?.ir)} (Ch 6.2.6)`));
+  const bucklingLines = [];
+  if (c.memberBuckling?.active && c.memberBuckling?.available) {
+    bucklingLines.push(ratioLine('IR = member buckling interaction = ', c.memberBuckling.ir, c.memberBuckling.pass, ` ${comparisonForIr(c.memberBuckling.ir)} (Ch 6.3.3)`));
+  } else if (c.memberBuckling?.message) {
+    bucklingLines.push({ kind: 'info', text: c.memberBuckling.message });
+  } else {
+    bucklingLines.push({ kind: 'info', text: 'No axial compression applied, so compression member buckling interaction is not required.' });
+  }
+  if (c.ltb?.available) bucklingLines.push(ratioLine('IR = My,Ed/(χLT*My,Rd) = ', c.ltb.ir, c.ltb.pass, ` ${comparisonForIr(c.ltb.ir)} (Ch 6.3.2)`));
+  else if (c.ltb?.message) bucklingLines.push({ kind: 'info', text: c.ltb.message });
+  return {
+    title: 'Results',
+    sections: [
+      { heading: 'SECTION CONTROL:', lines: sectionLines },
+      { heading: 'BUCKLING CONTROL: (incl Lateral Torsional Buckling)', lines: bucklingLines },
+      { heading: `DEFLECTION CONTROL: (L/${deflectionRatio})`, lines: [ratioLine(`IR = dz/dzMax = ${f1(s.deflection)}/${f1(s.deflectionLimit)} = `, c.deflection?.ir, c.deflection?.pass, ` ${comparisonForIr(c.deflection?.ir)}`)] }
+    ]
+  };
+}
+
+function renderCodeCheckControls(result) {
+  const controls = result.codeCheckControls || fallbackCodeCheckControls(result);
+  const sections = controls.sections || [];
+  return `<fieldset class="results-fieldset">
+    <legend class="results-legend">${esc(controls.title || 'Results')}</legend>
+    <div class="results-controls-body">
+      ${sections.map((section) => `<section class="check-section">
+        <div class="check-heading">${esc(section.heading || '')}</div>
+        ${(section.lines || []).map((line) => {
+          if (line.kind === 'info') return `<div class="check-line check-line-info">${esc(line.text || '')}</div>`;
+          const cls = line.pass ? 'check-ratio-pass' : 'check-ratio-fail';
+          return `<div class="check-line">${esc(line.prefix || '')}<span class="${cls}">${esc(line.ratio ?? '-')}</span>${esc(line.suffix || '')}</div>`;
+        }).join('')}
+      </section>`).join('')}
+    </div>
+    <div class="more-results-row"><button type="button" class="more-results-button" data-more-results>More Results</button></div>
+  </fieldset>`;
+}
+
+function renderChecks(result) {
+  $('codeChecks').innerHTML = renderCodeCheckControls(result);
 }
 
 function renderDetails(result) {
@@ -1727,6 +1767,12 @@ function bindEvents() {
     const btn = event.target.closest('[data-loadcase]');
     if (!btn) return;
     setActiveLoadCase(btn.dataset.loadcase);
+  });
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-more-results]');
+    if (!btn) return;
+    document.querySelector('[data-tab-group="inspectorTabs"][data-tab="detailsPanel"]')?.click();
+    $('detailResults')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   $('recalcBtn')?.addEventListener('click', () => calculate().catch((err) => setSaveStatus(err.message, 'error')));
   $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
