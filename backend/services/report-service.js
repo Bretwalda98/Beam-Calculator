@@ -954,6 +954,624 @@ function buildPdfBuffer(pages) {
   return Buffer.from(pdf, 'utf8');
 }
 
+function pdfColour(hex) {
+  const value = String(hex || '#000000').replace('#', '');
+  const r = parseInt(value.slice(0, 2), 16) / 255;
+  const g = parseInt(value.slice(2, 4), 16) / 255;
+  const b = parseInt(value.slice(4, 6), 16) / 255;
+  return `${roundPdf(r)} ${roundPdf(g)} ${roundPdf(b)}`;
+}
+
+function roundPdf(value) {
+  return Number(value || 0).toFixed(3).replace(/\.?0+$/, '') || '0';
+}
+
+function pdfLiteral(value) {
+  return String(value ?? '').replace(/[\\()]/g, '\\$&').replace(/\r?\n/g, ' ');
+}
+
+function cleanEngineeringText(value, fallback = '-') {
+  let text = String(value ?? '').trim();
+  if (!text) return fallback;
+  return text
+    .replace(/Ï‡/g, 'chi')
+    .replace(/Î³/g, 'gamma')
+    .replace(/Î´/g, 'delta')
+    .replace(/Î”/g, 'Delta')
+    .replace(/Î»/g, 'lambda')
+    .replace(/χ/g, 'chi')
+    .replace(/γ/g, 'gamma')
+    .replace(/δ/g, 'delta')
+    .replace(/Δ/g, 'Delta')
+    .replace(/λ/g, 'lambda')
+    .replace(/â‰¤/g, '<=')
+    .replace(/â‰¥/g, '>=')
+    .replace(/Ã—/g, 'x')
+    .replace(/IR_NM/g, 'N+M utilisation')
+    .replace(/IR_LT/g, 'LTB utilisation')
+    .replace(/delta_IR/g, 'delta utilisation')
+    .replace(/delta_max/g, 'delta max')
+    .replace(/delta_allow/g, 'Delta allow')
+    .replace(/gammaM0/g, 'gammaM0')
+    .replace(/gammaM1/g, 'gammaM1')
+    .replace(/chiLT/g, 'chiLT')
+    .replace(/lambdaLT/g, 'lambdaLT')
+    .replace(/My,Ed/g, 'MEd,y')
+    .replace(/My,Rd/g, 'MRd,y')
+    .replace(/Mz,Ed/g, 'MEd,z')
+    .replace(/Vz,Ed/g, 'VEd,z')
+    .replace(/Vz,Rd/g, 'VRd,z')
+    .replace(/NEd/g, 'NEd')
+    .replace(/NRd/g, 'NRd')
+    .replace(/Nb,y,Rd/g, 'Nb,Rd,y')
+    .replace(/Nb,z,Rd/g, 'Nb,Rd,z')
+    .replace(/dzMax/g, 'Delta max')
+    .replace(/dz/g, 'delta')
+    .replace(/_/g, '')
+    .replace(/\s+/g, ' ')
+    .trim() || fallback;
+}
+
+function extractRatio(value) {
+  const n = finite(value);
+  if (n !== null) return n;
+  const matches = String(value ?? '').match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/gi);
+  if (!matches || !matches.length) return null;
+  return finite(matches[matches.length - 1]);
+}
+
+function formatPercent(value) {
+  const ratio = extractRatio(value);
+  if (ratio === null) return '-';
+  const percent = ratio * 100;
+  const dp = Math.abs(percent) < 10 && Math.abs(percent) > 0 ? 1 : 0;
+  return `${round(percent, dp)} %`;
+}
+
+function pdfStatus(pass) {
+  if (pass === true || String(pass).toUpperCase() === 'PASS') return 'PASS';
+  if (pass === false || String(pass).toUpperCase() === 'FAIL') return 'FAIL';
+  return cleanEngineeringText(pass || 'INFO');
+}
+
+function checkStatusFromRow(row = {}) {
+  if (row.pass === true) return 'PASS';
+  if (row.pass === false) return 'FAIL';
+  if (row.available === false) return 'NOTE';
+  return 'INFO';
+}
+
+function getCheckClause(text) {
+  const match = String(text || '').match(/Ch\s+([0-9.]+)/i);
+  return match ? `EN 1993-1-1 ${match[1]}` : '-';
+}
+
+function pdfTextWidth(text, size = 9, bold = false) {
+  return String(text ?? '').length * size * (bold ? 0.58 : 0.52);
+}
+
+function wrapPdfText(value, maxWidth, size = 9, bold = false) {
+  const text = cleanEngineeringText(value);
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = '';
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (pdfTextWidth(test, size, bold) <= maxWidth || !line) {
+      line = test;
+    } else {
+      lines.push(line);
+      line = word;
+    }
+  });
+  if (line) lines.push(line);
+  return lines.length ? lines : ['-'];
+}
+
+function pdfRichSegments(text) {
+  return [{ font: 'F1', text: pdfSafeText(cleanEngineeringText(text)) }];
+}
+
+function buildPdfFromOperations(pages) {
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>'
+  ];
+  const kids = [];
+  pages.forEach((content) => {
+    const pageObj = objects.length + 1;
+    const contentObj = pageObj + 1;
+    kids.push(`${pageObj} 0 R`);
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentObj} 0 R >>`);
+    objects.push(`<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`);
+  });
+  objects[1] = `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`;
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(Buffer.byteLength(pdf));
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = Buffer.byteLength(pdf);
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(pdf, 'utf8');
+}
+
+function buildHandCalculationRows(input = {}, result = {}, model = {}) {
+  const checks = result.checks || {};
+  const summary = result.summary || {};
+  const forceUnit = summary.forceUnit || result.loads?.units?.force || 'kN';
+  const momentUnit = summary.momentUnit || result.loads?.units?.moment || 'kN m';
+  const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
+  const support = result.inputEcho?.supportLabel || input.model?.supportType || '-';
+  const status = (check) => checkStatusFromRow(check);
+  const summaryRows = [
+    ['Shear', `${round(checks.shear?.resistance, 2)} ${forceUnit}`, `${round(summary.maxShear, 2)} ${forceUnit}`, formatPercent(checks.shear?.ir), status(checks.shear)],
+    ['Bending moment', `${round(checks.moment?.resistance, 2)} ${momentUnit}`, `${round(summary.maxMoment, 2)} ${momentUnit}`, formatPercent(checks.moment?.ir), status(checks.moment)],
+    ['Total deflection', `${round(summary.deflectionLimit, 2)} mm`, `${round(summary.deflection, 2)} mm`, formatPercent(checks.deflection?.ir), status(checks.deflection)]
+  ];
+  if (Math.abs(Number(checks.axial?.axialEd || 0)) > 1e-9) {
+    summaryRows.splice(2, 0, ['Axial force', '-', `${round(checks.axial?.axialEd, 2)} ${forceUnit}`, formatPercent(checks.axial?.ir), status(checks.axial)]);
+  }
+  if (checks.ltb?.enabled) {
+    if (checks.ltb.available === false) {
+      summaryRows.push(['Buckling / LTB', 'Short note', checks.ltb.message || 'Not available for this case', '-', 'NOTE']);
+    } else {
+      summaryRows.push(['Buckling / LTB', 'See Eurocode check', `${round(summary.maxMoment, 2)} ${momentUnit}`, formatPercent(checks.ltb?.ir), status(checks.ltb)]);
+    }
+  }
+  if (checks.memberBuckling?.active) {
+    if (checks.memberBuckling.available === false) {
+      summaryRows.push(['Member buckling', 'Short note', checks.memberBuckling.message || 'Not available for this case', '-', 'NOTE']);
+    } else {
+      summaryRows.push(['Member buckling', 'See Eurocode check', `${round(checks.axial?.axialEd, 2)} ${forceUnit}`, formatPercent(checks.memberBuckling?.ir), status(checks.memberBuckling)]);
+    }
+  }
+  return {
+    summaryRows,
+    sectionName,
+    support,
+    spanRows: [
+      ['Effective span L', `${round(result.inputEcho?.span || input.model?.span, 3)} m`],
+      ['Support condition', support],
+      ['Deflection limit', `L/${round(input.settings?.deflectionLimit || (summary.deflectionLimit ? (Number(result.inputEcho?.span || input.model?.span || 0) * 1000 / Number(summary.deflectionLimit)) : 0), 0)}`],
+      ['Steel grade', result.inputEcho?.material || input.material?.grade || '-'],
+      ['Design code', model.packageData?.designCode || model.meta?.designCode || '-'],
+      ['National Annex', model.packageData?.nationalAnnex || model.meta?.nationalAnnex || '-'],
+      ['gammaM0', round(input.settings?.gammaM0, 2)],
+      ['gammaM1', round(input.settings?.gammaM1, 2)],
+      ['Self weight', input.model?.includeSelfWeight === false ? 'Excluded' : 'Included as full-span permanent UDL']
+    ],
+    reactionRows: (result.actions?.reactions || []).map((r) => [
+      `Support ${r.support}`,
+      `${round(r.x, 3)} m`,
+      `${round(r.vertical, 3)} ${forceUnit}`,
+      `${round(r.moment, 3)} ${momentUnit}`
+    ])
+  };
+}
+
+function buildPdfLoadRows(input = {}, result = {}) {
+  const loads = input.loads || {};
+  const rows = [];
+  const seenTraps = new Set();
+  const activeValues = (load) => ['G', 'Q1', 'Q2'].filter((key) => Math.abs(Number(load[key] || 0)) > 1e-12).map((key) => `${key}=${round(load[key], 3)}`).join(', ');
+
+  (loads.udls || []).forEach((load, index) => {
+    if (load.sourceType === 'trap') {
+      const id = load.reportLabel || String(load.label || `T${index + 1}`).split('.')[0];
+      const key = `${id}-${load.loadCase || 'G'}-${load.reportX1 ?? load.x1}-${load.reportX2 ?? load.x2}`;
+      if (seenTraps.has(key)) return;
+      seenTraps.add(key);
+      rows.push([
+        id,
+        'Trapezoidal UDL',
+        `${load.loadCase || 'G'}: q1=${round(load.q1, 3)} to q2=${round(load.q2, 3)}`,
+        `${round(load.reportX1 ?? load.x1, 3)} m`,
+        `${round(load.reportX2 ?? load.x2, 3)} m`,
+        'Linear crossfall shown in loading sketch'
+      ]);
+      return;
+    }
+    if (!activeValues(load)) return;
+    rows.push([
+      load.label || `U${index + 1}`,
+      load.isSelf ? 'Self weight UDL' : 'Uniform UDL',
+      activeValues(load),
+      `${round(load.x1, 3)} m`,
+      `${round(load.x2, 3)} m`,
+      load.isSelf ? 'Section self-weight' : '-'
+    ]);
+  });
+
+  (loads.points || []).forEach((load, index) => {
+    const isMoment = Math.abs(Number(load.M || 0)) > 1e-12;
+    const values = isMoment
+      ? `${load.momentCase || 'G'} ${round(load.M, 3)}`
+      : activeValues(load);
+    if (!values) return;
+    rows.push([
+      load.label || (isMoment ? `M${index + 1}` : `P${index + 1}`),
+      isMoment ? 'Applied moment' : 'Point load',
+      values,
+      `${round(load.x, 3)} m`,
+      '-',
+      '-'
+    ]);
+  });
+
+  const rawSelfWeight = (result.loads?.raw?.udls || []).find((load) => load.isSelf);
+  if (rawSelfWeight && !rows.some((row) => row[1] === 'Self weight UDL')) {
+    rows.push([
+      rawSelfWeight.label || 'Self-weight',
+      'Self weight UDL',
+      `G=${round(rawSelfWeight.G, 3)}`,
+      `${round(rawSelfWeight.x1, 3)} m`,
+      `${round(rawSelfWeight.x2, 3)} m`,
+      'Section self-weight'
+    ]);
+  }
+
+  return rows.length ? rows : [['-', 'No active loads recorded', '-', '-', '-', '-']];
+}
+
+function buildPdfCheckRows(result = {}) {
+  const rows = [];
+  (result.codeCheckControls?.sections || []).forEach((section) => {
+    const heading = cleanEngineeringText(section.heading || 'Code check');
+    (section.lines || []).forEach((line) => {
+      if (line.kind === 'ratio') {
+        const expression = `${line.prefix || ''}${line.ratio || '-'}${line.suffix || ''}`;
+        rows.push([
+          heading.replace(/:$/, ''),
+          cleanEngineeringText(expression),
+          getCheckClause(line.suffix),
+          formatPercent(line.ratio),
+          pdfStatus(line.pass)
+        ]);
+      } else if (line.text) {
+        rows.push([
+          heading.replace(/:$/, ''),
+          cleanEngineeringText(line.text),
+          '-',
+          '-',
+          'NOTE'
+        ]);
+      }
+    });
+  });
+  return rows.length ? rows : formatCheckRows(result).map((row) => [
+    cleanEngineeringText(row[0]),
+    cleanEngineeringText(row[3]),
+    '-',
+    formatPercent(row[1]),
+    cleanEngineeringText(row[2])
+  ]);
+}
+
+function buildPdfLoadSketchItems(input = {}, result = {}) {
+  const items = { udls: [], traps: [], points: [], moments: [], axial: [] };
+  const span = finite(result.inputEcho?.span) || finite(input.model?.span) || 1;
+  const seenTraps = new Set();
+  (input.loads?.udls || []).forEach((load, index) => {
+    if (load.sourceType === 'trap') {
+      const id = load.reportLabel || String(load.label || `T${index + 1}`).split('.')[0];
+      const key = `${id}-${load.loadCase || 'G'}-${load.reportX1 ?? load.x1}-${load.reportX2 ?? load.x2}`;
+      if (seenTraps.has(key)) return;
+      seenTraps.add(key);
+      items.traps.push({
+        id,
+        x1: Number(load.reportX1 ?? load.x1 ?? 0),
+        x2: Number(load.reportX2 ?? load.x2 ?? span),
+        q1: Number(load.q1 || 0),
+        q2: Number(load.q2 || 0),
+        loadCase: load.loadCase || 'G'
+      });
+      return;
+    }
+    const total = Math.abs(Number(load.G || 0)) + Math.abs(Number(load.Q1 || 0)) + Math.abs(Number(load.Q2 || 0));
+    if (!total && !load.isSelf) return;
+    items.udls.push({
+      id: load.label || `U${index + 1}`,
+      x1: Number(load.x1 || 0),
+      x2: Number(load.x2 ?? span),
+      text: `${load.label || `U${index + 1}`}: ${['G', 'Q1', 'Q2'].filter((key) => Number(load[key] || 0)).map((key) => `${key}=${round(load[key], 2)}`).join(', ') || '0'}`
+    });
+  });
+  (input.loads?.points || []).forEach((load, index) => {
+    if (Math.abs(Number(load.M || 0)) > 1e-12) {
+      items.moments.push({ id: load.label || `M${index + 1}`, x: Number(load.x || 0), text: `${load.label || `M${index + 1}`}: ${round(load.M, 2)}` });
+      return;
+    }
+    const total = Math.abs(Number(load.G || 0)) + Math.abs(Number(load.Q1 || 0)) + Math.abs(Number(load.Q2 || 0));
+    if (!total) return;
+    items.points.push({ id: load.label || `P${index + 1}`, x: Number(load.x || 0), text: `${load.label || `P${index + 1}`}: ${['G', 'Q1', 'Q2'].filter((key) => Number(load[key] || 0)).map((key) => `${key}=${round(load[key], 2)}`).join(', ')}` });
+  });
+  const axial = input.axial || {};
+  const axialTotal = Math.abs(Number(axial.G || 0)) + Math.abs(Number(axial.Q1 || 0)) + Math.abs(Number(axial.Q2 || 0));
+  if (axialTotal > 1e-12) {
+    items.axial.push({ text: `N: ${['G', 'Q1', 'Q2'].filter((key) => Number(axial[key] || 0)).map((key) => `${key}=${round(axial[key], 2)}`).join(', ')}` });
+  }
+  return items;
+}
+
+function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
+  const pageWidth = 595;
+  const pageHeight = 842;
+  const margin = 38;
+  const contentWidth = pageWidth - margin * 2;
+  const pages = [];
+  let ops = [];
+  let y = 0;
+  let pageNo = 0;
+  const meta = model.meta || {};
+  const rows = buildHandCalculationRows(input, result, model);
+  const forceUnit = result.summary?.forceUnit || 'kN';
+  const momentUnit = result.summary?.momentUnit || 'kN m';
+
+  const add = (op) => ops.push(op);
+  const stroke = (hex) => add(`${pdfColour(hex)} RG`);
+  const fill = (hex) => add(`${pdfColour(hex)} rg`);
+  const rect = (x, topY, w, h, options = {}) => {
+    if (options.fill) {
+      fill(options.fill);
+      add(`${roundPdf(x)} ${roundPdf(topY - h)} ${roundPdf(w)} ${roundPdf(h)} re f`);
+    }
+    if (options.stroke !== false) {
+      stroke(options.stroke || '#cbd5e1');
+      add(`${roundPdf(x)} ${roundPdf(topY - h)} ${roundPdf(w)} ${roundPdf(h)} re S`);
+    }
+  };
+  const line = (x1, y1, x2, y2, colour = '#334155', width = 0.7) => {
+    stroke(colour);
+    add(`${roundPdf(width)} w ${roundPdf(x1)} ${roundPdf(y1)} m ${roundPdf(x2)} ${roundPdf(y2)} l S`);
+  };
+  const text = (value, x, baseline, options = {}) => {
+    const size = options.size || 9;
+    const font = options.bold ? 'F2' : 'F1';
+    fill(options.color || '#0f172a');
+    let cx = x;
+    pdfRichSegments(value).forEach((segment) => {
+      const segmentFont = segment.symbol ? 'F3' : font;
+      add(`BT /${segmentFont} ${roundPdf(size)} Tf 1 0 0 1 ${roundPdf(cx)} ${roundPdf(baseline)} Tm (${pdfLiteral(segment.text)}) Tj ET`);
+      cx += pdfTextWidth(segment.text, size, options.bold || segment.symbol);
+    });
+  };
+  const paragraph = (value, x, startY, width, options = {}) => {
+    const size = options.size || 8.5;
+    const lineHeight = options.lineHeight || size + 3;
+    const lines = wrapPdfText(value, width, size, Boolean(options.bold));
+    lines.forEach((lineText, index) => text(lineText, x, startY - index * lineHeight, options));
+    return lines.length * lineHeight;
+  };
+  const finishPage = () => {
+    if (!ops.length) return;
+    pages.push(ops);
+  };
+  const header = () => {
+    pageNo += 1;
+    ops = [];
+    y = pageHeight - 34;
+    text(meta.companyName || 'Beam Calculator Studio', margin, y, { size: 10, bold: true });
+    text(`Project: ${meta.projectName || '-'}`, 210, y, { size: 8 });
+    text(`Ref: ${meta.jobReference || '-'}`, 420, y, { size: 8 });
+    y -= 13;
+    text(meta.calculationTitle || 'Beam calculation', margin, y, { size: 8 });
+    text(`Client: ${meta.clientName || '-'}`, 210, y, { size: 8 });
+    text(`Date: ${meta.date || today()}`, 420, y, { size: 8 });
+    line(margin, y - 8, pageWidth - margin, y - 8, '#94a3b8', 0.6);
+    y -= 27;
+  };
+  const ensure = (height) => {
+    if (y - height < 58) {
+      finishPage();
+      header();
+    }
+  };
+  const section = (title) => {
+    ensure(28);
+    y -= 5;
+    text(title, margin, y, { size: 12, bold: true, color: '#1e3a8a' });
+    line(margin, y - 5, pageWidth - margin, y - 5, '#1e3a8a', 0.9);
+    y -= 17;
+  };
+  const table = (headers, bodyRows, widths, options = {}) => {
+    const size = options.size || 8;
+    const headerHeight = 18;
+    const drawHeader = () => {
+      ensure(headerHeight + 4);
+      rect(margin, y, contentWidth, headerHeight, { fill: options.headerFill || '#e2e8f0', stroke: '#94a3b8' });
+      let x = margin;
+      headers.forEach((headerText, index) => {
+        paragraph(headerText, x + 4, y - 12, widths[index] - 8, { size, bold: true, lineHeight: size + 2 });
+        if (index > 0) line(x, y, x, y - headerHeight, '#94a3b8', 0.45);
+        x += widths[index];
+      });
+      y -= headerHeight;
+    };
+    drawHeader();
+    (bodyRows || []).forEach((row, rowIndex) => {
+      const wrapped = row.map((cell, index) => wrapPdfText(cell, widths[index] - 8, size, false));
+      const rowHeight = Math.max(18, Math.max(...wrapped.map((lines) => lines.length)) * (size + 2) + 8);
+      if (y - rowHeight < 58) {
+        finishPage();
+        header();
+        drawHeader();
+      }
+      rect(margin, y, contentWidth, rowHeight, { fill: rowIndex % 2 ? '#ffffff' : '#f8fafc', stroke: '#cbd5e1' });
+      let x = margin;
+      row.forEach((cell, index) => {
+        const color = /FAIL/i.test(String(cell)) ? '#b91c1c' : /PASS|OK/i.test(String(cell)) ? '#15803d' : '#0f172a';
+        wrapped[index].forEach((lineText, lineIndex) => text(lineText, x + 4, y - 12 - lineIndex * (size + 2), { size, color, bold: index === row.length - 1 && /PASS|FAIL|OK/i.test(String(cell)) }));
+        if (index > 0) line(x, y, x, y - rowHeight, '#e2e8f0', 0.35);
+        x += widths[index];
+      });
+      y -= rowHeight;
+    });
+    y -= 8;
+  };
+  const titleBlock = () => {
+    rect(margin, y, contentWidth, 82, { fill: '#ffffff', stroke: '#94a3b8' });
+    text('Structural Engineering Beam Calculation', margin + 10, y - 18, { size: 15, bold: true, color: '#0f172a' });
+    text(`Status: ${result.status || '-'}`, margin + 10, y - 40, { size: 12, bold: true, color: result.status === 'FAIL' ? '#b91c1c' : '#15803d' });
+    text(`Governing utilisation: ${formatPercent(result.summary?.governingIR)} (${round(result.summary?.governingIR, 3)})`, margin + 160, y - 40, { size: 10, bold: true });
+    text(`Beam/member: ${meta.beamMark || '-'}`, margin + 365, y - 40, { size: 9 });
+    text(`Prepared: ${meta.engineerName || '-'}    Checked: ${meta.checkedBy || '-'}    Approved: ${meta.approvedBy || '-'}`, margin + 10, y - 62, { size: 8 });
+    y -= 96;
+  };
+  const drawLoadingDiagram = () => {
+    ensure(150);
+    const top = y;
+    const h = 138;
+    const left = margin;
+    const right = margin + contentWidth;
+    const beamY = top - 76;
+    const span = finite(result.inputEcho?.span) || finite(input.model?.span) || 1;
+    const xMap = (xValue) => left + 36 + (Number(xValue || 0) / Math.max(span, 1e-9)) * (contentWidth - 72);
+    rect(left, top, contentWidth, h, { fill: '#ffffff', stroke: '#cbd5e1' });
+    text('Loading diagram', left + 8, top - 14, { size: 9, bold: true });
+    line(xMap(0), beamY, xMap(span), beamY, '#0f172a', 2);
+    line(xMap(0), beamY, xMap(0) - 10, beamY - 18, '#0f172a', 1);
+    line(xMap(0), beamY, xMap(0) + 10, beamY - 18, '#0f172a', 1);
+    line(xMap(span), beamY, xMap(span) - 10, beamY - 18, '#0f172a', 1);
+    line(xMap(span), beamY, xMap(span) + 10, beamY - 18, '#0f172a', 1);
+    const sketch = buildPdfLoadSketchItems(input, result);
+    sketch.udls.forEach((load, index) => {
+      const x1 = xMap(load.x1);
+      const x2 = xMap(load.x2);
+      rect(x1, beamY + 48 - index * 5, Math.max(4, x2 - x1), 14, { fill: '#dbeafe', stroke: '#2563eb' });
+      const count = Math.max(2, Math.min(12, Math.round((x2 - x1) / 28)));
+      for (let i = 0; i < count; i += 1) {
+        const x = x1 + (i + 0.5) * (x2 - x1) / count;
+        line(x, beamY + 48 - index * 5, x, beamY + 10, '#2563eb', 0.7);
+      }
+      text(load.text, x1, beamY + 54 - index * 8, { size: 6.5, color: '#1d4ed8' });
+    });
+    sketch.traps.forEach((load, index) => {
+      const x1 = xMap(load.x1);
+      const x2 = xMap(load.x2);
+      const maxQ = Math.max(Math.abs(load.q1), Math.abs(load.q2), 1);
+      const top1 = beamY + 12 + 44 * Math.abs(load.q1) / maxQ;
+      const top2 = beamY + 12 + 44 * Math.abs(load.q2) / maxQ;
+      fill('#fee2e2');
+      stroke('#b91c1c');
+      add(`${roundPdf(x1)} ${roundPdf(beamY + 8)} m ${roundPdf(x1)} ${roundPdf(top1)} l ${roundPdf(x2)} ${roundPdf(top2)} l ${roundPdf(x2)} ${roundPdf(beamY + 8)} l h f`);
+      line(x1, top1, x2, top2, '#b91c1c', 0.9);
+      const count = Math.max(3, Math.min(14, Math.round((x2 - x1) / 24)));
+      for (let i = 0; i < count; i += 1) {
+        const t = (i + 0.5) / count;
+        const x = x1 + t * (x2 - x1);
+        const yTop = top1 + t * (top2 - top1);
+        line(x, yTop, x, beamY + 9, '#b91c1c', 0.65);
+      }
+      text(`${load.id}: q1=${round(load.q1, 2)} to q2=${round(load.q2, 2)} ${load.loadCase}`, x1, beamY + 44 - index * 8, { size: 6.5, color: '#991b1b' });
+    });
+    sketch.points.forEach((load, index) => {
+      const x = xMap(load.x);
+      line(x, beamY + 54, x, beamY + 8, '#b91c1c', 1);
+      text(load.text, x + 4, beamY + 58 - index * 8, { size: 6.5, color: '#991b1b' });
+    });
+    sketch.moments.forEach((load, index) => {
+      const x = xMap(load.x);
+      add(`${pdfColour('#7c2d12')} RG 1 w ${roundPdf(x - 12)} ${roundPdf(beamY + 18)} ${roundPdf(24)} ${roundPdf(24)} re S`);
+      text(load.text, x + 15, beamY + 36 - index * 8, { size: 6.5, color: '#7c2d12' });
+    });
+    sketch.axial.forEach((load) => text(load.text, xMap(span / 2) - 38, beamY + 92, { size: 7, bold: true, color: '#1d4ed8' }));
+    text('0', xMap(0) - 4, beamY - 31, { size: 7 });
+    text(`${round(span, 3)} m`, xMap(span) - 16, beamY - 31, { size: 7 });
+    text(`L = ${round(span, 3)} m`, xMap(span / 2) - 22, beamY - 31, { size: 7, bold: true });
+    y -= h + 12;
+  };
+  const drawChart = (key, title, unit, colour) => {
+    const series = result.diagrams?.series || [];
+    ensure(135);
+    const top = y;
+    const h = 122;
+    const left = margin;
+    const plotLeft = left + 42;
+    const plotRight = left + contentWidth - 18;
+    const plotTop = top - 24;
+    const plotBottom = top - h + 24;
+    rect(left, top, contentWidth, h, { fill: '#ffffff', stroke: '#cbd5e1' });
+    text(title, left + 8, top - 12, { size: 9, bold: true });
+    if (!series.length) {
+      text('Diagram data not returned by calculation service.', left + 8, top - 42, { size: 8, color: '#64748b' });
+      y -= h + 10;
+      return;
+    }
+    const maxX = Math.max(...series.map((row) => Number(row.x || 0)), 1);
+    const values = series.map((row) => Number(row[key] || 0));
+    const maxAbs = Math.max(...values.map((value) => Math.abs(value)), 1e-9);
+    const xMap = (xValue) => plotLeft + (Number(xValue || 0) / maxX) * (plotRight - plotLeft);
+    const yMap = (value) => (plotTop + plotBottom) / 2 - (Number(value || 0) / maxAbs) * ((plotTop - plotBottom) * 0.43);
+    [0, 0.25, 0.5, 0.75, 1].forEach((p) => line(plotLeft, plotBottom + p * (plotTop - plotBottom), plotRight, plotBottom + p * (plotTop - plotBottom), '#e2e8f0', 0.35));
+    line(plotLeft, plotBottom, plotRight, plotBottom, '#64748b', 0.55);
+    line(plotLeft, plotTop, plotLeft, plotBottom, '#64748b', 0.55);
+    line(plotLeft, yMap(0), plotRight, yMap(0), '#334155', 0.6);
+    stroke(colour);
+    add(`1.2 w ${series.map((row, index) => `${roundPdf(xMap(row.x))} ${roundPdf(yMap(row[key]))} ${index ? 'l' : 'm'}`).join(' ')} S`);
+    const peak = series.reduce((best, row) => Math.abs(Number(row[key] || 0)) > Math.abs(Number(best?.[key] || 0)) ? row : best, series[0]);
+    text(`Peak ${round(peak?.[key], 3)} ${unit} at x=${round(peak?.x, 3)} m`, plotLeft + 6, plotBottom - 12, { size: 7, bold: true });
+    text(unit, left + 8, (plotTop + plotBottom) / 2, { size: 7 });
+    y -= h + 10;
+  };
+
+  header();
+  titleBlock();
+  section('Design summary');
+  table(['Check', 'Resistance / Limit', 'Applied / Actual', 'Utilisation', 'Status'], rows.summaryRows, [130, 118, 120, 82, 84], { size: 7.8 });
+  section('Section details');
+  table(['Property', 'Value', 'Unit'], model.sectionRows || [], [210, 160, 164], { size: 7.8 });
+  section('Span, restraints and limits');
+  table(['Item', 'Value'], rows.spanRows, [230, 304], { size: 8 });
+  section('Loading details');
+  table(['Load ID', 'Type', 'Value', 'Start x', 'End x', 'Notes'], buildPdfLoadRows(input, result), [58, 88, 128, 62, 62, 136], { size: 7.2 });
+  drawLoadingDiagram();
+  section('Reactions');
+  table(['Support', 'Position', 'Vertical reaction', 'Moment reaction'], rows.reactionRows.length ? rows.reactionRows : [['-', '-', '-', '-']], [110, 110, 150, 164], { size: 8 });
+  section('Shear, moment and deflection diagrams');
+  drawChart('shear', 'Design shear force diagram', forceUnit, '#1d4ed8');
+  drawChart('moment', 'Design bending moment diagram', momentUnit, '#1d4ed8');
+  drawChart('deflection', 'Deflection diagram', 'mm', '#15803d');
+  section('Eurocode checks');
+  table(['Check', 'Expression', 'Clause', 'Utilisation', 'Status'], buildPdfCheckRows(result), [96, 238, 78, 62, 60], { size: 6.9 });
+  section('Notes and assumptions');
+  const notes = [
+    ...(model.packageData?.assumptions || []),
+    ...(model.warnings || []).map((warning) => `Warning: ${warning}`),
+    `Section data source: ${model.source?.title || 'Source to be confirmed'}`,
+    `Load combination basis: ${result.actions?.ulsNote || result.loads?.combinations?.uls || '-'}`
+  ];
+  table(['Item', 'Note'], notes.map((note, index) => [`${index + 1}`, note]), [42, 492], { size: 7.5 });
+  section('Final summary');
+  table(['Item', 'Result'], [
+    ['Overall status', result.status || '-'],
+    ['Governing utilisation', `${formatPercent(result.summary?.governingIR)} (${round(result.summary?.governingIR, 3)})`],
+    ['Governing check', model.governing?.title || '-'],
+    ['Engineer comments', meta.notes || '-'],
+    ['Prepared by', meta.engineerName || '-'],
+    ['Checked by', meta.checkedBy || '-'],
+    ['Approved by', meta.approvedBy || '-']
+  ], [170, 364], { size: 8 });
+  finishPage();
+
+  const pageTotal = pages.length;
+  const finalPages = pages.map((pageOps, index) => {
+    const footer = [];
+    footer.push(`${pdfColour('#64748b')} rg`);
+    footer.push(`BT /F1 7 Tf 1 0 0 1 ${margin} 30 Tm (${pdfLiteral(pdfSafeText(model.packageData?.designCode || meta.designCode || 'EN 1993-1-1'))}) Tj ET`);
+    footer.push(`BT /F1 7 Tf 1 0 0 1 ${pageWidth - margin - 70} 30 Tm (${pdfLiteral(`Page ${index + 1} of ${pageTotal}`)}) Tj ET`);
+    return [...pageOps, ...footer].join('\n');
+  });
+  return buildPdfFromOperations(finalPages);
+}
+
 function resultToPdf(result = {}, metadata = {}, input = {}) {
   result = result || {};
   input = input || {};
@@ -1002,74 +1620,7 @@ function buildHandCalculationPdf(input = {}, result = {}, suppliedMetadata = {})
   input = input || {};
   result = result || {};
   const model = buildReportModel(input, result, suppliedMetadata);
-  const { meta, packageData, source, governing } = model;
-  const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
-  const checkControlLines = (result.codeCheckControls?.sections || []).flatMap((section) => [
-    section.heading || '',
-    ...(section.lines || []).map((line) => line.kind === 'ratio'
-      ? `${line.prefix || ''}${line.ratio || '-'}${line.suffix || ''}`
-      : line.text || '')
-  ]);
-  const lines = [
-    'Structural Engineering Hand Calculation Report',
-    `Project: ${meta.projectName}`,
-    `Client: ${meta.clientName}`,
-    `Company: ${meta.companyName}`,
-    `Job/reference: ${meta.jobReference}`,
-    `Calculation title: ${meta.calculationTitle}`,
-    `Beam/member mark: ${meta.beamMark}`,
-    `Revision: ${meta.revision}`,
-    `Prepared by: ${meta.engineerName}`,
-    `Checked by: ${meta.checkedBy}`,
-    `Approved by: ${meta.approvedBy}`,
-    `Date: ${meta.date}`,
-    `Design code: ${packageData.designCode || meta.designCode}`,
-    `National Annex: ${packageData.nationalAnnex || meta.nationalAnnex}`,
-    '',
-    '1. Design Summary',
-    `Overall status: ${result.status || '-'}`,
-    `Governing utilisation ratio: ${round(result.summary?.governingIR, 5)}`,
-    `Governing design check: ${governing.title}`,
-    `Section: ${sectionName}`,
-    `Material: ${result.inputEcho?.material || '-'}`,
-    `Span: ${round(result.inputEcho?.span || input.model?.span, 3)} m`,
-    `Maximum moment: ${round(result.summary?.maxMoment, 5)} ${result.summary?.momentUnit || ''}`,
-    `Maximum shear: ${round(result.summary?.maxShear, 5)} ${result.summary?.forceUnit || ''}`,
-    `Maximum deflection: ${round(result.summary?.deflection, 5)} mm`,
-    '',
-    '2. Code Check Controls',
-    ...checkControlLines,
-    '',
-    '3. Detailed Hand Calculations',
-    ...(packageData.calculations || []).flatMap((calc, index) => [
-      `${index + 1}. ${calc.title}`,
-      `Code reference: ${calc.codeReference || 'Reference to be confirmed'}`,
-      `Given values: ${(calc.variables || []).map((row) => `${row.symbol}=${row.value}`).join('; ') || '-'}`,
-      `Formula: ${calc.equation || '-'}`,
-      `Numerical substitution: ${calc.substitution || '-'}`,
-      `Unit conversion: ${calc.unitConversion || '-'}`,
-      `Result: ${calc.result || '-'}`,
-      `Resistance/limit: ${calc.resistance || '-'}`,
-      `Utilisation: ${calc.utilisation || '-'}`,
-      `Acceptance: ${calc.status || 'INFO'}`,
-      ...(calc.warnings || []).map((warning) => `Warning: ${warning}`),
-      ''
-    ]),
-    '4. Assumptions',
-    ...(packageData.assumptions || []).map((item) => `- ${item}`),
-    '',
-    '5. References',
-    `Section database: ${source.title || 'Source to be confirmed'} - ${source.reference || source.url || 'Source to be confirmed'}`,
-    `Design standard: ${packageData.designCode || meta.designCode} / ${packageData.nationalAnnex || meta.nationalAnnex}`,
-    `Material database: ${result.inputEcho?.material || '-'} from server material library`,
-    '',
-    '6. Final Summary',
-    `Overall ${result.status || '-'} with governing utilisation ${round(result.summary?.governingIR, 5)}.`,
-    `Critical design check: ${governing.title}.`
-  ];
-  const pages = [];
-  for (let i = 0; i < lines.length; i += 46) pages.push(lines.slice(i, i + 46));
-  return buildPdfBuffer(pages.length ? pages : [['Structural Engineering Hand Calculation Report']]);
+  return buildStructuredHandPdf(input, result, model);
 }
 
 module.exports = {
