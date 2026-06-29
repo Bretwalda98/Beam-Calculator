@@ -2569,6 +2569,50 @@ body.layout-mobile .inspector-shell{
   height:auto!important;
   overflow:visible!important;
 }
+.combination-preview-box{
+  min-height:132px!important;
+  height:132px!important;
+  line-height:1.45!important;
+  white-space:pre-wrap!important;
+  overflow:auto!important;
+  resize:vertical!important;
+}
+.combination-preview-meta{
+  margin-top:-2px!important;
+  margin-bottom:4px!important;
+  padding:8px 10px!important;
+  border:1px solid var(--border)!important;
+  border-radius:8px!important;
+  background:var(--panel-2)!important;
+  color:var(--text)!important;
+}
+.combination-preview-meta .kv{
+  grid-template-columns:minmax(72px,100px) minmax(0,1fr) 0!important;
+  gap:8px!important;
+  align-items:start!important;
+  padding:4px 0!important;
+  border-bottom:1px dashed var(--line)!important;
+}
+.combination-preview-meta .kv:last-child{border-bottom:0!important}
+.combination-preview-meta .kv .k{
+  color:var(--muted)!important;
+  font-weight:800!important;
+}
+.combination-preview-meta .kv .v{
+  color:var(--text)!important;
+  font-weight:650!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  text-align:left!important;
+}
+body.layout-mobile .combination-preview-box{
+  min-height:168px!important;
+  height:168px!important;
+}
+body.layout-mobile .combination-preview-meta .kv{
+  grid-template-columns:1fr!important;
+  gap:2px!important;
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -2801,9 +2845,10 @@ body.layout-mobile .inspector-shell{
         <label>ψ factor Q2 (secondary)
           <input id="psi_q2" type="number" min="0" max="1" step="0.05" value="0.7">
         </label>
-        <label class="full">Combination preview
-          <textarea id="lc_preview" class="mono" readonly></textarea>
+        <label class="full combination-preview-label">Combination preview
+          <textarea id="lc_preview" class="mono combination-preview-box" rows="8" readonly></textarea>
         </label>
+        <div id="lc_preview_meta" class="combination-preview-meta compact-kv full" aria-live="polite"></div>
         <div id="springSettings" class="full hide single-mode-only">
           <div class="panel">
             <div style="font-weight:900;margin-bottom:8px">Spring support settings</div>
@@ -3513,6 +3558,6 @@ body.layout-mobile .inspector-shell{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js?v=20260629-axial-load-inputs"></script>
+<script src="public/secure-app.js?v=20260629-combination-preview"></script>
 </body>
 </html>

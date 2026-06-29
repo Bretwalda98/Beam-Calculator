@@ -628,6 +628,139 @@ function readMetadata() {
   };
 }
 
+function clamp01(value, fallback = 0) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(1, n));
+}
+
+function fmtCoeff(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '0.00';
+  return n.toFixed(2);
+}
+
+function buildCombinationPreview() {
+  const key = $('load_combo')?.value || 'en1990_610';
+  const psi1 = clamp01($('psi_q1')?.value, 0.7);
+  const psi2 = clamp01($('psi_q2')?.value, 0.7);
+  const psiText = (value) => Number(value).toFixed(1);
+  const applied = (cG, cQ1, cQ2) => `${fmtCoeff(cG)}G + ${fmtCoeff(cQ1)}Q1 + ${fmtCoeff(cQ2)}Q2`;
+  const basis = {
+    source: 'BS EN 1990 load-combination selector implemented by the backend calculation service.',
+    use: 'ULS actions are used for resistance checks; SLS actions are used for deflection/serviceability checks.',
+    validation: 'Checks use the code-check ratio format IR = E_d / R_d. PASS when IR < 1.0.'
+  };
+
+  if (key === 'basic') {
+    return {
+      name: 'Basic loads',
+      source: 'Direct characteristic load summation, for checking/debugging rather than Eurocode design.',
+      use: basis.use,
+      validation: basis.validation,
+      lines: [
+        'Selected: Basic loads',
+        'ULS strength checks: LC_ULS = G + Q1 + Q2',
+        'SLS deflection checks: LC_SLS = G + Q1 + Q2',
+        `Applied coefficients: ${applied(1, 1, 1)}`
+      ]
+    };
+  }
+
+  if (key === 'uls_sls') {
+    return {
+      name: 'ULS/SLS',
+      source: 'App preset combination for simple ULS/SLS comparison.',
+      use: basis.use,
+      validation: basis.validation,
+      lines: [
+        'Selected: ULS/SLS',
+        'ULS strength checks: LC_ULS = 1.00G + 1.30Q1 + 0.70Q2',
+        'SLS deflection checks: LC_SLS = 1.00G + 1.00Q1 + 1.00Q2',
+        `Applied ULS coefficients: ${applied(1, 1.3, 0.7)}`,
+        `Applied SLS coefficients: ${applied(1, 1, 1)}`
+      ]
+    };
+  }
+
+  if (key === 'en1990_610a') {
+    return {
+      name: 'EN 1990 Eq 6.10a',
+      source: 'BS EN 1990 Eq 6.10a for ULS; Eq 6.14a style SLS serviceability combination.',
+      use: basis.use,
+      validation: basis.validation,
+      lines: [
+        'Selected: EN 1990 Eq 6.10a',
+        `ULS strength checks: LC_ULS = 1.35G + 1.5ψ1Q1 + 1.5ψ2Q2`,
+        `Substitution: LC_ULS = 1.35G + 1.5×${psiText(psi1)}Q1 + 1.5×${psiText(psi2)}Q2`,
+        `Applied ULS coefficients: ${applied(1.35, 1.5 * psi1, 1.5 * psi2)}`,
+        `SLS deflection checks: LC_SLS = G + Q1 + ψ2Q2 = ${applied(1, 1, psi2)}`
+      ]
+    };
+  }
+
+  if (key === 'en1990_610b') {
+    return {
+      name: 'EN 1990 Eq 6.10b',
+      source: 'BS EN 1990 Eq 6.10b for ULS; Eq 6.14a style SLS serviceability combination.',
+      use: basis.use,
+      validation: basis.validation,
+      lines: [
+        'Selected: EN 1990 Eq 6.10b',
+        `ULS strength checks: LC_ULS = 0.925×1.35G + 1.5Q1 + 1.5ψ2Q2`,
+        `Substitution: LC_ULS = 0.925×1.35G + 1.5Q1 + 1.5×${psiText(psi2)}Q2`,
+        `Applied ULS coefficients: ${applied(0.925 * 1.35, 1.5, 1.5 * psi2)}`,
+        `SLS deflection checks: LC_SLS = G + Q1 + ψ2Q2 = ${applied(1, 1, psi2)}`
+      ]
+    };
+  }
+
+  if (key === 'en1990_610ab') {
+    return {
+      name: 'EN 1990 Eq 6.10a/b',
+      source: 'BS EN 1990 Eq 6.10a and Eq 6.10b alternatives for ULS; Eq 6.14a style SLS serviceability combination.',
+      use: 'The backend evaluates both ULS alternatives for beam load effects and uses the governing response. SLS actions are used for deflection/serviceability checks.',
+      validation: basis.validation,
+      lines: [
+        'Selected: EN 1990 Eq 6.10a/b',
+        `ULS option A: LC_ULS,a = 1.35G + 1.5ψ1Q1 + 1.5ψ2Q2`,
+        `Substitution A: LC_ULS,a = 1.35G + 1.5×${psiText(psi1)}Q1 + 1.5×${psiText(psi2)}Q2 = ${applied(1.35, 1.5 * psi1, 1.5 * psi2)}`,
+        `ULS option B: LC_ULS,b = 0.925×1.35G + 1.5Q1 + 1.5ψ2Q2`,
+        `Substitution B: LC_ULS,b = 0.925×1.35G + 1.5Q1 + 1.5×${psiText(psi2)}Q2 = ${applied(0.925 * 1.35, 1.5, 1.5 * psi2)}`,
+        `SLS deflection checks: LC_SLS = G + Q1 + ψ2Q2 = ${applied(1, 1, psi2)}`
+      ]
+    };
+  }
+
+  return {
+    name: 'EN 1990 Eq 6.10',
+    source: 'BS EN 1990 Eq 6.10 for ULS; Eq 6.14a style SLS serviceability combination.',
+    use: basis.use,
+    validation: basis.validation,
+    lines: [
+      'Selected: EN 1990 Eq 6.10',
+      `ULS strength checks: LC_ULS = 1.35G + 1.5Q1 + 1.5ψ2Q2`,
+      `Substitution: LC_ULS = 1.35G + 1.5Q1 + 1.5×${psiText(psi2)}Q2`,
+      `Applied ULS coefficients: ${applied(1.35, 1.5, 1.5 * psi2)}`,
+      `SLS deflection checks: LC_SLS = G + Q1 + ψ2Q2 = ${applied(1, 1, psi2)}`
+    ]
+  };
+}
+
+function updateLCPreview() {
+  const preview = buildCombinationPreview();
+  const box = $('lc_preview');
+  if (box) box.value = preview.lines.join('\n');
+  const meta = $('lc_preview_meta');
+  if (meta) {
+    meta.innerHTML = [
+      ['Source', preview.source],
+      ['Use', preview.use],
+      ['Validation', preview.validation]
+    ].map(([key, value]) => `<div class="kv"><div class="k">${esc(key)}</div><div class="v">${esc(value)}</div><div></div></div>`).join('');
+  }
+}
+
 function buildRequest() {
   if ($('sectionSourceMode')?.value === 'custom') {
     throw new Error('Custom section calculations require backend custom-section support. Select a library section for this secure build.');
@@ -1330,6 +1463,7 @@ function applyInput(input = {}) {
   if (input.combination?.combination) $('load_combo').value = input.combination.combination;
   if (input.combination?.psiQ1 !== undefined) $('psi_q1').value = input.combination.psiQ1;
   if (input.combination?.psiQ2 !== undefined) $('psi_q2').value = input.combination.psiQ2;
+  updateLCPreview();
   if (input.axial) {
     setValue('axialG', input.axial.G || 0);
     setValue('axialQ1', input.axial.Q1 || 0);
@@ -1570,6 +1704,10 @@ function bindEvents() {
   $('sec_series')?.addEventListener('change', () => { populateSectionNames(); recalculateDebounced(); });
   $('sec_size')?.addEventListener('change', () => { updateSectionPreview(); recalculateDebounced(); });
   $('sec_class')?.addEventListener('change', () => renderSectionUseSummary(state.currentSectionPreview));
+  ['load_combo', 'psi_q1', 'psi_q2'].forEach((id) => {
+    $(id)?.addEventListener('input', updateLCPreview);
+    $(id)?.addEventListener('change', updateLCPreview);
+  });
   $$('input,select,textarea').forEach((el) => {
     if (el.closest('.settings-panel') || el.closest('.modal')) return;
     el.addEventListener('change', () => { if (state.settings.autoRecalc !== false) recalculateDebounced(); });
@@ -1705,6 +1843,7 @@ async function init() {
   initTabs();
   initLoads();
   bindEvents();
+  updateLCPreview();
   applyDefaultMetadata();
   if (state.settings.openProject !== false && $('projectAccordion')) $('projectAccordion').open = true;
   $('projectDate') && ($('projectDate').value = new Date().toISOString().slice(0, 10));
