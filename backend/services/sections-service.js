@@ -67,6 +67,14 @@ function visibleNumber(value) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function firstVisibleNumber(values, allowZero = false) {
+  for (const value of values) {
+    const n = Number(value);
+    if (Number.isFinite(n) && (n > 0 || (allowZero && n === 0))) return n;
+  }
+  return null;
+}
+
 function areaFromMass(section) {
   const mass = visibleNumber(section?.mass_kg_m);
   return mass ? mass / 7850 * 1_000_000 : null;
@@ -101,6 +109,7 @@ function buildSectionPreview(section) {
   if (!isCircular && !geometry.b_mm) warnings.push('Overall section width is not available.');
   if (geometry.type === 'i' && (!geometry.tw_mm || !geometry.tf_mm)) warnings.push('tw/tf missing - true I/H profile cannot be drawn.');
   if (['i', 'channel', 'rhs'].includes(geometry.type) && !geometry.r_mm) warnings.push('Radius not available from source data.');
+  const area = firstVisibleNumber([section.A_mm2, section.area_mm2]) || areaFromMass(section);
   return {
     id: sectionId(family, section.name),
     designation: section.name,
@@ -114,13 +123,20 @@ function buildSectionPreview(section) {
       tf_mm: geometry.tf_mm,
       t_mm: geometry.t_mm,
       r_mm: geometry.r_mm,
-      A_mm2: visibleNumber(section.A_mm2 || section.area_mm2) || areaFromMass(section),
+      A_mm2: area,
+      Aeff_mm2: firstVisibleNumber([section.Aeff_mm2, section.Aeffmm2, section.Aeff]) || area,
       mass_kg_m: visibleNumber(section.mass_kg_m),
       Iy_mm4: visibleNumber(section.Iy_mm4),
       Iz_mm4: visibleNumber(section.Iz_mm4),
       Wel_y_mm3: visibleNumber(section.Wel_y_mm3),
+      Wel_z_mm3: visibleNumber(section.Wel_z_mm3),
       Wpl_y_mm3: visibleNumber(section.Wpl_y_mm3),
-      Avz_mm2: visibleNumber(section.Avz_mm2)
+      Wpl_z_mm3: visibleNumber(section.Wpl_z_mm3),
+      Weff_y_mm3: firstVisibleNumber([section.Weff_y_mm3, section.Weffy_mm3, section.Weff_mm3_y, section.Weff_y]),
+      Weff_z_mm3: firstVisibleNumber([section.Weff_z_mm3, section.Weffz_mm3, section.Weff_mm3_z, section.Weff_z]),
+      Avz_mm2: visibleNumber(section.Avz_mm2),
+      It_mm4: firstVisibleNumber([section.It_mm4, section.Ix_mm4, section.I_t_mm4, section.Ix]),
+      Iw_mm6: firstVisibleNumber([section.Iw_mm6, section.I_w_mm6, section.Iw], true)
     },
     geometryWarnings: warnings
   };

@@ -10,6 +10,15 @@ const num = (id, fallback = 0) => {
 const txt = (id, fallback = '') => String($(id)?.value ?? fallback).trim();
 const fmt = (value, dp = 2) => Number.isFinite(Number(value)) ? Number(value).toFixed(dp) : '-';
 const fmt3 = (value) => fmt(value, 3);
+const fmtReadable = (value, dp = 0) => {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return n.toLocaleString('en-GB', {
+    minimumFractionDigits: dp,
+    maximumFractionDigits: dp
+  });
+};
 const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const GRAVITY = 9.80665;
 
@@ -32,6 +41,7 @@ const state = {
   apiBase: (window.BEAM_API_BASE_URL || document.querySelector('meta[name="beam-api-base-url"]')?.content || localStorage.getItem('beam_api_base_url') || defaultApiBase()).replace(/\/$/, ''),
   sections: [],
   sectionPreviewCache: new Map(),
+  currentSectionPreview: null,
   last: null,
   settings: JSON.parse(localStorage.getItem('beam_ui_settings_v4') || '{}'),
   activeLoadCase: 'G',
@@ -247,6 +257,58 @@ async function getSectionPreview() {
   return body.section;
 }
 
+function sectionClassInfo() {
+  const value = $('sec_class')?.value || '12';
+  if (value === '3') return { number: 3, label: 'Class 3', basis: 'elastic' };
+  if (value === '4') return { number: 4, label: 'Class 4', basis: 'effective' };
+  return { number: 2, label: 'Class 1–2', basis: 'plastic' };
+}
+
+function chooseWForSectionClass(props = {}) {
+  const info = sectionClassInfo();
+  if (info.number <= 2) {
+    if (Number(props.Wpl_y_mm3) > 0) return { ...info, value: props.Wpl_y_mm3, source: 'Wpl,y' };
+    return { ...info, value: props.Wel_y_mm3, source: 'Wel,y fallback - Wpl,y unavailable' };
+  }
+  if (info.number === 3) return { ...info, value: props.Wel_y_mm3, source: 'Wel,y' };
+  if (Number(props.Weff_y_mm3) > 0) return { ...info, value: props.Weff_y_mm3, source: 'Weff,y' };
+  return { ...info, value: props.Wel_y_mm3, source: 'Wel,y fallback - Weff,y unavailable' };
+}
+
+function propText(value, unit, dp = 0) {
+  return `${fmtReadable(value, dp)} ${unit}`;
+}
+
+function renderSectionUseSummary(section) {
+  const host = $('sec_summary');
+  if (!host) return;
+  if (!section) {
+    host.textContent = '';
+    return;
+  }
+  const props = section.visibleProperties || {};
+  const areaEffective = props.Aeff_mm2 ?? props.A_mm2;
+  const wUsed = chooseWForSectionClass(props);
+  const classLabel = `${wUsed.label} (${wUsed.basis})`;
+  const source = section.source?.title || 'Source to be confirmed';
+  const parts = [
+    `Selected: <strong>${esc(section.designation || 'Section')}</strong>`,
+    `h=${esc(propText(props.h_mm, 'mm'))}, b=${esc(propText(props.b_mm, 'mm'))}`,
+    `mass=${esc(propText(props.mass_kg_m, 'kg/m', 2))}`,
+    `A=${esc(propText(props.A_mm2, 'mm²'))}`,
+    `Aeff=${esc(propText(areaEffective, 'mm²'))}`,
+    `Wel,y=${esc(propText(props.Wel_y_mm3, 'mm³'))}`,
+    `Wpl,y=${esc(propText(props.Wpl_y_mm3, 'mm³'))}`,
+    `Weff,y=${esc(propText(props.Weff_y_mm3, 'mm³'))}`,
+    `W used for My,Rd (${esc(classLabel)}) = ${esc(propText(wUsed.value, 'mm³'))} (${esc(wUsed.source)})`,
+    `Av,z=${esc(propText(props.Avz_mm2, 'mm²'))}`,
+    `Iy=${esc(propText(props.Iy_mm4, 'mm⁴'))}`,
+    `LTB props: It=${esc(propText(props.It_mm4, 'mm⁴'))}, Iz=${esc(propText(props.Iz_mm4, 'mm⁴'))}, Iw=${esc(propText(props.Iw_mm6, 'mm⁶'))}`,
+    `Source: ${esc(source)}`
+  ];
+  host.innerHTML = parts.join(' &bull; ');
+}
+
 async function updateSectionPreview() {
   if ($('sectionSourceMode')?.value === 'custom') {
     renderCustomSectionNotice();
@@ -254,9 +316,10 @@ async function updateSectionPreview() {
   }
   const section = await getSectionPreview();
   if (!section) return;
+  state.currentSectionPreview = section;
   $('sectionPreviewName').textContent = section.designation || 'Section';
   $('sectionPreviewType').textContent = section.family || 'Library';
-  $('sec_summary').textContent = `${section.designation} - ${section.source?.title || 'Source to be confirmed'}`;
+  renderSectionUseSummary(section);
   const warnings = section.geometryWarnings || [];
   const warning = $('sectionPreviewWarning');
   if (warning) {
@@ -316,6 +379,7 @@ function renderCustomSectionFields() {
 }
 
 function renderCustomSectionNotice() {
+  state.currentSectionPreview = null;
   $('sectionPreviewName') && ($('sectionPreviewName').textContent = $('customSectionName')?.value || 'Custom section');
   $('sectionPreviewType') && ($('sectionPreviewType').textContent = 'Custom');
   const message = 'Custom section calculation is not enabled in this secure frontend until the backend custom-section endpoint is supplied.';
@@ -1505,6 +1569,7 @@ function bindEvents() {
   $('resetCustomSectionBtn')?.addEventListener('click', renderCustomSectionFields);
   $('sec_series')?.addEventListener('change', () => { populateSectionNames(); recalculateDebounced(); });
   $('sec_size')?.addEventListener('change', () => { updateSectionPreview(); recalculateDebounced(); });
+  $('sec_class')?.addEventListener('change', () => renderSectionUseSummary(state.currentSectionPreview));
   $$('input,select,textarea').forEach((el) => {
     if (el.closest('.settings-panel') || el.closest('.modal')) return;
     el.addEventListener('change', () => { if (state.settings.autoRecalc !== false) recalculateDebounced(); });
