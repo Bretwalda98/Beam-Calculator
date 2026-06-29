@@ -81,6 +81,9 @@ function runFixture(fixture) {
   assert.ok(calculations.length > 0, `${fixture.id}.calculationPackage.calculations should be populated`);
   const derivationCount = calculations.reduce((sum, calculation) => sum + (calculation.derivations || []).length, 0);
   assert.ok(derivationCount > 0, `${fixture.id}.calculationPackage should include variable derivations`);
+  const sampledDeflection = Math.max(...(result.diagrams?.series || []).map((point) => Math.abs(Number(point.deflection || 0))));
+  assertApprox(sampledDeflection, result.summary.deflection, `${fixture.id}.diagrams.series deflection peak should match SLS summary deflection`);
+  assert.strictEqual(result.diagrams?.basis?.deflection, 'SLS', `${fixture.id}.diagrams.basis.deflection`);
 
   return {
     id: fixture.id,

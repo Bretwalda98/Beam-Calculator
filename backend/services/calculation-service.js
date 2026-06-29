@@ -904,16 +904,19 @@ function applyCombo(raw, coeff, unit) {
   };
 }
 
-function sampleSeries(series, max = 161) {
-  const { xs, V, M, defl } = series;
+function sampleSeries(series, deflectionSeries = series, max = 161) {
+  const { xs, V, M } = series;
   const step = Math.max(1, Math.ceil(xs.length / max));
-  return xs.filter((_, i) => i % step === 0 || i === xs.length - 1).map((x, i) => {
-    const sourceIndex = Math.min(i * step, xs.length - 1);
+  const indices = xs
+    .map((_, index) => index)
+    .filter((index) => index % step === 0 || index === xs.length - 1);
+  return indices.map((sourceIndex) => {
+    const x = xs[sourceIndex];
     return {
       x: round(x, 5),
       shear: round(V[sourceIndex], 5),
       moment: round(M[sourceIndex], 5),
-      deflection: round(interpolate(defl.xs, defl.Y, x), 5)
+      deflection: round(interpolate(deflectionSeries.defl.xs, deflectionSeries.defl.Y, x), 5)
     };
   });
 }
@@ -1715,7 +1718,12 @@ function calculateBeam(input) {
     },
     calculationPackage,
     diagrams: {
-      series: sampleSeries(uls)
+      series: sampleSeries(uls, sls),
+      basis: {
+        shear: 'ULS',
+        moment: 'ULS',
+        deflection: 'SLS'
+      }
     }
   };
 }
