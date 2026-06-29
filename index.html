@@ -2121,7 +2121,7 @@ body.modal-open{overflow:hidden!important}
 .export-pane{min-width:0}
 .export-mobile-tabs{display:none;gap:8px;margin-bottom:8px}
 .export-mobile-tab{flex:1 1 0;min-height:44px}
-.export-mobile-tab.active{border-color:rgba(59,130,246,.55);background:rgba(59,130,246,.12);color:var(--text)}
+.export-mobile-tab.active{border-color:rgba(var(--accent-rgb),.55);background:rgba(var(--accent-rgb),.12);color:var(--text)}
 .load-entry-card.has-error{border-color:rgba(220,38,38,.55)!important;box-shadow:0 0 0 2px rgba(220,38,38,.12)!important}
 .load-field input[aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px rgba(220,38,38,.16)!important}
 .load-validation-note:empty{display:none!important}
@@ -2300,9 +2300,9 @@ body.layout-mobile .ad-actions .btn{min-height:40px!important}
 :root[data-theme="dark"] .tab-btn.active,
 :root[data-theme="dark"] .loadcase-tab.active,
 :root[data-theme="dark"] .export-mobile-tab.active{
-  background:rgba(96,165,250,.16)!important;
-  color:#dbeafe!important;
-  border-color:rgba(96,165,250,.62)!important;
+  background:rgba(var(--accent-rgb),.16)!important;
+  color:var(--accent)!important;
+  border-color:rgba(var(--accent-rgb),.62)!important;
 }
 :root[data-theme="dark"] .ad-slot{
   background:linear-gradient(180deg,rgba(245,158,11,.10),rgba(245,158,11,.04))!important;
@@ -2585,7 +2585,7 @@ body.layout-mobile .inspector-shell{
 .results-legend{
   padding:0 4px!important;
   margin-left:4px!important;
-  color:#2563eb!important;
+  color:var(--accent)!important;
   background:#ffffff!important;
   font-size:12px!important;
   font-weight:800!important;
@@ -3650,6 +3650,6 @@ body.layout-mobile .combination-preview-meta .kv{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js?v=20260629-hand-calc-pdf"></script>
+<script src="public/secure-app.js?v=20260629-accent-theme"></script>
 </body>
 </html>

@@ -25,6 +25,13 @@ const GRAVITY = 9.80665;
 const API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
 const WORKER_API_BASE = API_BASE;
 const LOAD_CASES = ['G', 'Q1', 'Q2'];
+const ACCENT_PALETTES = {
+  blue: { accent: '#155eef', accentRgb: '21,94,239', accentStrong: '#1d4ed8', accentSoft: '#dbeafe' },
+  purple: { accent: '#7c3aed', accentRgb: '124,58,237', accentStrong: '#6d28d9', accentSoft: '#ede9fe' },
+  teal: { accent: '#0f9f9a', accentRgb: '15,159,154', accentStrong: '#0f766e', accentSoft: '#ccfbf1' },
+  orange: { accent: '#ea580c', accentRgb: '234,88,12', accentStrong: '#c2410c', accentSoft: '#ffedd5' },
+  red: { accent: '#dc2626', accentRgb: '220,38,38', accentStrong: '#b91c1c', accentSoft: '#fee2e2' }
+};
 const LOAD_TYPES = {
   uniform: { host: 'multiUniformRows', prefix: 'U', title: 'Uniform load', fields: [['q', 'q'], ['x1', 'x1'], ['x2', 'x2']] },
   point: { host: 'multiPointRows', prefix: 'P', title: 'Point load', fields: [['P', 'P'], ['x', 'x']] },
@@ -186,6 +193,7 @@ function applySettings() {
   const themeMode = state.settings.theme || 'system';
   const theme = themeMode === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeMode;
   document.documentElement.dataset.theme = theme;
+  applyAccent();
   $('themeBadge') && ($('themeBadge').textContent = theme[0].toUpperCase() + theme.slice(1));
   const selected = state.settings.layoutMode || 'auto';
   const layout = selected === 'auto' ? detectLayout() : selected;
@@ -212,6 +220,21 @@ function applySettings() {
   if ($('settingsAutoRecalc')) $('settingsAutoRecalc').checked = state.settings.autoRecalc !== false;
   if ($('settingsOpenProject')) $('settingsOpenProject').checked = state.settings.openProject !== false;
   syncBeamModeUi();
+}
+
+function applyAccent() {
+  const key = Object.prototype.hasOwnProperty.call(ACCENT_PALETTES, state.settings.accent) ? state.settings.accent : 'blue';
+  const palette = ACCENT_PALETTES[key];
+  const root = document.documentElement;
+  root.dataset.accent = key;
+  root.style.setProperty('--accent', palette.accent);
+  root.style.setProperty('--accent-rgb', palette.accentRgb);
+  root.style.setProperty('--accent-strong', palette.accentStrong);
+  root.style.setProperty('--accent-soft', palette.accentSoft);
+  root.style.setProperty('--primary', palette.accent);
+  root.style.setProperty('--chart-primary', palette.accent);
+  root.style.setProperty('--section-accent', palette.accent);
+  root.style.setProperty('--focus-ring', `0 0 0 3px rgba(${palette.accentRgb},.24)`);
 }
 
 function saveSettings() {
@@ -1238,10 +1261,10 @@ function setChartPayloads(series, summary = {}) {
   }));
   state.chartPayloads.clear();
   [
-    ['chartV', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb'],
-    ['chartVFocus', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb'],
-    ['chartM', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef'],
-    ['chartMFocus', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef'],
+    ['chartV', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, null],
+    ['chartVFocus', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, null],
+    ['chartM', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, null],
+    ['chartMFocus', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, null],
     ['chartY', 'deflection', 'Deflection y(x) - mm', '#15803d'],
     ['chartYFocus', 'deflection', 'Deflection y(x) - mm', '#15803d']
   ].forEach(([id, key, title, color]) => state.chartPayloads.set(id, { series: displaySeries, key, title, color }));
