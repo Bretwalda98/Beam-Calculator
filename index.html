@@ -64,8 +64,8 @@
   .load-case-library-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
   .load-case-library-actions .btn{min-height:34px!important;padding:0 10px!important;font-size:10.5px!important}
   .load-case-library-status{margin-top:7px;color:var(--muted);font-size:10px;line-height:1.45}
-  .axial-load-cases label{display:none}
-  .axial-load-cases label.is-active{display:block}
+  .axial-load-cases label{display:block}
+  .axial-load-cases label.is-active{display:block!important}
   @media(max-width:620px){.load-case-library-grid{grid-template-columns:1fr}.load-case-library-actions .btn{flex:1 1 calc(50% - 7px)}}
   .custom-props-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
   .prop-chip{border:1px solid var(--border);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.03)}
@@ -2949,7 +2949,7 @@ body.layout-mobile .inspector-shell{
                   <input id="axialQ2" data-kind="axial" data-case="Q2" type="number" step="0.01" value="0">
                 </label>
               </div>
-              <div class="micro-note" id="axialNote">Positive = compression. Uses the same input units and active G/Q tab as the other loads.</div>
+              <div class="micro-note" id="axialNote">Positive = compression. Axial actions use the same G/Q load cases and input units as the other loads.</div>
             </div>
           </div>
         </div>
@@ -3513,6 +3513,6 @@ body.layout-mobile .inspector-shell{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js"></script>
+<script src="public/secure-app.js?v=20260629-axial-load-inputs"></script>
 </body>
 </html>

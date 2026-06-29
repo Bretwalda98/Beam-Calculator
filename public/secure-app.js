@@ -162,6 +162,16 @@ function detectLayout() {
   return 'desktop';
 }
 
+function getBeamMode() {
+  return $('analysisMode')?.value || state.settings.defaultMode || 'single';
+}
+
+function syncBeamModeUi() {
+  const mode = getBeamMode();
+  document.body.classList.toggle('mode-multi', mode === 'multi');
+  document.body.classList.toggle('mode-single', mode !== 'multi');
+}
+
 function applySettings() {
   const themeMode = state.settings.theme || 'system';
   const theme = themeMode === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themeMode;
@@ -191,6 +201,7 @@ function applySettings() {
   setValue('settingsDefaultCheckedBy', state.settings.defaultCheckedBy || '');
   if ($('settingsAutoRecalc')) $('settingsAutoRecalc').checked = state.settings.autoRecalc !== false;
   if ($('settingsOpenProject')) $('settingsOpenProject').checked = state.settings.openProject !== false;
+  syncBeamModeUi();
 }
 
 function saveSettings() {
@@ -402,6 +413,18 @@ function syncLoadCaseVisibility() {
   $$('.load-entry-card[data-case]').forEach((card) => {
     card.classList.toggle('is-loadcase-hidden', card.dataset.case !== state.activeLoadCase);
   });
+  $$('[data-axial-case]').forEach((label) => {
+    label.classList.toggle('is-active', label.dataset.axialCase === state.activeLoadCase);
+  });
+  if (!$('[data-axial-case].is-active')) {
+    const fallback = $('[data-axial-case="G"]') || $('[data-axial-case]');
+    fallback?.classList.add('is-active');
+  }
+}
+
+function setActiveLoadCase(loadCase = 'G') {
+  state.activeLoadCase = LOAD_CASES.includes(loadCase) ? loadCase : 'G';
+  syncLoadCaseVisibility();
 }
 
 function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values = {}, userAdded = false) {
@@ -1470,6 +1493,11 @@ function bindEvents() {
     syncSectionSourceMode();
     recalculateDebounced();
   });
+  $('analysisMode')?.addEventListener('change', () => {
+    syncBeamModeUi();
+    syncLoadCaseVisibility();
+    recalculateDebounced();
+  });
   $('customSectionType')?.addEventListener('change', renderCustomSectionFields);
   $('customSectionName')?.addEventListener('input', renderCustomSectionNotice);
   $('saveCustomSectionBtn')?.addEventListener('click', () => setSaveStatus('Custom sections require backend storage before they can be saved in this secure build.', 'error'));
@@ -1489,10 +1517,14 @@ function bindEvents() {
     addLoadCard(type, null, state.activeLoadCase, {}, true);
     syncLoadCaseVisibility();
   }));
-  $$('[data-loadcase]').forEach((btn) => btn.addEventListener('click', () => {
-    state.activeLoadCase = btn.dataset.loadcase;
-    syncLoadCaseVisibility();
-  }));
+  $$('[data-loadcase]').forEach((btn) => {
+    btn.onclick = () => setActiveLoadCase(btn.dataset.loadcase);
+  });
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-loadcase]');
+    if (!btn) return;
+    setActiveLoadCase(btn.dataset.loadcase);
+  });
   $('recalcBtn')?.addEventListener('click', () => calculate().catch((err) => setSaveStatus(err.message, 'error')));
   $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
   $('latexBtn')?.addEventListener('click', () => openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')));
