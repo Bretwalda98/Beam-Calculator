@@ -1,0 +1,207 @@
+[
+  {
+    "id": "hea200a_class2_plastic_ltb_udl",
+    "title": "HE 200 A Class 1-2 plastic bending with LTB and UDL",
+    "auditPurpose": "Baseline plastic section resistance, shear resistance, LTB, support reaction and SLS deflection selection.",
+    "input": {
+      "section": { "family": "HEA", "name": "HE 200 A" },
+      "material": { "grade": "S355" },
+      "units": "tonne",
+      "model": { "span": 6, "supportType": "ss", "includeSelfWeight": true },
+      "combination": { "combination": "en1990_610", "psiQ1": 0.7, "psiQ2": 0.7 },
+      "settings": {
+        "sectionClass": 2,
+        "gammaM0": 1,
+        "gammaM1": 1,
+        "deflectionLimit": 300,
+        "enableLTB": true,
+        "ltbRestraints": 0,
+        "ltbK": 1,
+        "ltbC1": 1,
+        "ltbC2": 0,
+        "ltbModel": "rolled",
+        "bucklingKy": 1,
+        "bucklingKz": 1,
+        "bucklingCurveY": "auto",
+        "bucklingCurveZ": "auto",
+        "kyy": 1,
+        "kzy": 0.6
+      },
+      "loads": { "udls": [{ "label": "G UDL", "x1": 0, "x2": 6, "G": 2, "Q1": 0, "Q2": 0 }], "points": [] },
+      "axial": { "G": 0, "Q1": 0, "Q2": 0 }
+    },
+    "expected": {
+      "status": "FAIL",
+      "sectionModulusLabel": "Wpl,y",
+      "summary": { "governingIR": 2.18033, "maxMoment": 12.40697, "maxShear": 8.27131, "deflection": 43.60651 },
+      "checks": {
+        "moment": { "ir": 0.79844, "pass": true, "label": "My,Rd" },
+        "shear": { "ir": 0.21897, "pass": true },
+        "deflection": { "ir": 2.18033, "pass": false },
+        "ltb": { "ir": 0.83165, "pass": true, "available": true },
+        "memberBuckling": { "active": false }
+      },
+      "controlHeadings": ["SECTION CONTROL:", "BUCKLING CONTROL: (incl Lateral Torsional Buckling)", "DEFLECTION CONTROL: (L/300)"]
+    },
+    "auditNotes": "Current branch uses Wpl,y for Class 1-2 and applies LTB. Colbeam parity depends on matching Mcr/C-factor assumptions."
+  },
+  {
+    "id": "hea200a_class3_elastic_bending",
+    "title": "HE 200 A Class 3 elastic bending",
+    "auditPurpose": "Verify Class 3 switches from plastic modulus to elastic modulus for major-axis bending resistance.",
+    "inherits": "hea200a_class2_plastic_ltb_udl",
+    "overrides": { "settings": { "sectionClass": 3 } },
+    "expected": {
+      "status": "FAIL",
+      "sectionModulusLabel": "Wel,y",
+      "checks": {
+        "moment": { "ir": 0.88227, "pass": true, "label": "My,Rd" },
+        "ltb": { "ir": 0.88227, "pass": true, "available": true }
+      }
+    },
+    "auditNotes": "Expected EC3 selection is elastic resistance for Class 3. Needs Colbeam case confirmation for LTB interaction when Wel,y governs."
+  },
+  {
+    "id": "hea200a_class4_missing_effective_properties",
+    "title": "HE 200 A Class 4 effective-property fallback",
+    "auditPurpose": "Expose current behaviour when Class 4 is selected but Weff/Aeff are not stored.",
+    "inherits": "hea200a_class2_plastic_ltb_udl",
+    "overrides": { "settings": { "sectionClass": 4 } },
+    "expected": {
+      "status": "FAIL",
+      "sectionModulusLabel": "Wel,y (fallback - no Weff in DB)",
+      "checks": {
+        "moment": { "ir": 0.88227, "pass": true, "label": "My,Rd" },
+        "ltb": { "ir": 0.88227, "pass": true, "available": true }
+      }
+    },
+    "auditNotes": "High-risk Colbeam mismatch: true Class 4 checks normally require effective properties. Current fallback is intentionally captured, not endorsed."
+  },
+  {
+    "id": "hea200a_axial_compression_member_buckling",
+    "title": "HE 200 A axial compression with member buckling interaction",
+    "auditPurpose": "Verify current activation of axial compression, cross-section N+M interaction and member buckling interaction.",
+    "inherits": "hea200a_class2_plastic_ltb_udl",
+    "overrides": { "axial": { "G": 100, "Q1": 0, "Q2": 0 } },
+    "expected": {
+      "status": "FAIL",
+      "summary": { "governingIR": 2.88089 },
+      "checks": {
+        "axial": { "ir": 0.69231, "pass": true, "axialEd": 135 },
+        "combined": { "ir": 1.52396, "pass": false },
+        "memberBuckling": { "ir": 2.88089, "pass": false, "available": true }
+      }
+    },
+    "auditNotes": "High-risk Colbeam mismatch: current kyy/kzy interaction defaults are simplified constants rather than a full Annex A/B style interaction selection."
+  },
+  {
+    "id": "hea200a_high_shear_mvy_reduction",
+    "title": "HE 200 A high shear moment reduction",
+    "auditPurpose": "Verify current VEd > 0.5 VRd trigger and Mv,y,Rd reduction branch.",
+    "inherits": "hea200a_class2_plastic_ltb_udl",
+    "overrides": {
+      "model": { "span": 1.5 },
+      "loads": { "udls": [{ "label": "High shear G UDL", "x1": 0, "x2": 1.5, "G": 90, "Q1": 0, "Q2": 0 }], "points": [] }
+    },
+    "expected": {
+      "status": "FAIL",
+      "summary": { "governingIR": 2.68165, "maxMoment": 34.18794, "maxShear": 91.16783 },
+      "checks": {
+        "moment": { "ir": 2.47032, "pass": false, "label": "Mv,y,Rd" },
+        "shear": { "ir": 2.41348, "pass": false },
+        "ltb": { "ir": 2.20015, "pass": false, "available": true },
+        "support": { "ir": 2.68165, "pass": false }
+      }
+    },
+    "auditNotes": "Needs detailed EC3 6.2.8 / Colbeam comparison for reduced plastic modulus and support/web check behaviour."
+  },
+  {
+    "id": "hea200a_en1990_610ab_moment_selects_610b",
+    "title": "EN 1990 6.10a/b current peak-moment selection",
+    "auditPurpose": "Capture current 6.10a/b alternative selection behaviour.",
+    "inherits": "hea200a_class2_plastic_ltb_udl",
+    "overrides": {
+      "combination": { "combination": "en1990_610ab", "psiQ1": 0.7, "psiQ2": 0.7 },
+      "loads": { "udls": [{ "label": "G plus Q1 UDL", "x1": 0, "x2": 6, "G": 2, "Q1": 10, "Q2": 0 }], "points": [] }
+    },
+    "expected": {
+      "status": "FAIL",
+      "actions": { "ulsNoteContains": "Eq 6.10b" },
+      "summary": { "governingIR": 12.85616, "maxMoment": 78.97645, "maxShear": 52.65097 },
+      "checks": {
+        "moment": { "ir": 5.7066, "pass": false, "label": "Mv,y,Rd" },
+        "shear": { "ir": 1.39383, "pass": false },
+        "deflection": { "ir": 12.85616, "pass": false }
+      }
+    },
+    "auditNotes": "Potential Colbeam mismatch: current code chooses the ULS alternative by peak moment, not separately per shear, reaction, support, or governing check."
+  },
+  {
+    "id": "pfc150_channel_ltb_unavailable",
+    "title": "PFC channel LTB unavailable branch",
+    "auditPurpose": "Verify current treatment of mono-symmetric channel sections where C3/shear-centre/load-height data are missing.",
+    "input": {
+      "section": { "family": "PFC", "name": "PFC 150x75x18" },
+      "material": { "grade": "S355" },
+      "units": "tonne",
+      "model": { "span": 6, "supportType": "ss", "includeSelfWeight": true },
+      "combination": { "combination": "en1990_610", "psiQ1": 0.7, "psiQ2": 0.7 },
+      "settings": {
+        "sectionClass": 2,
+        "gammaM0": 1,
+        "gammaM1": 1,
+        "deflectionLimit": 300,
+        "enableLTB": true,
+        "ltbRestraints": 0,
+        "ltbK": 1,
+        "ltbC1": 1,
+        "ltbC2": 0,
+        "ltbModel": "rolled"
+      },
+      "loads": { "udls": [{ "label": "G UDL", "x1": 0, "x2": 6, "G": 2, "Q1": 0, "Q2": 0 }], "points": [] },
+      "axial": { "G": 0, "Q1": 0, "Q2": 0 }
+    },
+    "expected": {
+      "status": "FAIL",
+      "checks": {
+        "moment": { "ir": 2.49636, "pass": false, "label": "My,Rd" },
+        "ltb": { "available": false, "messageContains": "C3, shear-centre and load-height" }
+      }
+    },
+    "auditNotes": "Colbeam may include channel LTB using mono-symmetric terms. This is a parity gap, not a UI issue."
+  },
+  {
+    "id": "rhs100_closed_section_ltb_current_branch",
+    "title": "RHS 100x100x5 closed-section current LTB branch",
+    "auditPurpose": "Capture current closed-section LTB handling for later Colbeam/EC3 review.",
+    "input": {
+      "section": { "family": "RHS", "name": "RHS 100x100x5" },
+      "material": { "grade": "S355" },
+      "units": "tonne",
+      "model": { "span": 6, "supportType": "ss", "includeSelfWeight": true },
+      "combination": { "combination": "en1990_610", "psiQ1": 0.7, "psiQ2": 0.7 },
+      "settings": {
+        "sectionClass": 2,
+        "gammaM0": 1,
+        "gammaM1": 1,
+        "deflectionLimit": 300,
+        "enableLTB": true,
+        "ltbRestraints": 0,
+        "ltbK": 1,
+        "ltbC1": 1,
+        "ltbC2": 0,
+        "ltbModel": "rolled"
+      },
+      "loads": { "udls": [{ "label": "G UDL", "x1": 0, "x2": 6, "G": 2, "Q1": 0, "Q2": 0 }], "points": [] },
+      "axial": { "G": 0, "Q1": 0, "Q2": 0 }
+    },
+    "expected": {
+      "status": "FAIL",
+      "checks": {
+        "moment": { "ir": 5.09365, "pass": false, "label": "My,Rd" },
+        "ltb": { "ir": 5.09365, "pass": false, "available": true }
+      }
+    },
+    "auditNotes": "Potential EC3/Colbeam mismatch: closed hollow sections commonly need different lateral-torsional treatment than open I-sections."
+  }
+]

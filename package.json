@@ -12,7 +12,7 @@
     "worker:dev": "npx wrangler dev",
     "worker:deploy": "npx wrangler deploy",
     "geometry:import": "node scripts/import-section-geometry.js",
-    "smoke": "node backend/tests/smoke-calculate.js"
+    "smoke": "node backend/tests/smoke-calculate.js && node backend/tests/calculation-audit-fixtures.js"
   },
   "engines": {
     "node": ">=20"
