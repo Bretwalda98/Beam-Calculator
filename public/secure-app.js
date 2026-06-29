@@ -11,6 +11,7 @@ const txt = (id, fallback = '') => String($(id)?.value ?? fallback).trim();
 const fmt = (value, dp = 2) => Number.isFinite(Number(value)) ? Number(value).toFixed(dp) : '-';
 const fmt3 = (value) => fmt(value, 3);
 const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const GRAVITY = 9.80665;
 
 const API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
 const WORKER_API_BASE = API_BASE;
@@ -34,7 +35,9 @@ const state = {
   last: null,
   settings: JSON.parse(localStorage.getItem('beam_ui_settings_v4') || '{}'),
   activeLoadCase: 'G',
-  chartPayloads: new Map()
+  chartPayloads: new Map(),
+  redrawHandle: 0,
+  backendOk: false
 };
 
 function apiUrl(path) {
@@ -102,7 +105,7 @@ function showStartScreen() {
   toggleMenu('fileMenu', 'fileMenuBtn', false);
   toggleMenu('moreMenu', 'moreMenuBtn', false);
   populateStartProjects();
-  ensureStartBackendStatus('Checking calculation service...');
+  ensureStartBackendStatus(state.backendOk ? 'Calculation service connected.' : 'Checking calculation service...', state.backendOk ? 'ok' : 'muted');
   showModal('startScreen');
 }
 
@@ -112,7 +115,6 @@ function hideStartScreen() {
 }
 
 function shouldShowStartScreen() {
-  if (state.settings.openProject === false) return false;
   try {
     return sessionStorage.getItem('beam_calc_session_started') !== '1';
   } catch (err) {
@@ -567,10 +569,15 @@ function buildRequest() {
       ltbK: num('ltbK', 1),
       ltbC1: num('ltbC1', 1),
       ltbC2: num('ltbC2', 0),
+      ltbLoadLevel: $('ltbLoadLevel')?.value || 'shear_centre',
+      ltbModel: $('ltbModel')?.value || 'ec3_simplified',
       bucklingKy: num('bucklingKy', 1),
       bucklingKz: num('bucklingKz', 1),
+      bucklingCurveY: $('bucklingCurveY')?.value || 'auto',
+      bucklingCurveZ: $('bucklingCurveZ')?.value || 'auto',
       endPostType: $('endPostType')?.value || 'flexible',
-      webStiffener: $('webStiffener')?.value || 'none'
+      webStiffener: $('webStiffener')?.value || 'none',
+      stiffenerA: num('stiffenerA', 5000)
     },
     axial: { G: num('axialG', 0), Q1: num('axialQ1', 0), Q2: num('axialQ2', 0) },
     loads: readLoads()
@@ -619,6 +626,7 @@ function renderResult(input, result) {
     card('Governing IR', fmt(s.governingIR, 3)),
     card(`Max moment [${s.momentUnit || ''}]`, fmt(s.maxMoment, 2)),
     card(`Max shear [${s.forceUnit || ''}]`, fmt(s.maxShear, 2)),
+    card(`Axial force [${s.forceUnit || ''}]`, fmt(result.checks?.axial?.axialEd || 0, 2)),
     card('Deflection [mm]', fmt(s.deflection, 2)),
     card('Max reaction', `${fmt(s.maxReaction, 2)} ${s.forceUnit || ''}`),
     card('Support condition', support),
@@ -630,8 +638,8 @@ function renderResult(input, result) {
   renderDetails(result);
   renderTables(result);
   renderWarnings(result);
-  drawBeamSketch(input, result);
-  drawAllCharts(result.diagrams?.series || [], s);
+  setChartPayloads(result.diagrams?.series || [], s);
+  queueVisualRedraw('calculation');
 }
 
 function renderUnavailable(message) {
@@ -639,12 +647,53 @@ function renderUnavailable(message) {
   ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
 }
 
+function checkStatus(check) {
+  if (!check || check.pass === undefined) return 'INFO';
+  return check.pass ? 'PASS' : 'FAIL';
+}
+
+function checkPanel(title, rows, status = 'INFO') {
+  return `<div class="panel ${status === 'FAIL' ? 'bad' : status === 'PASS' ? 'good' : ''}">
+    <div class="deflection-control-title">${esc(title)}</div>
+    <div class="deflection-control-equation">${rows.filter(Boolean).map((row) => `<div>${row}</div>`).join('')}</div>
+  </div>`;
+}
+
+function irLine(label, check, extra = '') {
+  const ir = check?.ir;
+  const status = checkStatus(check);
+  const irText = ir === null || ir === undefined ? '-' : fmt(ir, 3);
+  return `<strong>${esc(label)}</strong>: IR = ${esc(irText)} ${extra} <strong>${status}</strong>`;
+}
+
 function renderChecks(result) {
-  const checks = result.checks || {};
-  $('codeChecks').innerHTML = Object.entries(checks).map(([name, check]) => {
-    const pass = check.pass === undefined ? 'INFO' : check.pass ? 'PASS' : 'FAIL';
-    return `<div class="panel ${pass === 'FAIL' ? 'bad' : ''}"><div class="deflection-control-title">${esc(name.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()))}</div><div class="deflection-control-equation">IR = ${esc(check.ir ?? '-')} ${esc(check.label || check.message || '')} <strong>${pass}</strong></div></div>`;
-  }).join('');
+  const c = result.checks || {};
+  const s = result.summary || {};
+  const deflLimit = Number(s.deflectionLimit || 0) > 0 ? Math.round((state.last?.input?.model?.span || 0) * 1000 / s.deflectionLimit) : num('deflLimit', 300);
+  const sectionRows = [
+    irLine(c.moment?.label || 'Bending resistance', c.moment, c.moment?.resistance ? `&lt; ${fmt(c.moment.resistance, 1)} ${s.momentUnit || ''}` : ''),
+    irLine('Shear resistance', c.shear, c.shear?.resistance ? `&lt; ${fmt(c.shear.resistance, 1)} ${s.forceUnit || ''}` : ''),
+    irLine('Axial resistance', c.axial, `N,Ed = ${fmt(c.axial?.axialEd || 0, 2)} ${s.forceUnit || ''}`),
+    irLine('Combined interaction', c.combined)
+  ];
+  const bucklingRows = [
+    c.memberBuckling?.active ? irLine('Member buckling', c.memberBuckling, c.memberBuckling?.message || '') : '<strong>Member buckling</strong>: no axial compression applied, member buckling interaction is not required.',
+    c.ltb?.enabled === false ? '<strong>LTB</strong>: lateral torsional buckling check disabled.' : irLine('LTB', c.ltb, c.ltb?.message || '')
+  ];
+  const deflectionRows = [
+    `IR = dz/dzMax = ${fmt(s.deflection, 2)} / ${fmt(s.deflectionLimit, 2)} = <strong>${fmt(c.deflection?.ir, 3)}</strong>`,
+    `<strong>${checkStatus(c.deflection)}</strong>`
+  ];
+  const supportRows = [
+    irLine('Support / bearing', c.support),
+    result.actions?.ulsNote ? esc(result.actions.ulsNote) : ''
+  ];
+  $('codeChecks').innerHTML = [
+    checkPanel('Section Control (Eurocode 3)', sectionRows, [c.moment, c.shear, c.axial, c.combined].some((x) => x?.pass === false) ? 'FAIL' : 'PASS'),
+    checkPanel('Buckling Control', bucklingRows, [c.memberBuckling, c.ltb].some((x) => x?.pass === false) ? 'FAIL' : 'PASS'),
+    checkPanel(`Deflection Control (L/${deflLimit || num('deflLimit', 300)})`, deflectionRows, checkStatus(c.deflection)),
+    checkPanel('Support / Stiffener Control', supportRows, checkStatus(c.support))
+  ].join('');
 }
 
 function renderDetails(result) {
@@ -657,7 +706,8 @@ function renderDetails(result) {
     ['Wpl,y', `${fmt(props.Wpl_y_mm3, 0)} mm3`],
     ['Av,z', `${fmt(props.Avz_mm2, 0)} mm2`],
     ['Mass', `${fmt(props.mass_kg_m, 2)} kg/m`],
-    ['Classification', props.classification || '-']
+    ['Classification', props.classification || '-'],
+    ['Axial N,Ed', `${fmt(result.checks?.axial?.axialEd || 0, 3)} ${result.summary?.forceUnit || ''}`]
   ].map(([a, b]) => `<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
 }
 
@@ -897,24 +947,130 @@ function setupCanvas(canvas) {
   return ctx;
 }
 
-function drawAllCharts(series, summary) {
+function forceFromBase(value, forceUnit) {
+  return forceUnit === 't' ? value / GRAVITY : value;
+}
+
+function momentFromBase(value, momentUnit) {
+  return momentUnit === 't m' ? value / GRAVITY : value;
+}
+
+function setChartPayloads(series, summary = {}) {
+  const displaySeries = (series || []).map((p) => ({
+    x: Number(p.x) || 0,
+    shear: forceFromBase(Number(p.shear) || 0, summary.forceUnit || 'kN'),
+    moment: momentFromBase(Number(p.moment) || 0, summary.momentUnit || 'kNm'),
+    deflection: Number(p.deflection) || 0
+  }));
   state.chartPayloads.clear();
-  drawChart('chartV', series, 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb');
-  drawChart('chartVFocus', series, 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb');
-  drawChart('chartM', series, 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef');
-  drawChart('chartMFocus', series, 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef');
-  drawChart('chartY', series, 'deflection', 'Deflection y(x) - mm', '#15803d');
-  drawChart('chartYFocus', series, 'deflection', 'Deflection y(x) - mm', '#15803d');
+  [
+    ['chartV', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb'],
+    ['chartVFocus', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, '#2563eb'],
+    ['chartM', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef'],
+    ['chartMFocus', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, '#155eef'],
+    ['chartY', 'deflection', 'Deflection y(x) - mm', '#15803d'],
+    ['chartYFocus', 'deflection', 'Deflection y(x) - mm', '#15803d']
+  ].forEach(([id, key, title, color]) => state.chartPayloads.set(id, { series: displaySeries, key, title, color }));
+  updateChartPeakReadouts(displaySeries, summary);
+}
+
+function updateChartPeakReadouts(series, summary = {}) {
+  const write = (id, key, unit) => {
+    const host = $(id);
+    if (!host) return;
+    if (!series.length) {
+      host.textContent = 'No analysis series returned.';
+      return;
+    }
+    const peak = series.reduce((best, point) => Math.abs(Number(point[key]) || 0) > Math.abs(Number(best[key]) || 0) ? point : best, series[0]);
+    host.textContent = `Peak ${fmt3(peak[key])} ${unit || ''} at x = ${fmt(peak.x, 2)} m`;
+  };
+  write('peakV', 'shear', summary.forceUnit || '');
+  write('peakVFocus', 'shear', summary.forceUnit || '');
+  write('peakM', 'moment', summary.momentUnit || '');
+  write('peakMFocus', 'moment', summary.momentUnit || '');
+  write('peakY', 'deflection', 'mm');
+  write('peakYFocus', 'deflection', 'mm');
+}
+
+function queueVisualRedraw(reason = 'redraw') {
+  if (state.redrawHandle) cancelAnimationFrame(state.redrawHandle);
+  state.redrawHandle = requestAnimationFrame(() => {
+    state.redrawHandle = 0;
+    redrawAllVisuals(reason);
+  });
+}
+
+function redrawAllVisuals(reason = 'redraw', attempt = 0) {
+  if (!state.last) return;
+  drawBeamSketch(state.last.input, state.last.result);
+  state.chartPayloads.forEach((payload, id) => drawChart(id, payload.series, payload.key, payload.title, payload.color));
+  const waiting = Array.from(state.chartPayloads.keys()).some((id) => $(id)?.dataset.needsRedraw === 'true');
+  if (waiting && attempt < 4) setTimeout(() => redrawAllVisuals(reason, attempt + 1), 80);
+}
+
+function drawAllCharts(series, summary) {
+  setChartPayloads(series, summary);
+  queueVisualRedraw('legacy-chart-call');
+}
+
+function chartInterpY(xs, ys, x) {
+  if (!xs.length) return 0;
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+  for (let i = 1; i < xs.length; i += 1) {
+    if (x <= xs[i]) {
+      const dx = xs[i] - xs[i - 1] || 1;
+      const t = (x - xs[i - 1]) / dx;
+      return ys[i - 1] + (ys[i] - ys[i - 1]) * t;
+    }
+  }
+  return ys[ys.length - 1];
+}
+
+function setChartReadout(canvas, text) {
+  const readout = canvas.dataset.readout ? $(canvas.dataset.readout) : canvas.closest('.chart-card, .panel')?.querySelector('.chart-readout');
+  if (readout) readout.textContent = text || '';
+}
+
+function installChartInteractions(canvas) {
+  if (!canvas || canvas.dataset.interactionsInstalled === 'true') return;
+  canvas.dataset.interactionsInstalled = 'true';
+  canvas.addEventListener('pointermove', (event) => {
+    const payload = canvas._chartPayload;
+    const meta = canvas._plotMeta;
+    if (!payload || !meta) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const clamped = Math.max(meta.padL, Math.min(meta.W - meta.padR, px));
+    const x = meta.xmin + (clamped - meta.padL) / (meta.W - meta.padL - meta.padR || 1) * (meta.xmax - meta.xmin);
+    const y = chartInterpY(payload.xs, payload.ys, x);
+    canvas._hoverPoint = { x, y };
+    setChartReadout(canvas, `x = ${fmt(x, 2)} m, ${payload.axisSymbol} = ${fmt3(y)} ${payload.unit || ''}`);
+    drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color);
+  });
+  canvas.addEventListener('pointerleave', () => {
+    canvas._hoverPoint = null;
+    setChartReadout(canvas, '');
+    const payload = canvas._chartPayload;
+    if (payload) drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color);
+  });
+  canvas.addEventListener('click', () => openChartModal(canvas.id));
 }
 
 function drawChart(id, series, key, title, color) {
   const canvas = $(id);
   if (!canvas) return;
-  state.chartPayloads.set(id, { series, key, title, color });
+  if (id !== 'chartModalCanvas') state.chartPayloads.set(id, { series, key, title, color });
   canvas.dataset.chartKey = id;
-  const ctx = setupCanvas(canvas);
   const rect = canvas.getBoundingClientRect();
   const W = rect.width, H = rect.height;
+  if (W < 24 || H < 24 || getComputedStyle(canvas).display === 'none') {
+    canvas.dataset.needsRedraw = 'true';
+    return;
+  }
+  canvas.dataset.needsRedraw = 'false';
+  const ctx = setupCanvas(canvas);
   const padL = 54, padR = 16, padT = 34, padB = 40;
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = getVar('--panel') || '#fff';
@@ -925,6 +1081,10 @@ function drawChart(id, series, key, title, color) {
   if (!series.length) return;
   const xs = series.map((p) => Number(p.x) || 0);
   const ys = series.map((p) => Number(p[key]) || 0);
+  const unit = title.includes(' - ') ? title.split(' - ').pop().trim() : '';
+  const axisSymbol = key === 'shear' ? 'V' : key === 'moment' ? 'M' : 'y';
+  canvas._chartPayload = { series, key, title, color, xs, ys, unit, axisSymbol };
+  installChartInteractions(canvas);
   let xmin = Math.min(...xs), xmax = Math.max(...xs);
   let ymin = Math.min(...ys), ymax = Math.max(...ys);
   if (!Number.isFinite(ymin) || !Number.isFinite(ymax)) { ymin = -1; ymax = 1; }
@@ -983,13 +1143,29 @@ function drawChart(id, series, key, title, color) {
   ctx.save();
   ctx.translate(14, padT + (H - padT - padB) / 2);
   ctx.rotate(-Math.PI / 2);
-  const unit = title.includes(' - ') ? title.split(' - ').pop().trim() : '';
   const axisLabel = key === 'shear' ? `V [${unit || '-'}]` : key === 'moment' ? `M [${unit || '-'}]` : 'y [mm]';
   ctx.fillText(axisLabel, 0, 0);
   ctx.restore();
   ctx.fillStyle = getVar('--text') || '#111827';
   ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
   ctx.fillText(`peak ${fmt3(peak.y)} at x=${fmt(peak.x, 2)} m`, padL, H - 10);
+  if (canvas._hoverPoint) {
+    const hp = canvas._hoverPoint;
+    const hx = X(hp.x), hy = Y(hp.y);
+    ctx.save();
+    ctx.strokeStyle = getVar('--accent') || '#7c3aed';
+    ctx.fillStyle = getVar('--accent') || '#7c3aed';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(hx, padT);
+    ctx.lineTo(hx, H - padB);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(hx, hy, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 function openChartModal(chartId) {
@@ -997,7 +1173,10 @@ function openChartModal(chartId) {
   if (!payload) return;
   $('chartModalTitle') && ($('chartModalTitle').textContent = payload.title);
   showModal('chartModal');
-  requestAnimationFrame(() => drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color));
+  requestAnimationFrame(() => {
+    drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color);
+    setTimeout(() => drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color), 80);
+  });
 }
 
 async function ensureFresh() {
@@ -1155,6 +1334,7 @@ function initTabs() {
       else el.classList.toggle('active', el.id === btn.dataset.tab);
     });
     $(btn.dataset.tab)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    requestAnimationFrame(() => queueVisualRedraw('tab-change'));
   }));
 }
 
@@ -1275,6 +1455,15 @@ function initSplitters() {
   bind('rightInspectorSplitter', '--right-panel-w', 260, 520);
 }
 
+function initCanvasObservers() {
+  if (!('ResizeObserver' in window)) return;
+  const observer = new ResizeObserver(() => queueVisualRedraw('canvas-resize'));
+  ['beamSketch', 'chartV', 'chartVFocus', 'chartM', 'chartMFocus', 'chartY', 'chartYFocus', 'chartModalCanvas'].forEach((id) => {
+    const el = $(id);
+    if (el) observer.observe(el);
+  });
+}
+
 function bindEvents() {
   initCustomSectionUi();
   $('sectionSourceMode')?.addEventListener('change', () => {
@@ -1321,19 +1510,29 @@ function bindEvents() {
   $$('[data-rail-target]').forEach((btn) => btn.addEventListener('click', () => handleRailTarget(btn)));
   $('settingsClose')?.addEventListener('click', () => hideModal('settingsModal'));
   $('settingsCancel')?.addEventListener('click', () => hideModal('settingsModal'));
-  $('settingsSave')?.addEventListener('click', () => { collectSettingsForm(); saveSettings(); applySettings(); applyDefaultMetadata(); hideModal('settingsModal'); });
+  $('settingsSave')?.addEventListener('click', () => {
+    collectSettingsForm();
+    saveSettings();
+    applySettings();
+    applyDefaultMetadata();
+    if (state.settings.openProject !== false && $('projectAccordion')) $('projectAccordion').open = true;
+    hideModal('settingsModal');
+    queueVisualRedraw('settings-save');
+  });
   $('settingsReset')?.addEventListener('click', () => {
     state.settings = { theme: 'system', layoutMode: 'auto', density: 'compact', accent: 'blue', autoRecalc: true, openProject: true };
     saveSettings();
     applySettings();
+    queueVisualRedraw('settings-reset');
   });
   $$('[data-settings-tab]').forEach((btn) => btn.addEventListener('click', () => activateSettingsPane(btn.dataset.settingsTab)));
-  $$('input[name="settingsTheme"]').forEach((el) => el.addEventListener('change', () => { state.settings.theme = el.value; saveSettings(); applySettings(); }));
-  $$('input[name="settingsLayoutMode"]').forEach((el) => el.addEventListener('change', () => { state.settings.layoutMode = el.value; saveSettings(); applySettings(); }));
+  $$('input[name="settingsTheme"]').forEach((el) => el.addEventListener('change', () => { state.settings.theme = el.value; saveSettings(); applySettings(); queueVisualRedraw('theme-change'); }));
+  $$('input[name="settingsLayoutMode"]').forEach((el) => el.addEventListener('change', () => { state.settings.layoutMode = el.value; saveSettings(); applySettings(); queueVisualRedraw('layout-change'); }));
   $$('input[name="settingsDensity"], input[name="settingsAccent"]').forEach((el) => el.addEventListener('change', () => {
     collectSettingsForm();
     saveSettings();
     applySettings();
+    queueVisualRedraw('density-accent-change');
   }));
   ['settingsDefaultMode', 'settingsDefaultUnit', 'settingsDefaultProjectName', 'settingsDefaultCalculationTitle', 'settingsDefaultJobReference', 'settingsDefaultCompany', 'settingsDefaultEngineer', 'settingsDefaultCheckedBy', 'settingsAutoRecalc', 'settingsOpenProject'].forEach((id) => {
     $(id)?.addEventListener('change', () => { collectSettingsForm(); saveSettings(); });
@@ -1375,7 +1574,6 @@ function bindEvents() {
   $('fileMenuBtn')?.addEventListener('click', () => $('fileMenu')?.classList.toggle('hide'));
   $('moreMenuBtn')?.addEventListener('click', () => toggleMenu('moreMenu', 'moreMenuBtn'));
   $$('[data-more-action]').forEach((btn) => btn.addEventListener('click', () => handleMoreAction(btn.dataset.moreAction)));
-  ['chartV', 'chartVFocus', 'chartM', 'chartMFocus', 'chartY', 'chartYFocus'].forEach((id) => $(id)?.addEventListener('click', () => openChartModal(id)));
   $('chartModalClose')?.addEventListener('click', () => hideModal('chartModal'));
   $$('[data-export-tab]').forEach((btn) => btn.addEventListener('click', () => activateExportTab(btn.dataset.exportTab)));
   $('accountModalClose')?.addEventListener('click', () => hideModal('accountModal'));
@@ -1383,6 +1581,7 @@ function bindEvents() {
   $('googleSignInBtn')?.addEventListener('click', () => api('/api/auth/google/start').then((r) => r.json()).then((b) => { if (b.url) location.href = b.url; }).catch((err) => $('accountStatus').textContent = err.message));
   $('appleSignInBtn')?.addEventListener('click', () => api('/api/auth/apple/start').then((r) => r.json()).then((b) => { if (b.url) location.href = b.url; }).catch((err) => $('accountStatus').textContent = err.message));
   initSplitters();
+  initCanvasObservers();
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.file-menu-wrap')) toggleMenu('fileMenu', 'fileMenuBtn', false);
     if (!event.target.closest('.more-menu-wrap')) toggleMenu('moreMenu', 'moreMenuBtn', false);
@@ -1392,7 +1591,8 @@ function bindEvents() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') $$('.modal:not(.hide), .chart-modal:not(.hide)').forEach((modal) => hideModal(modal.id));
   });
-  window.addEventListener('resize', () => { applySettings(); if (state.last) drawAllCharts(state.last.result.diagrams?.series || [], state.last.result.summary || {}); });
+  window.addEventListener('resize', () => { applySettings(); queueVisualRedraw('resize'); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { applySettings(); queueVisualRedraw('system-theme-change'); });
 }
 
 async function loadSources() {
@@ -1409,11 +1609,13 @@ async function init() {
   initLoads();
   bindEvents();
   applyDefaultMetadata();
+  if (state.settings.openProject !== false && $('projectAccordion')) $('projectAccordion').open = true;
   $('projectDate') && ($('projectDate').value = new Date().toISOString().slice(0, 10));
   if (shouldShowStartScreen()) showStartScreen();
   try {
     const health = await api('/api/health');
     await safeJson(health, '/api/health');
+    state.backendOk = true;
     ensureStartBackendStatus('Calculation service connected.', 'ok');
     await loadSections();
     loadSources().catch((err) => {
@@ -1422,6 +1624,7 @@ async function init() {
     });
     await calculate();
   } catch (err) {
+    state.backendOk = false;
     setSaveStatus(err.message || 'Calculation service unavailable. Please try again.', 'error');
     ensureStartBackendStatus(`${err.message || 'Calculation service unavailable.'} Use the deployed site or an allowed local backend origin.`, 'error');
     renderUnavailable(err.message);
