@@ -823,8 +823,22 @@ function recalculateDebounced() {
   }), 450);
 }
 
+function statusClass(value) {
+  const status = String(value || '').trim().toUpperCase();
+  if (status === 'PASS') return 'status-pass';
+  if (status === 'FAIL') return 'status-fail';
+  return '';
+}
+
+function statusMarkup(value) {
+  const status = String(value || '').trim().toUpperCase();
+  const cls = statusClass(status);
+  return cls ? `<span class="${cls}">${esc(status)}</span>` : esc(value);
+}
+
 function card(k, v, tone = '') {
-  return `<div class="metric-card ${tone}"><div class="metric-label">${esc(k)}</div><div class="metric-value">${esc(v)}</div></div>`;
+  const valueHtml = statusClass(v) ? statusMarkup(v) : esc(v);
+  return `<div class="metric-card ${tone}"><div class="metric-label">${esc(k)}</div><div class="metric-value">${valueHtml}</div></div>`;
 }
 
 function renderResult(input, result) {
@@ -840,7 +854,7 @@ function renderResult(input, result) {
     `Max V = ${fmt(s.maxShear, 2)} ${s.forceUnit || ''}`,
     `IR = ${fmt(s.governingIR, 3)}`,
     result.status
-  ].filter(Boolean).map((item) => `<span>${esc(item)}</span>`).join('');
+  ].filter(Boolean).map((item) => `<span>${statusClass(item) ? statusMarkup(item) : esc(item)}</span>`).join('');
   $('summaryResults').innerHTML = [
     card('Status', result.status, result.status === 'PASS' ? 'good' : 'bad'),
     card('Governing IR', fmt(s.governingIR, 3)),
@@ -852,8 +866,8 @@ function renderResult(input, result) {
     card('Support condition', support),
     card('Section', section)
   ].join('');
-  $('verdict').textContent = result.status === 'PASS' ? 'PASS' : 'FAIL';
-  $('verdict').className = result.status === 'PASS' ? 'green' : 'red';
+  $('verdict').innerHTML = statusMarkup(result.status === 'PASS' ? 'PASS' : 'FAIL');
+  $('verdict').className = statusClass(result.status);
   renderChecks(result);
   renderDetails(result);
   renderTables(result);
@@ -883,7 +897,7 @@ function irLine(label, check, extra = '') {
   const ir = check?.ir;
   const status = checkStatus(check);
   const irText = ir === null || ir === undefined ? '-' : fmt(ir, 3);
-  return `<strong>${esc(label)}</strong>: IR = ${esc(irText)} ${extra} <strong>${status}</strong>`;
+  return `<strong>${esc(label)}</strong>: IR = ${esc(irText)} ${extra} <strong>${statusMarkup(status)}</strong>`;
 }
 
 function comparisonForIr(ir) {
