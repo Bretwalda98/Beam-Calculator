@@ -192,6 +192,10 @@ function isChannelFamilyKey(family) {
   return ['UPE', 'UPN', 'PFC', 'CH'].includes(String(family || '').toUpperCase());
 }
 
+function isClosedHollowFamily(section) {
+  return ['RHS', 'SHS', 'CHS', 'CFRHS', 'CFSHS'].includes(getFamilyKey(section));
+}
+
 function estimateOpenSectionGeometry(section) {
   const family = getFamilyKey(section);
   const h = numOrNull(section?.h_mm);
@@ -277,7 +281,14 @@ function getWForMRd(section, sectionClass) {
   }
   if (sectionClass === 3) return { W: moduli.Wel, label: 'Wel,y', source: moduli.source.Wel, fallback: false };
   if (moduli.Weff) return { W: moduli.Weff, label: 'Weff,y', source: moduli.source.Weff, fallback: false };
-  return { W: moduli.Wel, label: 'Wel,y (fallback - no Weff in DB)', source: moduli.source.Wel, fallback: true, missing: 'Weff_y_mm3' };
+  return {
+    W: moduli.Wel || 0,
+    label: 'Weff,y unavailable (Wel,y shown for reference)',
+    source: moduli.source.Wel,
+    fallback: true,
+    unavailable: true,
+    missing: 'Weff_y_mm3'
+  };
 }
 
 function zeroMatrix(n) {
@@ -624,6 +635,7 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
   const IR_M = MyEd / momentRdForCheck;
   const IR_V = VzEd / VzRd;
   const IR_N = axialEd >= 0 ? (NcRd > 0 ? axialEd / NcRd : Infinity) : (NtRd > 0 ? Math.abs(axialEd) / NtRd : Infinity);
+  const momentAvailable = !(Wsel.unavailable || !(Wsel.W > 0));
   return {
     cls: sectionClass,
     gammaM0,
@@ -644,7 +656,8 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
     IR_V,
     IR_N,
     IR_My: MyRd > 0 ? MyEd / MyRd : Infinity,
-    passM: IR_M < 1,
+    momentAvailable,
+    passM: momentAvailable && IR_M < 1,
     passV: IR_V < 1,
     passN: IR_N < 1
   };
@@ -673,6 +686,15 @@ function getLtbImperfection(section, model) {
 
 function evaluateLTB(section, material, L, MyEd, Wsel, settings) {
   if (!settings.enableLTB) return { enabled: false };
+  if (isClosedHollowFamily(section)) {
+    return {
+      enabled: true,
+      available: false,
+      notRequired: true,
+      pass: true,
+      message: 'Lateral torsional buckling check not required for closed hollow sections in this EC3 beam model.'
+    };
+  }
   if (isMonosymmetricLtbFamily(section)) return ltbUnavailable('Automatic LTB is disabled for channels, tees and angles because C3, shear-centre and load-height data are not stored.');
   const props = getSectionLTBProps(section);
   const gammaM1 = positiveNumber(settings.gammaM1, 1);
@@ -1010,8 +1032,9 @@ function buildCalculationPackage(context) {
   const source = getSectionSourceInfo(section);
   const warnings = [
     ...getSectionReportGeometry(section).warnings,
+    check.Wsel.unavailable ? `Required section property missing: ${check.Wsel.missing}. Class ${check.cls} resistance cannot be verified from the current database.` : null,
     check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
-    ltb.enabled && !ltb.available ? `LTB unavailable: ${ltb.message}` : null,
+    ltb.enabled && !ltb.available && !ltb.notRequired ? `LTB unavailable: ${ltb.message}` : null,
     memberBuckling.active && !memberBuckling.available ? `Member buckling unavailable: ${memberBuckling.message}` : null,
     !source.title || source.title === 'Source to be confirmed' ? 'Section source to be confirmed.' : null
   ].filter(Boolean);
@@ -1069,7 +1092,10 @@ function buildCalculationPackage(context) {
       resistance: valueUnit(unit.fromBaseMoment(check.momentRdForCheck), unit.momentShort),
       utilisation: `IR = M_y,Ed / M_y,Rd = ${round(check.IR_M, 5)}`,
       status: passFail(check.passM),
-      warnings: check.mv.trigger ? [check.mv.note] : []
+      warnings: [
+        check.Wsel.unavailable ? `Required ${check.Wsel.missing} is missing; Class ${check.cls} bending resistance is not verified.` : null,
+        check.mv.trigger ? check.mv.note : null
+      ].filter(Boolean)
     }),
     buildCalculationObject({
       id: 'shear-resistance',
@@ -1153,14 +1179,14 @@ function buildCalculationPackage(context) {
         { symbol: 'lambda_LT', value: round(ltb.lambdaLT, 5) },
         { symbol: 'chi_LT', value: round(ltb.chiLT, 5) },
         { symbol: 'L_b', value: valueUnit(ltb.Lb_mm, 'mm', 0) }
-      ] : [{ symbol: 'LTB', value: ltb.enabled ? 'Unavailable' : 'Disabled' }],
+      ] : [{ symbol: 'LTB', value: ltb.enabled ? (ltb.notRequired ? 'Not required' : 'Unavailable') : 'Disabled' }],
       substitution: ltb.enabled && ltb.available ? `${round(ltb.chiLT, 5)} x ${round(check.Wsel.W, 0)} mm^3 x ${material.fy} N/mm^2 / ${round(settings.gammaM1, 3)}` : (ltb.message || 'LTB disabled by input.'),
       unitConversion: 'N mm converted to kN m by dividing by 1,000,000, then to display units.',
       result: ltb.enabled && ltb.available ? `M_b,Rd = ${valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort)}` : (ltb.message || 'LTB disabled'),
-      resistance: ltb.enabled && ltb.available ? valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort) : 'Not available',
+      resistance: ltb.enabled && ltb.available ? valueUnit(unit.fromBaseMoment(ltb.MbRd), unit.momentShort) : (ltb.notRequired ? 'Not required' : 'Not available'),
       utilisation: ltb.enabled && ltb.available ? `IR_LT = ${round(ltb.IR_LT, 5)}` : 'Not applicable',
-      status: ltb.enabled ? (ltb.available ? passFail(ltb.pass) : 'WARNING') : 'INFO',
-      warnings: ltb.enabled && !ltb.available ? [ltb.message] : []
+      status: ltb.enabled ? (ltb.available ? passFail(ltb.pass) : (ltb.notRequired ? 'INFO' : 'WARNING')) : 'INFO',
+      warnings: ltb.enabled && !ltb.available && !ltb.notRequired ? [ltb.message] : []
     }),
     buildCalculationObject({
       id: 'support-web',
@@ -1290,10 +1316,14 @@ function buildCodeCheckControls({
     ratioLine(
       `IR = My,Ed/My,Rd = ${moment(check.MyEd)}/${moment(check.MyRd)} = `,
       check.IR_My,
-      check.IR_My < 1,
+      check.momentAvailable && check.IR_My < 1,
       ` ${comparisonText(check.IR_My)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.5)`
     )
   ];
+
+  if (check.Wsel.unavailable) {
+    sectionLines.unshift(infoLine(`Class ${check.cls} effective section property ${check.Wsel.missing} is missing; bending resistance is not verified.`));
+  }
 
   if (check.mv?.trigger) {
     const mvDen = check.mv.available ? check.MvRd : check.MyRd;
@@ -1351,6 +1381,8 @@ function buildCodeCheckControls({
       ltb.pass,
       ` ${comparisonText(ltb.IR_LT)} (Ch 6.3.2)`
     ));
+  } else if (ltb.enabled && ltb.notRequired) {
+    bucklingLines.push(infoLine(ltb.message || 'Lateral torsional buckling check is not required for this section.'));
   } else if (ltb.enabled) {
     bucklingLines.push(infoLine(ltb.message || 'Lateral torsional buckling check is unavailable for this section/loading.'));
   } else {
@@ -1442,23 +1474,27 @@ function calculateBeam(input) {
   });
   let uls;
   let ulsNote;
+  let ulsCoeff;
   if (lc.key === 'en1990_610ab') {
     const a = evalCombo(lc.uls);
     const b = evalCombo(lc.uls.alt);
     if ((b.peakM?.val || 0) > (a.peakM?.val || 0)) {
       uls = b;
       ulsNote = lc.uls.alt.note;
+      ulsCoeff = lc.uls.alt;
     } else {
       uls = a;
       ulsNote = lc.uls.note;
+      ulsCoeff = lc.uls;
     }
   } else {
     uls = evalCombo(lc.uls);
     ulsNote = lc.uls.note;
+    ulsCoeff = lc.uls;
   }
   const sls = evalCombo(lc.sls);
   const axialRaw = input.axial || {};
-  const axialEd = unit.toBaseForce(lc.uls.cG * finiteNumber(axialRaw.G, 0) + lc.uls.cQ1 * finiteNumber(axialRaw.Q1, 0) + lc.uls.cQ2 * finiteNumber(axialRaw.Q2, 0));
+  const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
   const endSupport = evaluateEndSupportCheck(check, uls, settings);
@@ -1466,7 +1502,7 @@ function calculateBeam(input) {
   const deflAllow_mm = (L * 1000) / settings.deflectionLimit;
   const deflPeak = sls.defl.peakY.val;
   const passDefl = deflPeak <= deflAllow_mm;
-  const passLTB = !ltb.enabled || (ltb.available && ltb.pass);
+  const passLTB = !ltb.enabled || ltb.notRequired || (ltb.available && ltb.pass);
   const passSupport = endSupport.pass;
   const baseMyRd = ltb.enabled && ltb.available ? Math.min(check.momentRdForCheck, ltb.MbRd) : check.momentRdForCheck;
   const IR_NM = check.IR_N + (check.MyEd / baseMyRd);
@@ -1543,7 +1579,7 @@ function calculateBeam(input) {
       shear: { ir: round(check.IR_V, 5), pass: check.passV, resistance: round(unit.fromBaseForce(check.VzRd), 5) },
       axial: { ir: round(check.IR_N, 5), pass: check.passN, axialEd: round(unit.fromBaseForce(check.axialEd), 5) },
       deflection: { ir: round(deflIR, 5), pass: passDefl },
-      ltb: ltb.enabled ? { ir: ltb.available ? round(ltb.IR_LT, 5) : null, pass: Boolean(ltb.pass), available: Boolean(ltb.available), message: ltb.message || null } : { enabled: false },
+      ltb: ltb.enabled ? { ir: ltb.available ? round(ltb.IR_LT, 5) : null, pass: Boolean(ltb.pass), available: Boolean(ltb.available), notRequired: Boolean(ltb.notRequired), message: ltb.message || null } : { enabled: false },
       support: { ir: round(supportIR, 5), pass: passSupport },
       combined: { ir: round(IR_NM, 5), pass: passNM },
       memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false }

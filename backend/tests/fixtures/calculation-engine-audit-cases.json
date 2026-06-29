@@ -69,13 +69,13 @@
     "overrides": { "settings": { "sectionClass": 4 } },
     "expected": {
       "status": "FAIL",
-      "sectionModulusLabel": "Wel,y (fallback - no Weff in DB)",
+      "sectionModulusLabel": "Weff,y unavailable (Wel,y shown for reference)",
       "checks": {
-        "moment": { "ir": 0.88227, "pass": true, "label": "My,Rd" },
+        "moment": { "ir": 0.88227, "pass": false, "label": "My,Rd" },
         "ltb": { "ir": 0.88227, "pass": true, "available": true }
       }
     },
-    "auditNotes": "High-risk Colbeam mismatch: true Class 4 checks normally require effective properties. Current fallback is intentionally captured, not endorsed."
+    "auditNotes": "Corrected behaviour: true Class 4 checks require effective properties. The displayed Wel,y value is reference only and the bending verification fails when Weff is unavailable."
   },
   {
     "id": "hea200a_axial_compression_member_buckling",
@@ -172,8 +172,8 @@
   },
   {
     "id": "rhs100_closed_section_ltb_current_branch",
-    "title": "RHS 100x100x5 closed-section current LTB branch",
-    "auditPurpose": "Capture current closed-section LTB handling for later Colbeam/EC3 review.",
+    "title": "RHS 100x100x5 closed-section LTB not-required branch",
+    "auditPurpose": "Capture closed-section LTB handling for later Colbeam/EC3 review.",
     "input": {
       "section": { "family": "RHS", "name": "RHS 100x100x5" },
       "material": { "grade": "S355" },
@@ -199,9 +199,46 @@
       "status": "FAIL",
       "checks": {
         "moment": { "ir": 5.09365, "pass": false, "label": "My,Rd" },
-        "ltb": { "ir": 5.09365, "pass": false, "available": true }
+        "ltb": {
+          "pass": true,
+          "available": false,
+          "notRequired": true,
+          "messageContains": "not required for closed hollow sections"
+        }
       }
     },
-    "auditNotes": "Potential EC3/Colbeam mismatch: closed hollow sections commonly need different lateral-torsional treatment than open I-sections."
+    "auditNotes": "Corrected behaviour: closed hollow sections are not checked using the open-section LTB expression. This still needs Colbeam reference confirmation for exact wording/status."
+  },
+  {
+    "id": "hea200a_en1990_610ab_axial_uses_selected_coefficients",
+    "title": "EN 1990 6.10a/b selected coefficients also factor axial force",
+    "auditPurpose": "Verify that when 6.10b governs the ULS beam actions, axial design action also uses the 6.10b coefficients.",
+    "input": {
+      "section": { "family": "HEA", "name": "HE 200 A" },
+      "material": { "grade": "S355" },
+      "units": "tonne",
+      "model": { "span": 6, "supportType": "ss", "includeSelfWeight": false },
+      "combination": { "combination": "en1990_610ab", "psiQ1": 0.7, "psiQ2": 0.7 },
+      "settings": {
+        "sectionClass": 2,
+        "gammaM0": 1,
+        "gammaM1": 1,
+        "deflectionLimit": 300,
+        "enableLTB": false
+      },
+      "loads": { "udls": [{ "label": "Q1 UDL", "x1": 0, "x2": 6, "G": 0, "Q1": 10, "Q2": 0 }], "points": [] },
+      "axial": { "G": 0, "Q1": 100, "Q2": 0 }
+    },
+    "expected": {
+      "status": "FAIL",
+      "actions": { "ulsNoteContains": "Eq 6.10b" },
+      "summary": { "governingIR": 10.67583, "maxMoment": 67.5, "maxShear": 45 },
+      "checks": {
+        "axial": { "ir": 0.76924, "pass": true, "axialEd": 150 },
+        "combined": { "ir": 5.64659, "pass": false },
+        "memberBuckling": { "ir": 5.56521, "pass": false, "available": true }
+      }
+    },
+    "auditNotes": "Corrected behaviour: axial Q1 is factored by 1.5 under the selected 6.10b ULS alternative, not by 1.5*psi under 6.10a."
   }
 ]

@@ -4,7 +4,7 @@ Audit date: 2026-06-29
 
 ## Summary
 
-This audit reviews the backend-first calculation engine against the intended Colbeam EC3 style of behaviour. No calculation formulas were changed as part of this audit. The implementation work in this pass adds regression fixtures that capture current equation-selection behaviour, then documents the highest-risk differences that must be resolved before claiming Colbeam parity.
+This audit reviews the backend-first calculation engine against the intended Colbeam EC3 style of behaviour. The initial audit added regression fixtures, then the first engine correction pass fixed only issues that were clear from EC3 logic and current code flow without guessing Colbeam internals.
 
 Current calculation authority is concentrated in `backend/services/calculation-service.js`. The frontend should remain a renderer only.
 
@@ -17,7 +17,23 @@ Colbeam public output examples were not found in the repository, uploaded attach
 - SCI Blue Book overview: https://www.steelconstruction.info/index.php?title=The_Blue_Book
 - NCCI elastic critical moment reference: https://www.steelconstruction.info/images/0/0f/SN003b.pdf
 
-Because Colbeam reference outputs are unavailable, the new fixtures are labelled as current-engine baselines, not proof of EC3 correctness.
+Because Colbeam reference outputs are unavailable, most fixtures are still labelled as current-engine baselines, not proof of EC3 correctness. Fixtures marked "corrected behaviour" capture changes made after the audit.
+
+## Implemented Engine Corrections
+
+The following changes have been applied to `backend/services/calculation-service.js`:
+
+1. Class 4 missing effective properties no longer silently pass using elastic `Wel,y`.
+   - If Class 4 is selected and `Weff,y` is missing, the output now warns that `Weff_y_mm3` is unavailable.
+   - The displayed `Wel,y` value is reference-only and the bending resistance verification fails.
+
+2. Closed hollow sections are no longer checked using the open-section LTB expression.
+   - RHS/SHS/CHS/CFRHS/CFSHS now return an LTB "not required" status in this EC3 beam model.
+   - This avoids treating `Iw = 0` closed-section data as an open-section LTB calculation.
+
+3. EN 1990 6.10a/b selected coefficients are now used consistently for axial action.
+   - Previously, beam actions could select Eq 6.10b while axial force was still factored with Eq 6.10a coefficients.
+   - The selected ULS alternative now carries through to axial design action.
 
 ## Added Regression Coverage
 
@@ -34,7 +50,8 @@ Covered branches:
 | `hea200a_high_shear_mvy_reduction` | `VEd > 0.5 VRd` and `Mv,y,Rd` branch | Fails shear/moment/support |
 | `hea200a_en1990_610ab_moment_selects_610b` | EN 1990 6.10a/b alternative selection | Selects 6.10b by peak moment |
 | `pfc150_channel_ltb_unavailable` | Mono-symmetric channel LTB unavailable branch | LTB disabled with note |
-| `rhs100_closed_section_ltb_current_branch` | Closed hollow section current LTB branch | LTB reported available |
+| `rhs100_closed_section_ltb_current_branch` | Closed hollow section LTB branch | LTB marked not required |
+| `hea200a_en1990_610ab_axial_uses_selected_coefficients` | 6.10a/b axial coefficient consistency | Axial uses selected 6.10b coefficients |
 
 These tests are now run by `npm run smoke`.
 
@@ -71,14 +88,16 @@ Current behaviour:
 - Section class is a user setting.
 - Class 1-2 uses `Wpl,y`.
 - Class 3 uses `Wel,y`.
-- Class 4 uses `Weff,y` if available, otherwise falls back to `Wel,y`.
+- Class 4 uses `Weff,y` if available.
+- If Class 4 is selected and `Weff,y` is missing, the check is marked not verified and fails rather than silently passing on `Wel,y`.
 
 Risk:
-- High for Class 4 and for cases where Colbeam auto-classifies the section. The current fallback is useful for continuity but is not a true effective-section check.
+- Reduced for missing `Weff,y` because the app now fails the verification instead of silently passing.
+- Still high where Colbeam auto-classifies the section and this app relies on manual class input.
 
-Required fix:
+Remaining fix:
 - Add automatic section classification or expose a clearly documented Colbeam-compatible class input mode.
-- For Class 4, require published/effective properties or mark the check unavailable instead of silently using `Wel,y`.
+- Add effective properties to the section database where Class 4 checks are intended to be supported.
 
 ### 3. Bending Resistance
 
@@ -161,14 +180,13 @@ Current behaviour:
 - `C1`, `C2`, `k`, load level and restraints are user inputs.
 - `C3`, shear-centre offsets and mono-symmetric terms are not implemented.
 - Channels, tees and angles are marked unavailable.
-- Closed RHS currently pass through the LTB branch with `Iw = 0`.
+- Closed hollow sections are marked "not required" for LTB in this EC3 beam model.
 
 Risk:
-- Very high. This is the most likely source of Colbeam check differences.
+- Very high for open-section and mono-symmetric LTB. This remains the most likely source of Colbeam check differences.
 
-Required fix:
+Remaining fix:
 - Rebuild LTB selection around Colbeam-style parameters: C-factor selection, load-height level, k/kw handling, restraint spacing and mono-symmetric terms.
-- Add explicit closed-section handling for RHS/SHS/CHS.
 - Keep LTB unavailable for section families only when the required data is truly unavailable and document it in output.
 
 ### 8. Member Buckling and Beam-Column Interaction
@@ -227,9 +245,9 @@ Required fix:
 
 1. Add user-supplied Colbeam reference outputs as fixtures.
 2. Change 6.10a/b handling to envelope per governing response/check.
-3. Correct Class 4 behaviour so missing effective properties do not silently pass as elastic checks.
-4. Rework LTB selection to match Colbeam parameters and closed/mono-symmetric section behaviour.
-5. Replace simplified axial+bending and member-buckling interaction with a documented Colbeam-compatible method.
+3. Rework LTB selection to match Colbeam parameters and mono-symmetric section behaviour.
+4. Replace simplified axial+bending and member-buckling interaction with a documented Colbeam-compatible method.
+5. Add effective Class 4 properties where Class 4 design is to be supported.
 
 ### Priority 2 - Engineering completeness
 
@@ -255,4 +273,3 @@ Required fix:
 ## Browser Verification Status
 
 The in-app browser target was not available to Codex during this run (`agent.browsers.list()` returned an empty list). Backend/API and local engine verification can still be performed, but live browser UI verification should be repeated once the browser target is available.
-
