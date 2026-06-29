@@ -1457,9 +1457,22 @@ async function openReport() {
 async function openHandCalculation() {
   await ensureFresh();
   const res = await api('/api/hand-calculation', { method: 'POST', body: JSON.stringify({ input: state.last.input, result: state.last.result, metadata: state.last.input.metadata }) });
-  const tex = await res.text();
-  $('latexSourceBox').value = tex;
-  $('latexFrame').srcdoc = `<pre style="white-space:pre-wrap;font:12px/1.45 ui-monospace,Consolas,monospace;padding:18px">${esc(tex)}</pre>`;
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/pdf')) {
+    const text = await res.text();
+    $('latexSourceBox').value = 'The calculation service returned LaTeX source instead of a compiled PDF. Deploy the updated backend /api/hand-calculation endpoint, or use /api/report/latex for source export.\n\n' + text;
+    $('latexFrame').removeAttribute('src');
+    $('latexFrame').srcdoc = `<pre style="white-space:pre-wrap;font:12px/1.45 ui-monospace,Consolas,monospace;padding:18px">${esc($('latexSourceBox').value)}</pre>`;
+    showModal('latexModal');
+    throw new Error('Hand Calculation PDF endpoint is not deployed yet.');
+  }
+  const blob = await res.blob();
+  if (window._lastHandCalculationPdfUrl) URL.revokeObjectURL(window._lastHandCalculationPdfUrl);
+  window._lastHandCalculationPdfBlob = blob;
+  window._lastHandCalculationPdfUrl = URL.createObjectURL(blob);
+  $('latexSourceBox').value = 'Compiled Hand Calculation PDF is ready.\n\nThe raw LaTeX source remains available from the backend /api/report/latex endpoint for development/internal export.';
+  $('latexFrame').removeAttribute('srcdoc');
+  $('latexFrame').src = window._lastHandCalculationPdfUrl;
   showModal('latexModal');
 }
 
@@ -1778,7 +1791,11 @@ function bindEvents() {
   $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
   $('latexBtn')?.addEventListener('click', () => openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')));
   $('latexRefreshBtn')?.addEventListener('click', () => openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')));
-  $('latexDownloadBtn')?.addEventListener('click', () => downloadBlob(new Blob([$('latexSourceBox').value], { type: 'application/x-tex' }), 'beam-hand-calculation.tex'));
+  $('latexDownloadBtn')?.addEventListener('click', () => {
+    const blob = window._lastHandCalculationPdfBlob;
+    if (blob) return downloadBlob(blob, 'beam-hand-calculation.pdf');
+    return openHandCalculation().catch((err) => setSaveStatus(err.message, 'error'));
+  });
   $('reportDownloadBtn')?.addEventListener('click', () => downloadBlob(new Blob([window._lastReportHtml || $('reportFrame').srcdoc || ''], { type: 'text/html' }), 'beam-calculation-report.html'));
   $('reportPrintBtn')?.addEventListener('click', () => $('reportFrame')?.contentWindow?.print());
   $('reportModalClose')?.addEventListener('click', () => hideModal('reportModal'));

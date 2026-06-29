@@ -25,7 +25,7 @@ const {
 const { validateCalculationRequest } = require('./backend/services/validation-service');
 const { providers, oauthStart, unauthenticatedSession } = require('./backend/auth/auth-service');
 const { listProjects, readProject, saveProject, archiveProject } = require('./backend/services/project-service');
-const { resultToPdf, buildReportHtml, buildLatexReport } = require('./backend/services/report-service');
+const { resultToPdf, buildReportHtml, buildLatexReport, buildHandCalculationPdf } = require('./backend/services/report-service');
 
 requireProductionSecret();
 
@@ -150,7 +150,20 @@ async function routeApi(req, res, url) {
       });
       return res.end(html);
     }
-    if (req.method === 'POST' && (pathname === '/api/report/latex' || pathname === '/api/hand-calculation')) {
+    if (req.method === 'POST' && pathname === '/api/hand-calculation') {
+      const body = await parseJsonBody(req);
+      const input = body.input || {};
+      if (input.section) validateCalculationRequest(input);
+      const result = input.section ? calculateBeam(input) : (body.result || calculateBeam(input));
+      const pdf = buildHandCalculationPdf(input, result, body.metadata || input.metadata || {});
+      res.writeHead(200, {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="beam-hand-calculation.pdf"',
+        'Content-Length': pdf.length
+      });
+      return res.end(pdf);
+    }
+    if (req.method === 'POST' && pathname === '/api/report/latex') {
       const body = await parseJsonBody(req);
       const input = body.input || {};
       if (input.section) validateCalculationRequest(input);

@@ -12,7 +12,7 @@ const {
   buildSectionSourceIndex
 } = sectionsService;
 const { validateCalculationRequest } = validationService;
-const { buildReportHtml, buildLatexReport } = reportService;
+const { buildReportHtml, buildLatexReport, buildHandCalculationPdf } = reportService;
 
 const VERSION = '1.0.0';
 const ALLOWED_ORIGINS = new Set([
@@ -57,6 +57,18 @@ function textResponse(request, status, body, contentType) {
     status,
     headers: {
       'Content-Type': contentType,
+      'Cache-Control': 'no-store',
+      ...corsHeaders(request)
+    }
+  });
+}
+
+function binaryResponse(request, status, body, contentType, filename) {
+  return new Response(body, {
+    status,
+    headers: {
+      'Content-Type': contentType,
+      'Content-Disposition': `attachment; filename="${filename}"`,
       'Cache-Control': 'no-store',
       ...corsHeaders(request)
     }
@@ -189,6 +201,15 @@ async function route(request) {
   }
 
   if (request.method === 'POST' && pathname === '/api/hand-calculation') {
+    const body = await readJson(request);
+    const input = body.input || {};
+    if (input.section) validateCalculationRequest(input);
+    const result = input.section ? calculateBeam(input) : body.result;
+    const pdf = buildHandCalculationPdf(input, result || {}, body.metadata || input.metadata || {});
+    return binaryResponse(request, 200, pdf, 'application/pdf', 'beam-hand-calculation.pdf');
+  }
+
+  if (request.method === 'POST' && pathname === '/api/report/latex') {
     const body = await readJson(request);
     const input = body.input || {};
     if (input.section) validateCalculationRequest(input);

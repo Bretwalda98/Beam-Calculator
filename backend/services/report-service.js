@@ -29,8 +29,29 @@ function escLatex(value) {
   }[ch]));
 }
 
+function pdfSafeText(value) {
+  return String(value ?? '')
+    .replace(/[–—]/g, '-')
+    .replace(/[·•]/g, '*')
+    .replace(/×/g, 'x')
+    .replace(/≤/g, '<=')
+    .replace(/≥/g, '>=')
+    .replace(/ψ/g, 'psi')
+    .replace(/χ/g, 'chi')
+    .replace(/γ/g, 'gamma')
+    .replace(/δ/g, 'delta')
+    .replace(/λ/g, 'lambda')
+    .replace(/φ/g, 'phi')
+    .replace(/π/g, 'pi')
+    .replace(/²/g, '^2')
+    .replace(/³/g, '^3')
+    .replace(/⁴/g, '^4')
+    .replace(/⁶/g, '^6')
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '');
+}
+
 function escPdf(value) {
-  return String(value ?? '').replace(/[\\()]/g, '\\$&').replace(/\r?\n/g, ' ');
+  return pdfSafeText(value).replace(/[\\()]/g, '\\$&').replace(/\r?\n/g, ' ');
 }
 
 function finite(value) {
@@ -977,9 +998,84 @@ function resultToPdf(result = {}, metadata = {}, input = {}) {
   return buildPdfBuffer(pages.length ? pages : [['Beam calculation report']]);
 }
 
+function buildHandCalculationPdf(input = {}, result = {}, suppliedMetadata = {}) {
+  input = input || {};
+  result = result || {};
+  const model = buildReportModel(input, result, suppliedMetadata);
+  const { meta, packageData, source, governing } = model;
+  const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
+  const checkControlLines = (result.codeCheckControls?.sections || []).flatMap((section) => [
+    section.heading || '',
+    ...(section.lines || []).map((line) => line.kind === 'ratio'
+      ? `${line.prefix || ''}${line.ratio || '-'}${line.suffix || ''}`
+      : line.text || '')
+  ]);
+  const lines = [
+    'Structural Engineering Hand Calculation Report',
+    `Project: ${meta.projectName}`,
+    `Client: ${meta.clientName}`,
+    `Company: ${meta.companyName}`,
+    `Job/reference: ${meta.jobReference}`,
+    `Calculation title: ${meta.calculationTitle}`,
+    `Beam/member mark: ${meta.beamMark}`,
+    `Revision: ${meta.revision}`,
+    `Prepared by: ${meta.engineerName}`,
+    `Checked by: ${meta.checkedBy}`,
+    `Approved by: ${meta.approvedBy}`,
+    `Date: ${meta.date}`,
+    `Design code: ${packageData.designCode || meta.designCode}`,
+    `National Annex: ${packageData.nationalAnnex || meta.nationalAnnex}`,
+    '',
+    '1. Design Summary',
+    `Overall status: ${result.status || '-'}`,
+    `Governing utilisation ratio: ${round(result.summary?.governingIR, 5)}`,
+    `Governing design check: ${governing.title}`,
+    `Section: ${sectionName}`,
+    `Material: ${result.inputEcho?.material || '-'}`,
+    `Span: ${round(result.inputEcho?.span || input.model?.span, 3)} m`,
+    `Maximum moment: ${round(result.summary?.maxMoment, 5)} ${result.summary?.momentUnit || ''}`,
+    `Maximum shear: ${round(result.summary?.maxShear, 5)} ${result.summary?.forceUnit || ''}`,
+    `Maximum deflection: ${round(result.summary?.deflection, 5)} mm`,
+    '',
+    '2. Code Check Controls',
+    ...checkControlLines,
+    '',
+    '3. Detailed Hand Calculations',
+    ...(packageData.calculations || []).flatMap((calc, index) => [
+      `${index + 1}. ${calc.title}`,
+      `Code reference: ${calc.codeReference || 'Reference to be confirmed'}`,
+      `Given values: ${(calc.variables || []).map((row) => `${row.symbol}=${row.value}`).join('; ') || '-'}`,
+      `Formula: ${calc.equation || '-'}`,
+      `Numerical substitution: ${calc.substitution || '-'}`,
+      `Unit conversion: ${calc.unitConversion || '-'}`,
+      `Result: ${calc.result || '-'}`,
+      `Resistance/limit: ${calc.resistance || '-'}`,
+      `Utilisation: ${calc.utilisation || '-'}`,
+      `Acceptance: ${calc.status || 'INFO'}`,
+      ...(calc.warnings || []).map((warning) => `Warning: ${warning}`),
+      ''
+    ]),
+    '4. Assumptions',
+    ...(packageData.assumptions || []).map((item) => `- ${item}`),
+    '',
+    '5. References',
+    `Section database: ${source.title || 'Source to be confirmed'} - ${source.reference || source.url || 'Source to be confirmed'}`,
+    `Design standard: ${packageData.designCode || meta.designCode} / ${packageData.nationalAnnex || meta.nationalAnnex}`,
+    `Material database: ${result.inputEcho?.material || '-'} from server material library`,
+    '',
+    '6. Final Summary',
+    `Overall ${result.status || '-'} with governing utilisation ${round(result.summary?.governingIR, 5)}.`,
+    `Critical design check: ${governing.title}.`
+  ];
+  const pages = [];
+  for (let i = 0; i < lines.length; i += 46) pages.push(lines.slice(i, i + 46));
+  return buildPdfBuffer(pages.length ? pages : [['Structural Engineering Hand Calculation Report']]);
+}
+
 module.exports = {
   buildReportModel,
   buildReportHtml,
   buildLatexReport,
+  buildHandCalculationPdf,
   resultToPdf
 };
