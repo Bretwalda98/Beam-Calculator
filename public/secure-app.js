@@ -881,16 +881,18 @@ function renderResult(input, result) {
   const s = result.summary || {};
   const support = result.inputEcho?.supportLabel || input.model.supportType;
   const section = `${input.section.family} ${input.section.name}`;
-  $('workspaceSummary').innerHTML = [
-    section,
-    result.source?.title,
-    input.material.grade,
-    `L = ${fmt(input.model.span, 2)} m`,
-    `Max M = ${fmt(s.maxMoment, 2)} ${s.momentUnit || ''}`,
-    `Max V = ${fmt(s.maxShear, 2)} ${s.forceUnit || ''}`,
-    `IR = ${fmt(s.governingIR, 3)}`,
-    result.status
-  ].filter(Boolean).map((item) => `<span>${statusClass(item) ? statusMarkup(item) : esc(item)}</span>`).join('');
+  if ($('workspaceSummary')) {
+    $('workspaceSummary').innerHTML = [
+      section,
+      result.source?.title,
+      input.material.grade,
+      `L = ${fmt(input.model.span, 2)} m`,
+      `Max M = ${fmt(s.maxMoment, 2)} ${s.momentUnit || ''}`,
+      `Max V = ${fmt(s.maxShear, 2)} ${s.forceUnit || ''}`,
+      `IR = ${fmt(s.governingIR, 3)}`,
+      result.status
+    ].filter(Boolean).map((item) => `<span>${statusClass(item) ? statusMarkup(item) : esc(item)}</span>`).join('');
+  }
   if ($('summaryResults')) {
     $('summaryResults').innerHTML = [
       card('Status', result.status, result.status === 'PASS' ? 'good' : 'bad'),
