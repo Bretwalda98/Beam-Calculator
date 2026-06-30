@@ -36,5 +36,10 @@ if (fs.existsSync(path.join(root, 'public', 'styles.css'))) {
   copyFile(path.join(root, 'public', 'styles.css'), path.join(dist, 'public', 'styles.css'), minify);
 }
 
+['ads.txt', 'robots.txt', 'sitemap.xml', 'privacy.html'].forEach((filename) => {
+  const source = path.join(root, filename);
+  if (fs.existsSync(source)) copyFile(source, path.join(dist, filename));
+});
+
 execFileSync(process.execPath, [path.join(root, 'scripts', 'check-public-bundle.js')], { stdio: 'inherit' });
 console.log(`Frontend build complete: ${path.relative(root, dist)}`);
