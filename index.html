@@ -2574,25 +2574,35 @@ body.layout-mobile .inspector-shell{
   position:relative!important;
   margin:8px 0 0!important;
   padding:14px 12px 10px!important;
-  border:1px solid #b8c0ca!important;
+  border:1px solid var(--border)!important;
   border-radius:2px!important;
-  background:#ffffff!important;
-  color:#111827!important;
+  background:var(--panel)!important;
+  color:var(--text)!important;
   box-shadow:none!important;
   min-width:0!important;
+}
+:root[data-theme="light"] .results-fieldset{
+  border-color:#b8c0ca!important;
+  background:#ffffff!important;
+  color:#111827!important;
+}
+:root[data-theme="dark"] .results-fieldset{
+  border-color:#333333!important;
+  background:#000000!important;
+  color:#f4f4f5!important;
 }
 .results-legend{
   padding:0 4px!important;
   margin-left:4px!important;
   color:var(--accent)!important;
-  background:#ffffff!important;
+  background:var(--panel)!important;
   font-size:12px!important;
   font-weight:800!important;
   line-height:1!important;
 }
 .results-controls-body{
   display:block!important;
-  color:#111827!important;
+  color:inherit!important;
 }
 .check-section{
   margin:0 0 8px!important;
@@ -2601,7 +2611,7 @@ body.layout-mobile .inspector-shell{
 .check-section:last-of-type{margin-bottom:0!important}
 .check-heading{
   margin:7px 0 3px!important;
-  color:#111827!important;
+  color:inherit!important;
   font-size:12px!important;
   font-weight:900!important;
   line-height:1.25!important;
@@ -2612,7 +2622,7 @@ body.layout-mobile .inspector-shell{
 .check-line{
   display:block!important;
   margin:1px 0!important;
-  color:#111827!important;
+  color:inherit!important;
   font-size:12px!important;
   font-weight:500!important;
   line-height:1.35!important;
@@ -2620,7 +2630,7 @@ body.layout-mobile .inspector-shell{
   white-space:normal!important;
 }
 .check-line-info{
-  color:#334155!important;
+  color:var(--muted)!important;
   font-style:normal!important;
 }
 .check-ratio-pass{
@@ -3651,6 +3661,6 @@ body.layout-mobile .combination-preview-meta .kv{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js?v=20260629-accent-theme"></script>
+<script src="public/secure-app.js?v=20260630-code-check-theme"></script>
 </body>
 </html>

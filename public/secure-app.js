@@ -973,8 +973,7 @@ function fallbackCodeCheckControls(result) {
 function renderCodeCheckControls(result) {
   const controls = result.codeCheckControls || fallbackCodeCheckControls(result);
   const sections = controls.sections || [];
-  return `<fieldset class="results-fieldset">
-    <legend class="results-legend">${esc(controls.title || 'Results')}</legend>
+  return `<div class="results-fieldset" role="group" aria-label="Code checks">
     <div class="results-controls-body">
       ${sections.map((section) => `<section class="check-section">
         <div class="check-heading">${esc(section.heading || '')}</div>
@@ -985,8 +984,7 @@ function renderCodeCheckControls(result) {
         }).join('')}
       </section>`).join('')}
     </div>
-    <div class="more-results-row"><button type="button" class="more-results-button" data-more-results>More Results</button></div>
-  </fieldset>`;
+  </div>`;
 }
 
 function renderChecks(result) {
