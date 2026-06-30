@@ -22,24 +22,24 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #151719;
-  --surface: #202428;
-  --surface-2: #272c31;
-  --surface-3: #30363d;
-  --text: #f2f5f7;
-  --muted: #c2c8cf;
-  --border: #49525c;
-  --border-strong: #697481;
+  --bg: #000000;
+  --surface: #050505;
+  --surface-2: #0b0b0b;
+  --surface-3: #141414;
+  --text: #f4f4f5;
+  --muted: #b3b3b8;
+  --border: #2a2a2a;
+  --border-strong: #454545;
   --accent: #74a8ff;
   --accent-strong: #9dc1ff;
-  --accent-soft: #223044;
+  --accent-soft: #101820;
   --danger: #ff8a8a;
   --danger-soft: #3a2528;
   --success: #72dc92;
   --success-soft: #20382a;
   --warning: #ffd166;
   --warning-soft: #3c3321;
-  --shadow: 0 14px 36px rgba(0, 0, 0, .30);
+  --shadow: 0 14px 36px rgba(0, 0, 0, .60);
 }
 
 * { box-sizing: border-box; }
