@@ -2830,6 +2830,23 @@ body.layout-mobile .code-checks-dock{
 body.layout-mobile .code-checks-dock .inspector-block{
   padding:10px!important;
 }
+
+/* ===== v40 wider left input rail ===== */
+body.layout-desktop{
+  --left-panel-w:432px!important;
+}
+body.layout-desktop .layout{
+  grid-template-columns:minmax(432px,var(--left-panel-w)) minmax(0,1fr)!important;
+}
+body.layout-tablet .layout{
+  grid-template-columns:minmax(378px,459px) minmax(0,1fr)!important;
+}
+body.layout-desktop .section-preview-panel,
+body.layout-desktop .input-scroll-stack,
+body.layout-tablet .section-preview-panel,
+body.layout-tablet .input-scroll-stack{
+  width:100%!important;
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
