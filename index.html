@@ -794,9 +794,6 @@ body .layout .splitter, body .workspace .splitter{z-index:12}
   .modal{background:rgba(15,23,42,.50)}
   .modal-panel{background:#ffffff;border:1px solid #d7dee8;border-radius:14px;box-shadow:0 24px 60px rgba(15,23,42,.24)}
   .report-frame,.latex-frame{background:#ffffff;color:#0f172a}
-  #summaryPanel .metric-card:first-child,
-  #summaryPanel .metric-card:nth-child(2){min-height:74px}
-  #summaryPanel .metric-value:first-child{font-size:1.3rem}
   :root[data-theme="dark"] body{background:#000000}
   :root[data-theme="dark"] header{background:linear-gradient(180deg,#050505,#000000)}
   :root[data-theme="dark"] .btn,:root[data-theme="dark"] .badge,:root[data-theme="dark"] .header-select{background:#0a0a0a;border-color:#2a2a2a;color:#f4f4f5}
@@ -1020,7 +1017,6 @@ canvas.chart{height:208px!important}
 .metric-card{padding:10px!important;background:#fbfcfe!important}
 .metric-label{font-size:.66rem!important;color:#748496!important}
 .metric-value{font-size:1rem!important;color:#1f3044!important;font-weight:800!important}
-#summaryPanel .metric-card:first-child,#summaryPanel .metric-card:nth-child(2){min-height:66px!important}
 .result-fold>summary{padding:10px 12px!important;color:#233248!important}
 .result-fold-body{padding:0 12px 12px!important}
 .kv{grid-template-columns:1fr auto auto!important;padding:4px 0!important}
@@ -2873,7 +2869,7 @@ body.layout-mobile .combination-preview-meta .kv{
   <button class="rail-button" type="button" data-rail-target="loadsAccordion" aria-label="Loads" title="Loads"><i class="bi bi-arrow-down-square"></i></button>
   <button class="rail-button" type="button" data-rail-target="stabilityAccordion" aria-label="Stability" title="Stability / LTB"><i class="bi bi-shield-check"></i></button>
   <button class="rail-button" type="button" data-rail-target="stageOverview" aria-label="Charts" title="Charts"><i class="bi bi-graph-up"></i></button>
-  <button class="rail-button" type="button" data-rail-target="summaryPanel" aria-label="Results" title="Results"><i class="bi bi-clipboard-data"></i></button>
+  <button class="rail-button" type="button" data-rail-target="codeChecksPanel" aria-label="Code checks" title="Code checks"><i class="bi bi-clipboard-data"></i></button>
   <div class="rail-spacer"></div>
   <button class="rail-button" type="button" data-rail-target="settingsModal" aria-label="Settings" title="Settings"><i class="bi bi-gear"></i></button>
 </nav>
@@ -3364,28 +3360,9 @@ body.layout-mobile .combination-preview-meta .kv{
 
     <div class="inspector-shell">
       <div class="inspector-block">
-        <div class="inspector-tabs">
-          <button type="button" class="tab-btn active" data-tab-group="inspectorTabs" data-tab="summaryPanel">Summary</button>
-          <button type="button" class="tab-btn" data-tab-group="inspectorTabs" data-tab="detailsPanel">Detailed</button>
-          <button type="button" class="tab-btn" data-tab-group="inspectorTabs" data-tab="codeChecksPanel">Code checks</button>
-          <button type="button" class="tab-btn" data-tab-group="inspectorTabs" data-tab="warningsPanel">Warnings</button>
-        </div>
-        <div id="summaryPanel" class="tab-panel active" data-tab-group="inspectorTabs">
-          <div class="section-title">Summary</div>
-          <div id="summaryResults"></div>
-          <div id="verdict" style="font-weight:900;margin-top:10px"></div>
-        </div>
-        <div id="detailsPanel" class="tab-panel" data-tab-group="inspectorTabs">
-          <div class="section-title">Detailed results</div>
-          <div id="detailResults"></div>
-        </div>
-        <div id="codeChecksPanel" class="tab-panel" data-tab-group="inspectorTabs">
+        <div id="codeChecksPanel" class="code-checks-only">
           <div class="section-title">Code checks</div>
           <div id="codeChecks"></div>
-        </div>
-        <div id="warningsPanel" class="tab-panel" data-tab-group="inspectorTabs">
-          <div class="section-title">Warnings / assumptions</div>
-          <div id="warningsPanelContent"></div>
         </div>
       </div>
     </div>
@@ -3711,6 +3688,6 @@ body.layout-mobile .combination-preview-meta .kv{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js?v=20260630-section-preview-toggle"></script>
+<script src="public/secure-app.js?v=20260630-code-checks-only"></script>
 </body>
 </html>

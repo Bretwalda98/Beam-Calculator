@@ -891,19 +891,23 @@ function renderResult(input, result) {
     `IR = ${fmt(s.governingIR, 3)}`,
     result.status
   ].filter(Boolean).map((item) => `<span>${statusClass(item) ? statusMarkup(item) : esc(item)}</span>`).join('');
-  $('summaryResults').innerHTML = [
-    card('Status', result.status, result.status === 'PASS' ? 'good' : 'bad'),
-    card('Governing IR', fmt(s.governingIR, 3)),
-    card(`Max moment [${s.momentUnit || ''}]`, fmt(s.maxMoment, 2)),
-    card(`Max shear [${s.forceUnit || ''}]`, fmt(s.maxShear, 2)),
-    card(`Axial force [${s.forceUnit || ''}]`, fmt(result.checks?.axial?.axialEd || 0, 2)),
-    card('Deflection [mm]', fmt(s.deflection, 2)),
-    card('Max reaction', `${fmt(s.maxReaction, 2)} ${s.forceUnit || ''}`),
-    card('Support condition', support),
-    card('Section', section)
-  ].join('');
-  $('verdict').innerHTML = statusMarkup(result.status === 'PASS' ? 'PASS' : 'FAIL');
-  $('verdict').className = statusClass(result.status);
+  if ($('summaryResults')) {
+    $('summaryResults').innerHTML = [
+      card('Status', result.status, result.status === 'PASS' ? 'good' : 'bad'),
+      card('Governing IR', fmt(s.governingIR, 3)),
+      card(`Max moment [${s.momentUnit || ''}]`, fmt(s.maxMoment, 2)),
+      card(`Max shear [${s.forceUnit || ''}]`, fmt(s.maxShear, 2)),
+      card(`Axial force [${s.forceUnit || ''}]`, fmt(result.checks?.axial?.axialEd || 0, 2)),
+      card('Deflection [mm]', fmt(s.deflection, 2)),
+      card('Max reaction', `${fmt(s.maxReaction, 2)} ${s.forceUnit || ''}`),
+      card('Support condition', support),
+      card('Section', section)
+    ].join('');
+  }
+  if ($('verdict')) {
+    $('verdict').innerHTML = statusMarkup(result.status === 'PASS' ? 'PASS' : 'FAIL');
+    $('verdict').className = statusClass(result.status);
+  }
   renderChecks(result);
   renderDetails(result);
   renderTables(result);
@@ -1001,10 +1005,11 @@ function renderCodeCheckControls(result) {
 }
 
 function renderChecks(result) {
-  $('codeChecks').innerHTML = renderCodeCheckControls(result);
+  if ($('codeChecks')) $('codeChecks').innerHTML = renderCodeCheckControls(result);
 }
 
 function renderDetails(result) {
+  if (!$('detailResults')) return;
   const props = result.sectionProperties || {};
   $('detailResults').innerHTML = `<table class="data-table"><tbody>${[
     ['Area A', `${fmt(props.A_mm2, 0)} mm2`],
@@ -1025,6 +1030,7 @@ function renderTables(result) {
 }
 
 function renderWarnings(result) {
+  if (!$('warningsPanelContent')) return;
   const warnings = [...(result.calculationPackage?.warnings || []), ...(result.sectionProperties?.dimensions?.warnings || [])];
   $('warningsPanelContent').innerHTML = warnings.length ? warnings.map((warning) => `<div class="warning-box">${esc(warning)}</div>`).join('') : '<div class="result-block good">No warnings returned by the calculation service.</div>';
 }
@@ -1728,9 +1734,7 @@ function handleRailTarget(btn) {
   const target = btn.dataset.railTarget;
   $$('.rail-button').forEach((item) => item.classList.toggle('active', item === btn));
   if (target === 'settingsModal') return showModal('settingsModal');
-  if (target === 'summaryPanel') {
-    document.querySelector('[data-tab-group="inspectorTabs"][data-tab="summaryPanel"]')?.click();
-  } else if (target?.startsWith('stage')) {
+  if (target?.startsWith('stage')) {
     document.querySelector(`[data-tab-group="stageTabs"][data-tab="${CSS.escape(target)}"]`)?.click();
   }
   const el = $(target);
@@ -1832,8 +1836,7 @@ function bindEvents() {
   document.addEventListener('click', (event) => {
     const btn = event.target.closest('[data-more-results]');
     if (!btn) return;
-    document.querySelector('[data-tab-group="inspectorTabs"][data-tab="detailsPanel"]')?.click();
-    $('detailResults')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    $('codeChecksPanel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   $('recalcBtn')?.addEventListener('click', () => calculate().catch((err) => setSaveStatus(err.message, 'error')));
   $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
