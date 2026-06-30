@@ -2757,6 +2757,79 @@ body.layout-mobile .combination-preview-meta .kv{
   grid-template-columns:1fr!important;
   gap:2px!important;
 }
+
+/* ===== v39 code checks bottom dock ===== */
+#rightInspectorSplitter{display:none!important}
+.workspace{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.code-checks-dock{
+  grid-column:1/-1!important;
+  min-width:0!important;
+  padding-left:0!important;
+}
+.code-checks-dock .inspector-block{
+  min-height:0!important;
+}
+.code-checks-dock .section-title{
+  margin:0 0 6px!important;
+  padding-bottom:6px!important;
+}
+body.layout-desktop .workspace{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+}
+body.layout-desktop .main-stage{
+  align-self:stretch!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding-right:0!important;
+}
+body.layout-desktop .code-checks-dock{
+  position:relative!important;
+  top:auto!important;
+  bottom:auto!important;
+  z-index:30!important;
+  height:auto!important;
+  max-height:min(34vh,330px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  padding:0!important;
+  scrollbar-gutter:stable;
+}
+body.layout-desktop .code-checks-dock .inspector-block{
+  padding:9px 11px!important;
+  border-radius:8px!important;
+}
+body.inputs-collapsed.layout-desktop .workspace{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+}
+body.inputs-collapsed.layout-desktop .code-checks-dock{
+  padding-left:0!important;
+}
+body.layout-tablet .workspace,
+body.layout-mobile .workspace{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body.layout-tablet .code-checks-dock,
+body.layout-mobile .code-checks-dock{
+  position:static!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-left:0!important;
+}
+body.layout-mobile .code-checks-dock .inspector-block{
+  padding:10px!important;
+}
 @media print{
   body{background:#fff!important;color:#111827!important;overflow:visible!important}
   .app-topbar,.app-rail,.app-statusbar,.file-menu,.settings-panel,.modal:not(#reportModal){display:none!important}
@@ -3356,9 +3429,7 @@ body.layout-mobile .combination-preview-meta .kv{
       </div>
     </div>
 
-    <div class="splitter" id="rightInspectorSplitter" role="separator" aria-orientation="vertical" aria-label="Resize results panel"></div>
-
-    <div class="inspector-shell">
+    <div class="inspector-shell code-checks-dock" aria-label="Locked code checks window">
       <div class="inspector-block">
         <div id="codeChecksPanel" class="code-checks-only">
           <div class="section-title">Code checks</div>
