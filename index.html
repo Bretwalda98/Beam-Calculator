@@ -1761,6 +1761,30 @@ body.layout-tablet .section-selector-layout{
   gap:10px!important;
   margin-bottom:8px!important;
 }
+.section-preview-actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  flex:0 0 auto!important;
+}
+.section-preview-toggle{
+  min-height:26px!important;
+  padding:0 7px!important;
+  border:1px solid var(--border)!important;
+  border-radius:999px!important;
+  background:var(--panel)!important;
+  color:var(--muted)!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  cursor:pointer!important;
+}
+.section-preview-toggle:hover,
+.section-preview-toggle:focus-visible{
+  color:var(--accent)!important;
+  border-color:rgba(var(--accent-rgb),.42)!important;
+  outline:none!important;
+}
 .section-preview-name{font-weight:800!important;color:var(--text)!important;font-size:13px!important;line-height:1.25!important}
 .section-preview-type{
   flex:0 0 auto!important;
@@ -1791,20 +1815,36 @@ body.layout-tablet .section-selector-layout{
 }
 .section-preview-facts{
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:6px!important;
-  margin-top:8px!important;
+  grid-template-columns:repeat(auto-fit,minmax(68px,1fr))!important;
+  gap:4px!important;
+  margin-top:6px!important;
 }
 .section-preview-facts .prop-chip{
   min-width:0!important;
-  padding:7px!important;
-  border-radius:6px!important;
+  min-height:28px!important;
+  padding:3px 5px!important;
+  border-radius:5px!important;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:baseline!important;
+  gap:3px!important;
 }
 .section-preview-facts .prop-chip strong,
 .section-preview-facts .prop-chip span{
   overflow:hidden!important;
   text-overflow:ellipsis!important;
   white-space:nowrap!important;
+}
+.section-preview-panel.is-collapsed{
+  padding:8px 10px!important;
+}
+.section-preview-panel.is-collapsed .section-preview-header{
+  margin-bottom:0!important;
+}
+.section-preview-panel.is-collapsed #sectionProfilePreview,
+.section-preview-panel.is-collapsed #sectionPreviewWarning,
+.section-preview-panel.is-collapsed #sectionPreviewFacts{
+  display:none!important;
 }
 .multi-loads-scroll{overflow-x:visible!important}
 .multi-load-grid{grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))!important}
@@ -2046,9 +2086,9 @@ body.layout-mobile .inspector-tabs .tab-btn{
 body.layout-mobile .section-selector-layout{gap:8px!important}
 body.layout-mobile #sectionProfilePreview{height:220px!important}
 body.layout-mobile .section-preview-panel{padding:8px!important;position:relative!important;top:auto!important}
-body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.layout-mobile .section-preview-facts{grid-template-columns:repeat(auto-fit,minmax(66px,1fr))!important}
 @media(max-width:600px){
-  body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.layout-mobile .section-preview-facts{grid-template-columns:repeat(auto-fit,minmax(66px,1fr))!important}
   body.layout-mobile .section-library-controls .compact-grid{grid-template-columns:1fr!important}
   body.layout-mobile .custom-actions .btn{flex-basis:100%!important}
 }
@@ -2061,7 +2101,7 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
 @media(max-width:412px){
   body.layout-mobile .brand-copy h1{font-size:15px!important}
   body.layout-mobile .toolbar-right{grid-template-columns:repeat(5,minmax(44px,1fr))!important}
-  body.layout-mobile .section-preview-facts{grid-template-columns:1fr 1fr!important}
+  body.layout-mobile .section-preview-facts{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))!important}
 }
 @media(max-width:390px){
   body.layout-mobile .toolbar-right{grid-template-columns:repeat(5,minmax(44px,1fr))!important}
@@ -2075,7 +2115,7 @@ body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(
 @media(max-width:320px){
   body.layout-mobile .container{padding:4px!important}
   body.layout-mobile .toolbar-right{grid-template-columns:repeat(5,minmax(44px,1fr))!important;gap:4px!important}
-  body.layout-mobile .section-preview-facts{grid-template-columns:1fr!important}
+  body.layout-mobile .section-preview-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   body.layout-mobile #sectionProfilePreview{height:190px!important}
 }
 
@@ -2537,25 +2577,28 @@ body.inputs-collapsed.layout-desktop .workspace{
 body.inputs-collapsed.layout-desktop .main-stage{padding-right:14px!important}
 body.inputs-collapsed.layout-desktop .inspector-shell{padding-left:14px!important}
 .section-preview-facts{
+  grid-template-columns:repeat(auto-fit,minmax(68px,1fr))!important;
   gap:4px!important;
   margin-top:6px!important;
 }
 .section-preview-facts .prop-chip{
   min-height:0!important;
-  padding:5px 6px!important;
-  border-radius:6px!important;
+  padding:3px 5px!important;
+  border-radius:5px!important;
   display:grid!important;
-  gap:1px!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  gap:3px!important;
   align-content:center!important;
+  align-items:baseline!important;
 }
 .section-preview-facts .prop-chip strong{
   margin-bottom:0!important;
-  font-size:9.5px!important;
+  font-size:8.5px!important;
   line-height:1.1!important;
 }
 .section-preview-facts .prop-chip span{
-  font-size:12px!important;
-  line-height:1.18!important;
+  font-size:10.5px!important;
+  line-height:1.12!important;
   font-weight:850!important;
 }
 body.layout-mobile{
@@ -2850,7 +2893,10 @@ body.layout-mobile .combination-preview-meta .kv{
         <div class="mini-title">Section preview</div>
         <div id="sectionPreviewName" class="section-preview-name">No section selected</div>
       </div>
-      <div id="sectionPreviewType" class="section-preview-type">Library</div>
+      <div class="section-preview-actions">
+        <div id="sectionPreviewType" class="section-preview-type">Library</div>
+        <button id="sectionPreviewToggle" class="section-preview-toggle" type="button" aria-controls="sectionProfilePreview sectionPreviewWarning sectionPreviewFacts" aria-expanded="true">Hide</button>
+      </div>
     </div>
     <div id="sectionProfilePreview" class="section-profile-preview" role="img" aria-label="True scaled section geometry preview"></div>
     <div id="sectionPreviewWarning" class="section-preview-warning hide">Geometry not available for this section.</div>
@@ -3661,6 +3707,6 @@ body.layout-mobile .combination-preview-meta .kv{
 <script>
   window.BEAM_API_BASE_URL = window.BEAM_API_BASE_URL || "";
 </script>
-<script src="public/secure-app.js?v=20260630-code-check-theme"></script>
+<script src="public/secure-app.js?v=20260630-section-preview-toggle"></script>
 </body>
 </html>

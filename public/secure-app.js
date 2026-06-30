@@ -219,7 +219,20 @@ function applySettings() {
   setValue('settingsDefaultCheckedBy', state.settings.defaultCheckedBy || '');
   if ($('settingsAutoRecalc')) $('settingsAutoRecalc').checked = state.settings.autoRecalc !== false;
   if ($('settingsOpenProject')) $('settingsOpenProject').checked = state.settings.openProject !== false;
+  applySectionPreviewVisibility();
   syncBeamModeUi();
+}
+
+function applySectionPreviewVisibility() {
+  const hidden = state.settings.sectionPreviewHidden === true;
+  const panel = $('sectionPreviewPanel');
+  const button = $('sectionPreviewToggle');
+  panel?.classList.toggle('is-collapsed', hidden);
+  if (button) {
+    button.textContent = hidden ? 'Show' : 'Hide';
+    button.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+    button.setAttribute('title', hidden ? 'Show section preview' : 'Hide section preview');
+  }
 }
 
 function applyAccent() {
@@ -1840,6 +1853,11 @@ function bindEvents() {
   $('themeBtn')?.addEventListener('click', () => showModal('settingsModal'));
   $('railToggleBtn')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
   $('inputRailToggle')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
+  $('sectionPreviewToggle')?.addEventListener('click', () => {
+    state.settings.sectionPreviewHidden = state.settings.sectionPreviewHidden !== true;
+    saveSettings();
+    applySectionPreviewVisibility();
+  });
   $$('[data-rail-target]').forEach((btn) => btn.addEventListener('click', () => handleRailTarget(btn)));
   $('settingsClose')?.addEventListener('click', () => hideModal('settingsModal'));
   $('settingsCancel')?.addEventListener('click', () => hideModal('settingsModal'));
