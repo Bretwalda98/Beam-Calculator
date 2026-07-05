@@ -110,7 +110,7 @@ function getLC(input = {}) {
     };
     return {
       key,
-      name: 'Custom / COLBEAM audit factors',
+      name: 'Custom / Advanced EC3 audit factors',
       uls: { ...uls, note: `ULS: Custom audit LC = ${coeffText(uls)}` },
       sls: { ...sls, note: `SLS: Custom audit LC = ${coeffText(sls)}` }
     };
@@ -1355,8 +1355,8 @@ function buildCalculationPackage(context) {
     ...(check.shear?.meta?.warnings || []),
     ...(minorCheck?.available === false && rawLoads.udls.concat(rawLoads.points).some((load) => normaliseLoadDirection(load.direction, 'Y') === 'Z') ? (minorCheck.warnings || []) : []),
     ...(conservativeInteraction?.warnings || []),
-    audit.settings.flangeBucklingIgnored ? 'Recorded for COLBEAM comparison; flange buckling ignored toggle is not yet used by the calculation engine.' : null,
-    audit.settings.webBucklingIgnored ? 'Recorded for COLBEAM comparison; web buckling ignored toggle is not yet used by the calculation engine.' : null,
+    audit.settings.flangeBucklingIgnored ? 'Recorded for reference comparison; flange buckling ignored toggle is not yet used by the calculation engine.' : null,
+    audit.settings.webBucklingIgnored ? 'Recorded for reference comparison; web buckling ignored toggle is not yet used by the calculation engine.' : null,
     check.Wsel.unavailable ? `Required section property missing: ${check.Wsel.missing}. Class ${check.cls} resistance cannot be verified from the current database.` : null,
     check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
     ltb.enabled && !ltb.available && !ltb.notRequired ? `LTB unavailable: ${ltb.message}` : null,
@@ -1372,7 +1372,7 @@ function buildCalculationPackage(context) {
       variables: [
         { symbol: 'Combination', value: lc.name },
         { symbol: 'ULS selected', value: ulsNote || lc.uls.note },
-        { symbol: 'COLBEAM audit profile', value: audit.settings.auditProfile },
+        { symbol: 'Advanced EC3 audit profile', value: audit.settings.auditProfile },
         { symbol: 'Per-check 6.10a/b envelope', value: audit.combination.perCheckEnvelope ? 'Recorded only - not engine-wired in Stage 1' : 'Off' },
         { symbol: 'SLS deflection basis', value: `${audit.combination.slsDeflectionBasis}; self-weight ${audit.combination.slsIncludeSelfWeight ? 'included' : 'excluded'} metadata recorded only` },
         { symbol: 'Design code', value: input.metadata?.designCode || 'EN 1993-1-1' },
@@ -1421,7 +1421,7 @@ function buildCalculationPackage(context) {
       ],
       derivations: [
         buildDerivation('M_y,Ed', 'Design bending action used in the code-check controls.', 'M_y,Ed = max |M_y(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakM.x, 5)} m`, valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort), 'Server beam analysis'),
-        buildDerivation('W_y', 'Section modulus selected from the section class and COLBEAM elastic-design toggle.', 'Class 1-2: Wpl,y unless elastic toggle is enabled; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
+        buildDerivation('W_y', 'Section modulus selected from the section class and forced-elastic toggle.', 'Class 1-2: Wpl,y unless forced elastic resistance is enabled; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
         buildDerivation('M_y,Rd', 'Major-axis cross-section bending resistance before high-shear reduction.', 'M_y,Rd = W_y f_y / gamma_M0', `${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(check.MyRd), unit.momentShort), 'EN 1993-1-1 6.2.5'),
         ...(check.mv?.trigger ? [
           buildDerivation('rho', 'High shear reduction factor because VEd exceeds 0.5 VRd.', 'rho = (2 VEd / VRd - 1)^2', `(2 x ${round(check.mv.ratio, 5)} - 1)^2`, round(check.mv.rho, 5), 'EN 1993-1-1 6.2.8'),
@@ -1456,7 +1456,7 @@ function buildCalculationPackage(context) {
       derivations: [
         buildDerivation('V_z,Ed', 'Design shear action used in the code-check controls.', 'V_z,Ed = max |V_z(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakV.x, 5)} m`, valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort), 'Server beam analysis'),
         buildDerivation('A_v,z', 'Published shear area used for vertical shear resistance.', 'A_v,z = tabulated section shear area', valueUnit(check.shear?.meta?.shearArea || 0, 'mm^2', 0), valueUnit(check.shear?.meta?.shearArea || 0, 'mm^2', 0), 'Section database'),
-        buildDerivation('eta', 'COLBEAM audit shear factor applied only when a published shear area is available.', 'eta = configured shear factor', check.shear?.meta?.etaUsed || 'Not used', check.shear?.meta?.etaUsed || 'Not used', 'COLBEAM audit setting'),
+        buildDerivation('eta', 'Advanced EC3 audit shear factor applied only when a published shear area is available.', 'eta = configured shear factor', check.shear?.meta?.etaUsed || 'Not used', check.shear?.meta?.etaUsed || 'Not used', 'Advanced EC3 audit setting'),
         buildDerivation('V_z,Rd', 'Plastic shear resistance.', 'V_z,Rd = eta A_v,z f_y / (sqrt(3) gamma_M0)', `${round(check.shear?.meta?.shearArea || 0, 0)} x ${round(check.shear?.meta?.etaUsed || 1, 3)} x ${round(material.fy, 0)} / (sqrt(3) x ${round(settings.gammaM0, 3)}) / 1000`, valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort), 'EN 1993-1-1 6.2.6'),
         buildDerivation('IR_V', 'Utilisation ratio shown in Section Control.', 'IR_V = V_z,Ed / V_z,Rd', `${round(unit.fromBaseForce(check.VzEd), 5)} / ${round(unit.fromBaseForce(check.VzRd), 5)}`, round(check.IR_V, 5), 'Code-check controls')
       ],
@@ -1668,7 +1668,7 @@ function buildCalculationPackage(context) {
     nationalAnnex: input.metadata?.nationalAnnex || 'UK National Annex / project default',
     assumptions: [
       `Support condition modelled as ${SUPPORT_LABELS[supportType] || supportType}.`,
-      `COLBEAM support mapping: ${audit.model.colbeamSupportMappingLabel}. ${audit.model.supportEquivalenceNote}`,
+      `Reference support mapping: ${audit.model.colbeamSupportMappingLabel}. ${audit.model.supportEquivalenceNote}`,
       `Load combination: ${lc.name}.`,
       `SLS deflection basis used: ${slsCombo?.basis || 'total'}; self-weight ${slsCombo?.includeSelfWeight === false ? 'excluded' : 'included'} for SLS deflection.`,
       `Custom ULS factors recorded for audit: G=${audit.combination.customULSFactors.G}, Q1=${audit.combination.customULSFactors.Q1}, Q2=${audit.combination.customULSFactors.Q2}.`,
@@ -2072,12 +2072,12 @@ function calculateBeam(input) {
         flangeBucklingIgnored: {
           configured: audit.settings.flangeBucklingIgnored === true,
           engineWired: false,
-          warning: audit.settings.flangeBucklingIgnored ? 'Recorded for COLBEAM comparison; not yet used by calculation engine.' : null
+          warning: audit.settings.flangeBucklingIgnored ? 'Recorded for reference comparison; not yet used by calculation engine.' : null
         },
         webBucklingIgnored: {
           configured: audit.settings.webBucklingIgnored === true,
           engineWired: false,
-          warning: audit.settings.webBucklingIgnored ? 'Recorded for COLBEAM comparison; not yet used by calculation engine.' : null
+          warning: audit.settings.webBucklingIgnored ? 'Recorded for reference comparison; not yet used by calculation engine.' : null
         }
       }
     },

@@ -369,16 +369,25 @@ async function updateSectionPreview() {
   }
   $('sectionProfilePreview').innerHTML = drawSectionSvg(section);
   const props = section.visibleProperties || {};
-  $('sectionPreviewFacts').innerHTML = [
-    ['h', props.h_mm, 'mm'],
-    ['b', props.b_mm, 'mm'],
-    ['tw', props.tw_mm, 'mm'],
-    ['tf/t', props.tf_mm || props.t_mm, 'mm'],
-    ['r', props.r_mm, 'mm'],
-    ['A', props.A_mm2, 'mm2'],
-    ['Mass', props.mass_kg_m, 'kg/m'],
-    ['Wel,y', props.Wel_y_mm3, 'mm3']
-  ].filter(([, value]) => value).map(([key, value, unit]) => `<div class="prop-chip"><strong>${esc(key)}</strong><span>${esc(fmt(value, key === 'Mass' ? 2 : 0))} ${esc(unit)}</span></div>`).join('');
+  const factRows = [
+    ['h', props.h_mm, 'mm', 0],
+    ['b', props.b_mm, 'mm', 0],
+    ['tw', props.tw_mm, 'mm', 0],
+    ['tf', props.tf_mm || props.t_mm, 'mm', 0],
+    ['r', props.r_mm, 'mm', 0],
+    ['A', props.A_mm2, 'mm2', 0],
+    ['Mass', props.mass_kg_m, 'kg/m', 1],
+    ['Wel,y', props.Wel_y_mm3, 'mm3', 0],
+    ['Wel,z', props.Wel_z_mm3, 'mm3', 0],
+    ['Wpl,y', props.Wpl_y_mm3, 'mm3', 0],
+    ['Wpl,z', props.Wpl_z_mm3, 'mm3', 0],
+    ['Iy', props.Iy_mm4, 'mm4', 0],
+    ['Iz', props.Iz_mm4, 'mm4', 0]
+  ].filter(([, value]) => Number(value) > 0);
+  $('sectionPreviewFacts').innerHTML = factRows.map(([key, value, unit, dp]) => {
+    const full = `${key} ${fmtReadable(value, dp)} ${unit}`;
+    return `<div class="prop-chip" title="${esc(full)}"><strong>${esc(key)}</strong><span>${esc(fmtReadable(value, dp))} ${esc(unit)}</span></div>`;
+  }).join('');
 }
 
 function syncSectionSourceMode() {
@@ -823,12 +832,12 @@ function buildCombinationPreview() {
   if (key === 'custom_colbeam') {
     const custom = colbeamAuditInputDefaults();
     return {
-      name: 'Custom / COLBEAM audit factors',
-      source: 'User-entered custom ULS/SLS factors for COLBEAM comparison. These factors are engine-wired only in this custom mode.',
+      name: 'Custom / Advanced EC3 audit factors',
+      source: 'User-entered custom ULS/SLS factors for reference comparison. These factors are engine-wired only in this custom mode.',
       use: 'ULS custom factors are used for resistance checks; SLS custom factors are used for deflection/serviceability checks, then adjusted by the selected SLS deflection basis.',
       validation: basis.validation,
       lines: [
-        'Selected: Custom / COLBEAM audit factors',
+        'Selected: Custom / Advanced EC3 audit factors',
         `ULS strength checks: LC_ULS = ${fmtCoeff(custom.customULSFactors.G)}G + ${fmtCoeff(custom.customULSFactors.Q1)}Q1 + ${fmtCoeff(custom.customULSFactors.Q2)}Q2`,
         `SLS deflection checks: LC_SLS = ${fmtCoeff(custom.customSLSFactors.G)}G + ${fmtCoeff(custom.customSLSFactors.Q1)}Q1 + ${fmtCoeff(custom.customSLSFactors.Q2)}Q2`,
         `SLS basis: ${custom.slsDeflectionBasis}; self-weight ${custom.slsIncludeSelfWeight ? 'included' : 'excluded'} for SLS deflection`,
@@ -888,7 +897,7 @@ function buildRequest() {
       springLeftPct: num('springLeftPct', 100),
       springRightPct: num('springRightPct', 100),
       colbeamSupportMappingLabel: txt('colbeamSupportMappingLabel', 'Current support mapping'),
-      supportEquivalenceNote: `${txt('supportEquivalenceNote', 'Support equivalence to COLBEAM EC3 has not been independently verified.')} ${txt('springEquivalenceNote', '')}`.trim()
+      supportEquivalenceNote: `${txt('supportEquivalenceNote', 'Support equivalence to the reference EC3 workflow has not been independently verified.')} ${txt('springEquivalenceNote', '')}`.trim()
     },
     combination: { combination: $('load_combo')?.value || 'en1990_610', psiQ1: num('psi_q1', 0.7), psiQ2: num('psi_q2', 0.7), ...colbeamAuditInputDefaults() },
     settings: {
@@ -954,6 +963,86 @@ function card(k, v, tone = '') {
   return `<div class="metric-card ${tone}"><div class="metric-label">${esc(k)}</div><div class="metric-value">${valueHtml}</div></div>`;
 }
 
+function axisValue(value, unit = '', dp = 3) {
+  if (value === undefined || value === null || value === '' || !Number.isFinite(Number(value))) return 'Not available';
+  return `${fmt(value, dp)}${unit ? ` ${unit}` : ''}`;
+}
+
+function axisRow(label, value) {
+  return `<div class="axis-row"><div class="k">${esc(label)}</div><div class="v">${esc(value)}</div></div>`;
+}
+
+function axisWarningsFrom(result = {}, axisKey = 'z') {
+  const props = result.sectionProperties || {};
+  const warnings = [];
+  if (axisKey === 'z') {
+    if (!Number(props.Iz_mm4)) warnings.push('Iz not available from section data.');
+    if (!Number(props.Wel_z_mm3)) warnings.push('Wel,z not available from section data.');
+    if (!Number(props.Wpl_z_mm3)) warnings.push('Wpl,z not available from section data.');
+    if (!Number(props.Weff_z_mm3)) warnings.push('Weff,z not available from section data.');
+    if (!Number(props.Avy_mm2)) warnings.push('Avy not available from section data.');
+  }
+  return warnings;
+}
+
+function renderAxisOverview(result = {}) {
+  const host = $('axisOverview');
+  if (!host) return;
+  const s = result.summary || {};
+  const c = result.checks || {};
+  const axis = result.actions?.axis || {};
+  const momentUnit = s.momentUnit || '';
+  const forceUnit = s.forceUnit || '';
+  const majorBendIr = axis.MyIR ?? c.moment?.ir;
+  const majorShearIr = axis.VyIR ?? c.shear?.ir;
+  const minorAvailable = c.minorAxis?.available === true || Number.isFinite(Number(axis.MzRd)) || Number.isFinite(Number(axis.VzRd));
+  const minorWarnings = [
+    ...(axis.warnings || []),
+    ...(c.minorAxis?.warnings || []),
+    ...axisWarningsFrom(result, 'z')
+  ].filter(Boolean);
+  const minorBendIr = axis.MzIR ?? c.minorAxis?.ir;
+  const minorShearIr = axis.VzIR ?? null;
+  const governingAxis = axis.governingAxis || (Number(minorBendIr || 0) > Number(majorBendIr || 0) ? 'z' : 'y');
+  const governingParts = [
+    ['major bending', majorBendIr],
+    ['major shear', majorShearIr],
+    ['minor bending', minorBendIr],
+    ['minor shear', minorShearIr]
+  ].filter(([, value]) => Number.isFinite(Number(value)));
+  const governing = governingParts.reduce((best, item) => Number(item[1]) > Number(best[1]) ? item : best, ['governing', s.governingIR || 0]);
+  host.innerHTML = [
+    `<section class="axis-overview-card" id="majorAxisOverview"><h4>Major-axis overview</h4>
+      ${axisRow('MyEd', axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit))}
+      ${axisRow('VyEd', axisValue(axis.VyEd ?? s.maxShearY ?? s.maxShear, forceUnit))}
+      ${axisRow('MyRd', axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit))}
+      ${axisRow('VyRd', axisValue(axis.VyRd ?? c.shear?.resistance, forceUnit))}
+      ${axisRow('Bending utilisation', axisValue(majorBendIr, '', 3))}
+      ${axisRow('Shear utilisation', axisValue(majorShearIr, '', 3))}
+      ${axisRow('Governing major check', Number(majorShearIr || 0) > Number(majorBendIr || 0) ? 'Shear' : 'Bending')}
+    </section>`,
+    `<section class="axis-overview-card" id="minorAxisOverview"><h4>Minor-axis overview</h4>
+      ${axisRow('Availability', minorAvailable ? 'Available where properties exist' : 'Unavailable / not governing')}
+      ${axisRow('MzEd', axisValue(axis.MzEd ?? s.maxMomentZ, momentUnit))}
+      ${axisRow('VzEd', axisValue(axis.VzEd ?? s.maxShearZ, forceUnit))}
+      ${axisRow('MzRd', axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit))}
+      ${axisRow('VzRd', axisValue(axis.VzRd ?? c.minorAxis?.shearResistance, forceUnit))}
+      ${axisRow('Bending utilisation', axisValue(minorBendIr, '', 3))}
+      ${axisRow('Shear utilisation', axisValue(minorShearIr, '', 3))}
+      ${axisRow('Governing minor check', minorAvailable ? (Number(minorShearIr || 0) > Number(minorBendIr || 0) ? 'Shear' : 'Bending') : 'Not available')}
+      ${minorWarnings.length ? `<div class="axis-warning">${esc([...new Set(minorWarnings)].join(' '))}</div>` : ''}
+    </section>`,
+    `<section class="axis-overview-card" id="combinedAxisOverview"><h4>Combined / governing overview</h4>
+      ${axisRow('Governing axis', String(governingAxis).toLowerCase() === 'z' ? 'z / minor axis' : 'y / major axis')}
+      ${axisRow('Governing utilisation', axisValue(s.governingIR ?? governing[1], '', 3))}
+      ${axisRow('Governing axis check', governing[0])}
+      ${axisRow('Overall status', String(result.status || 'Not available'))}
+      ${axisRow('Combined interaction', axisValue(c.combined?.ir, '', 3))}
+      ${axisRow('Conservative N+My+Mz', c.conservativeInteraction?.enabled ? axisValue(c.conservativeInteraction?.ir, '', 3) : 'Off')}
+    </section>`
+  ].join('');
+}
+
 function renderResult(input, result) {
   const s = result.summary || {};
   const support = result.inputEcho?.supportLabel || input.model.supportType;
@@ -987,6 +1076,7 @@ function renderResult(input, result) {
     $('verdict').innerHTML = statusMarkup(result.status === 'PASS' ? 'PASS' : 'FAIL');
     $('verdict').className = statusClass(result.status);
   }
+  renderAxisOverview(result);
   renderChecks(result);
   renderDetails(result);
   renderTables(result);
@@ -998,7 +1088,7 @@ function renderResult(input, result) {
 
 function renderUnavailable(message) {
   const html = `<div class="result-block bad">${esc(message || 'Calculation service unavailable. Please try again.')}</div>`;
-  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables', 'colbeamAuditOutput'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
+  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables', 'colbeamAuditOutput', 'axisOverview'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
 }
 
 function auditValue(value, fallback = 'Not available') {
@@ -1066,7 +1156,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     generatedAt: result.generatedAt || new Date().toISOString(),
     general: {
       engineProfile: setup.auditProfile || 'current',
-      colbeamComparisonReference: setup.colbeamInteractionMethodLabel || 'Source to be confirmed',
+      referenceComparisonMode: setup.colbeamInteractionMethodLabel || 'Source to be confirmed',
       nationalAnnexLabel: setup.nationalAnnexLabel || input.metadata?.nationalAnnex || 'Not available',
       coefficientSource: setup.coefficientSource || 'Not available',
       engineVersion: 'v34.3.0',
@@ -1084,7 +1174,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     geometrySupport: {
       span: input.model?.span || result.inputEcho?.span,
       supportType: input.model?.supportType || result.inputEcho?.supportType,
-      colbeamSupportMappingLabel: modelAudit.colbeamSupportMappingLabel,
+      referenceSupportMappingLabel: modelAudit.colbeamSupportMappingLabel,
       supportEquivalenceNote: modelAudit.supportEquivalenceNote,
       springLeftPct: input.model?.springLeftPct,
       springRightPct: input.model?.springRightPct,
@@ -1190,12 +1280,14 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     },
     interactionSectionControl: {
       memberBucklingInteractionMethod: setup.memberBucklingInteractionMethod,
-      colbeamInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
+      referenceInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
       class12ElasticDesign: setup.class12ElasticDesign,
       conservativeNMyMz: setup.conservativeNMyMz,
       bendingResistanceBasis: checks.sectionControlSettings?.bendingResistanceBasis || 'Not available',
       MyRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MyRdBasis || 'Not available',
       MzRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MzRdBasis || 'Not available',
+      sectionClass: input.settings?.sectionClass || result.inputEcho?.sectionClass || 'Not available',
+      resistanceBasis: checks.sectionControlSettings?.bendingResistanceBasis?.y || 'Not available',
       conservativeInteractionResult: checks.conservativeInteraction || 'Not available',
       flangeBucklingIgnored: setup.flangeBucklingIgnored,
       webBucklingIgnored: setup.webBucklingIgnored,
@@ -1256,7 +1348,7 @@ function renderColbeamAudit(input, result) {
   host.innerHTML = [
     auditSection('1. General audit info', [
       ['Engine/profile', payload.general.engineProfile],
-      ['COLBEAM comparison mode/reference', payload.general.colbeamComparisonReference],
+      ['Advanced EC3 comparison/reference', payload.general.referenceComparisonMode],
       ['National Annex label', payload.general.nationalAnnexLabel],
       ['Coefficient source', payload.general.coefficientSource],
       ['Engine version', payload.general.engineVersion],
@@ -1942,7 +2034,7 @@ function downloadBlob(blob, filename) {
 
 function colbeamAuditJsonBlob() {
   const payload = window._lastColbeamAuditPayload || (state.last ? buildColbeamAuditPayload(state.last.input, state.last.result) : null);
-  if (!payload) throw new Error('Run a calculation before exporting COLBEAM audit output.');
+  if (!payload) throw new Error('Run a calculation before exporting Advanced EC3 audit output.');
   return new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
 }
 
@@ -2350,11 +2442,11 @@ function bindEvents() {
     const blob = colbeamAuditJsonBlob();
     const text = await blob.text();
     await navigator.clipboard.writeText(text);
-    setSaveStatus('COLBEAM audit JSON copied.', 'ok');
+    setSaveStatus('Advanced EC3 audit JSON copied.', 'ok');
   });
   $('downloadColbeamAuditJson')?.addEventListener('click', () => {
-    downloadBlob(colbeamAuditJsonBlob(), 'colbeam-audit-output.json');
-    setSaveStatus('COLBEAM audit JSON downloaded.', 'ok');
+    downloadBlob(colbeamAuditJsonBlob(), 'advanced-ec3-audit-output.json');
+    setSaveStatus('Advanced EC3 audit JSON downloaded.', 'ok');
   });
   $('projectFileInput')?.addEventListener('change', async (event) => {
     const file = event.target.files?.[0]; if (!file) return;

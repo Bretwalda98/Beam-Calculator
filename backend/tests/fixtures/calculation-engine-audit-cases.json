@@ -43,7 +43,7 @@
       },
       "controlHeadings": ["SECTION CONTROL:", "BUCKLING CONTROL: (incl Lateral Torsional Buckling)", "DEFLECTION CONTROL: (L/300)"]
     },
-    "auditNotes": "Current branch uses Wpl,y for Class 1-2 and applies LTB. Colbeam parity depends on matching Mcr/C-factor assumptions."
+    "auditNotes": "Current branch uses Wpl,y for Class 1-2 and applies LTB. Reference software parity depends on matching Mcr/C-factor assumptions."
   },
   {
     "id": "hea200a_class3_elastic_bending",
@@ -59,7 +59,7 @@
         "ltb": { "ir": 0.88227, "pass": true, "available": true }
       }
     },
-    "auditNotes": "Expected EC3 selection is elastic resistance for Class 3. Needs Colbeam case confirmation for LTB interaction when Wel,y governs."
+    "auditNotes": "Expected EC3 selection is elastic resistance for Class 3. Needs Reference software case confirmation for LTB interaction when Wel,y governs."
   },
   {
     "id": "hea200a_class4_missing_effective_properties",
@@ -92,7 +92,7 @@
         "memberBuckling": { "ir": 2.88089, "pass": false, "available": true }
       }
     },
-    "auditNotes": "High-risk Colbeam mismatch: current kyy/kzy interaction defaults are simplified constants rather than a full Annex A/B style interaction selection."
+    "auditNotes": "High-risk Reference software mismatch: current kyy/kzy interaction defaults are simplified constants rather than a full Annex A/B style interaction selection."
   },
   {
     "id": "hea200a_high_shear_mvy_reduction",
@@ -113,7 +113,7 @@
         "support": { "ir": 2.68165, "pass": false }
       }
     },
-    "auditNotes": "Needs detailed EC3 6.2.8 / Colbeam comparison for reduced plastic modulus and support/web check behaviour."
+    "auditNotes": "Needs detailed EC3 6.2.8 / Reference software comparison for reduced plastic modulus and support/web check behaviour."
   },
   {
     "id": "hea200a_en1990_610ab_moment_selects_610b",
@@ -134,7 +134,7 @@
         "deflection": { "ir": 12.85616, "pass": false }
       }
     },
-    "auditNotes": "Potential Colbeam mismatch: current code chooses the ULS alternative by peak moment, not separately per shear, reaction, support, or governing check."
+    "auditNotes": "Potential Reference software mismatch: current code chooses the ULS alternative by peak moment, not separately per shear, reaction, support, or governing check."
   },
   {
     "id": "pfc150_channel_ltb_unavailable",
@@ -168,12 +168,12 @@
         "ltb": { "available": false, "messageContains": "C3, shear-centre and load-height" }
       }
     },
-    "auditNotes": "Colbeam may include channel LTB using mono-symmetric terms. This is a parity gap, not a UI issue."
+    "auditNotes": "Reference software may include channel LTB using mono-symmetric terms. This is a parity gap, not a UI issue."
   },
   {
     "id": "rhs100_closed_section_ltb_current_branch",
     "title": "RHS 100x100x5 closed-section LTB not-required branch",
-    "auditPurpose": "Capture closed-section LTB handling for later Colbeam/EC3 review.",
+    "auditPurpose": "Capture closed-section LTB handling for later Reference software/EC3 review.",
     "input": {
       "section": { "family": "RHS", "name": "RHS 100x100x5" },
       "material": { "grade": "S355" },
@@ -207,7 +207,7 @@
         }
       }
     },
-    "auditNotes": "Corrected behaviour: closed hollow sections are not checked using the open-section LTB expression. This still needs Colbeam reference confirmation for exact wording/status."
+    "auditNotes": "Corrected behaviour: closed hollow sections are not checked using the open-section LTB expression. This still needs Reference software reference confirmation for exact wording/status."
   },
   {
     "id": "hea200a_en1990_610ab_axial_uses_selected_coefficients",

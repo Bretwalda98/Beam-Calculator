@@ -35,10 +35,10 @@ validateCalculationRequest(baseInput);
 const oldResult = calculateBeam(baseInput);
 assert.strictEqual(oldResult.inputEcho.colbeamAudit.combination.slsDeflectionBasis, 'total');
 assert.strictEqual(oldResult.inputEcho.colbeamAudit.axial.signConvention, 'positive_compression');
-assert.ok(oldResult.calculationPackage.warnings.some((warning) => warning.includes('does not claim COLBEAM EC3 parity')));
+assert.ok(oldResult.calculationPackage.warnings.some((warning) => warning.includes('does not claim reference-software parity')));
 
 const newInput = clone(baseInput);
-newInput.model.colbeamSupportMappingLabel = 'COLBEAM pinned-pinned equivalent';
+newInput.model.colbeamSupportMappingLabel = 'Reference pinned-pinned equivalent';
 newInput.model.supportEquivalenceNote = 'Mapped to simply supported for this audit case.';
 newInput.combination.customULSFactors = { G: 1.2, Q1: 1.4, Q2: 1.1 };
 newInput.combination.customSLSFactors = { G: 1, Q1: 0.8, Q2: 0.6 };
@@ -46,10 +46,10 @@ newInput.combination.perCheckEnvelope = true;
 newInput.combination.slsDeflectionBasis = 'imposed-only';
 newInput.combination.slsIncludeSelfWeight = false;
 newInput.settings.colbeamAudit = {
-  auditProfile: 'colbeam_ec3',
+  auditProfile: 'advanced_ec3',
   materialVariantLabel: 'S355 NL',
   nationalAnnexLabel: 'UK NA',
-  coefficientSource: 'COLBEAM audit setup',
+  coefficientSource: 'Advanced EC3 audit setup',
   autoSectionClassificationStatus: 'pending',
   class4EffectivePropertiesMode: 'manual',
   shearFactorEta: 1,
@@ -66,7 +66,7 @@ newInput.settings.colbeamAudit = {
   lambdaLT0: 0.4,
   beta: 0.75,
   memberBucklingInteractionMethod: 'colbeam',
-  colbeamInteractionMethodLabel: 'COLBEAM EC3 interaction',
+  colbeamInteractionMethodLabel: 'Reference EC3 interaction',
   supportBearingModel: 'colbeam_metadata',
   webBearingModel: 'colbeam_metadata',
   stiffenerModel: 'colbeam_metadata',
@@ -78,11 +78,11 @@ newInput.axial.signConvention = 'positive_compression';
 
 validateCalculationRequest(newInput);
 const newResult = calculateBeam(newInput);
-assert.strictEqual(newResult.inputEcho.colbeamAudit.model.colbeamSupportMappingLabel, 'COLBEAM pinned-pinned equivalent');
+assert.strictEqual(newResult.inputEcho.colbeamAudit.model.colbeamSupportMappingLabel, 'Reference pinned-pinned equivalent');
 assert.strictEqual(newResult.inputEcho.colbeamAudit.combination.customULSFactors.G, 1.2);
 assert.strictEqual(newResult.inputEcho.colbeamAudit.combination.perCheckEnvelope, true);
 assert.strictEqual(newResult.inputEcho.colbeamAudit.combination.slsDeflectionBasis, 'imposed-only');
-assert.strictEqual(newResult.inputEcho.colbeamAudit.settings.auditProfile, 'colbeam_ec3');
+assert.strictEqual(newResult.inputEcho.colbeamAudit.settings.auditProfile, 'advanced_ec3');
 assert.strictEqual(newResult.inputEcho.colbeamAudit.settings.ltbLoadHeight, 'top_flange');
 assert.strictEqual(newResult.inputEcho.colbeamAudit.settings.memberBucklingInteractionMethod, 'colbeam');
 assert.ok(newResult.loads.raw.udls.some((load) => load.direction === 'Y'));
