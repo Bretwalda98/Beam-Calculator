@@ -1159,7 +1159,12 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     ec3Factors: {
       gammaM0: { value: settings.gammaM0, status: 'engine-wired' },
       gammaM1: { value: settings.gammaM1, status: 'engine-wired' },
-      shearFactorEta: { value: setup.shearFactorEta, status: 'metadata-only' }
+      shearFactorEta: {
+        value: checks.sectionControlSettings?.shearFactorEta?.configured ?? setup.shearFactorEta,
+        status: checks.sectionControlSettings?.shearFactorEta ? 'engine-wired where shear area exists' : 'metadata-only',
+        usedMajorAxis: checks.sectionControlSettings?.shearFactorEta?.majorAxisUsed ?? 'Not used',
+        notUsedReason: checks.sectionControlSettings?.shearFactorEta?.majorAxisNotUsedReason || checks.sectionControlSettings?.shearFactorEta?.minorAxisNotUsedReason || ''
+      }
     },
     bucklingLtb: {
       Ky: settings.bucklingKy,
@@ -1188,8 +1193,16 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       colbeamInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
       class12ElasticDesign: setup.class12ElasticDesign,
       conservativeNMyMz: setup.conservativeNMyMz,
+      bendingResistanceBasis: checks.sectionControlSettings?.bendingResistanceBasis || 'Not available',
+      MyRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MyRdBasis || 'Not available',
+      MzRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MzRdBasis || 'Not available',
+      conservativeInteractionResult: checks.conservativeInteraction || 'Not available',
       flangeBucklingIgnored: setup.flangeBucklingIgnored,
       webBucklingIgnored: setup.webBucklingIgnored,
+      flangeBucklingIgnoredEngineWired: checks.sectionControlSettings?.flangeBucklingIgnored?.engineWired === true,
+      webBucklingIgnoredEngineWired: checks.sectionControlSettings?.webBucklingIgnored?.engineWired === true,
+      flangeBucklingWarning: checks.sectionControlSettings?.flangeBucklingIgnored?.warning || '',
+      webBucklingWarning: checks.sectionControlSettings?.webBucklingIgnored?.warning || '',
       modalAnalysisStatus: setup.modalAnalysisStatus,
       memberBucklingEngineValues: checks.memberBuckling || {},
       formula: memberCalc.equation || 'Not available',
@@ -1203,6 +1216,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       VzRd: axis.VzRd ?? checks.minorAxis?.shearResistance ?? 'Not available',
       bucklingResistances: memberCalc.resistance || 'Not available',
       ltbResistance: ltbCalc.resistance || 'Not available',
+      conservativeInteraction: checks.conservativeInteraction || 'Not available',
       utilisationRatios: {
         moment: checks.moment?.ir,
         shear: checks.shear?.ir,
@@ -1211,6 +1225,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
         combined: checks.combined?.ir,
         memberBuckling: checks.memberBuckling?.ir,
         ltb: checks.ltb?.ir,
+        conservativeInteraction: checks.conservativeInteraction?.ir,
         governing: summary.governingIR
       },
       governingAxis: axis.governingAxis || 'y',
@@ -1282,7 +1297,10 @@ function renderColbeamAudit(input, result) {
     auditSection('7. EC3 factors', [
       ['gammaM0', `${payload.ec3Factors.gammaM0.value} (${payload.ec3Factors.gammaM0.status})`],
       ['gammaM1', `${payload.ec3Factors.gammaM1.value} (${payload.ec3Factors.gammaM1.status})`],
-      ['shear factor eta', `${payload.ec3Factors.shearFactorEta.value} (${payload.ec3Factors.shearFactorEta.status})`]
+      ['shear factor eta configured', payload.ec3Factors.shearFactorEta.value],
+      ['shear factor eta used', payload.ec3Factors.shearFactorEta.usedMajorAxis],
+      ['eta status', payload.ec3Factors.shearFactorEta.status],
+      ['eta not used reason', payload.ec3Factors.shearFactorEta.notUsedReason || 'None']
     ]),
     auditSection('8. Buckling and LTB', Object.entries(payload.bucklingLtb).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
     auditSection('9. Interaction and section control', Object.entries(payload.interactionSectionControl).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
@@ -1292,6 +1310,7 @@ function renderColbeamAudit(input, result) {
       ['MzRd', payload.resistancesChecks.MzRd],
       ['VyRd', payload.resistancesChecks.VyRd],
       ['VzRd', payload.resistancesChecks.VzRd],
+      ['Conservative N+My+Mz check', typeof payload.resistancesChecks.conservativeInteraction === 'object' ? JSON.stringify(payload.resistancesChecks.conservativeInteraction) : payload.resistancesChecks.conservativeInteraction],
       ['Buckling resistances', payload.resistancesChecks.bucklingResistances],
       ['LTB resistance', payload.resistancesChecks.ltbResistance],
       ['Utilisation ratios', JSON.stringify(payload.resistancesChecks.utilisationRatios)],

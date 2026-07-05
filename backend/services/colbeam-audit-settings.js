@@ -135,20 +135,27 @@ function normaliseAxialAudit(axial = {}) {
 function normaliseColbeamAuditInput(input = {}) {
   const combinationAudit = normaliseCombinationAudit(input.combination || {});
   const setupAudit = normaliseSetupAudit(input.settings || {}, input.metadata || {});
+  const metadataOnlyWarnings = [
+    'COLBEAM audit fields are recorded and echoed for comparison, but this stage does not claim COLBEAM EC3 parity.',
+    'Per-check EN 1990 6.10a/6.10b envelope remains metadata-only; the current engine still selects a single governing 6.10a/b ULS response by peak moment.',
+    'Custom ULS/SLS factors are engine-wired only when the Custom / COLBEAM audit combination mode is selected.',
+    'Y/Z load directions are engine-wired for separate major/minor action tracking where section data supports it; unsupported axis resistances are reported as unavailable rather than inferred.',
+    'LTB C3, kw, load-height, shear-centre convention, restraint model, moment-gradient method, lambdaLT,0 and beta are metadata-only until the COLBEAM LTB method is implemented.',
+    'Member-buckling interaction method, Class 4 effective-property mode, auto classification status, support bearing, web bearing and stiffener model are metadata-only in this stage.',
+    'Modal analysis status is recorded as not implemented.'
+  ];
+  if (setupAudit.flangeBucklingIgnored) {
+    metadataOnlyWarnings.push('Recorded for COLBEAM comparison; flange buckling ignored toggle is not yet used by calculation engine.');
+  }
+  if (setupAudit.webBucklingIgnored) {
+    metadataOnlyWarnings.push('Recorded for COLBEAM comparison; web buckling ignored toggle is not yet used by calculation engine.');
+  }
   return {
     model: normaliseModelAudit(input.model || {}),
     combination: combinationAudit,
     axial: normaliseAxialAudit(input.axial || {}),
     settings: setupAudit,
-    metadataOnlyWarnings: [
-      'COLBEAM audit fields are recorded and echoed for comparison, but this stage does not claim COLBEAM EC3 parity.',
-      'Per-check EN 1990 6.10a/6.10b envelope remains metadata-only; the current engine still selects a single governing 6.10a/b ULS response by peak moment.',
-      'Custom ULS/SLS factors are engine-wired only when the Custom / COLBEAM audit combination mode is selected.',
-      'Y/Z load directions are engine-wired for separate major/minor action tracking where section data supports it; unsupported axis resistances are reported as unavailable rather than inferred.',
-      'LTB C3, kw, load-height, shear-centre convention, restraint model, moment-gradient method, lambdaLT,0 and beta are metadata-only until the COLBEAM LTB method is implemented.',
-      'Member-buckling interaction method, Class 4 effective-property mode, auto classification status, support bearing, web bearing and stiffener model are metadata-only in this stage.',
-      'Modal analysis status is recorded as not implemented.'
-    ]
+    metadataOnlyWarnings
   };
 }
 

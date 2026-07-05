@@ -306,18 +306,42 @@ function calcI_mm4(section, axis = 'y') {
   return (moduli.Wel || 0) * (depth / 2);
 }
 
-function getWForMRd(section, sectionClass, axis = 'y') {
+function getWForMRd(section, sectionClass, axis = 'y', options = {}) {
   const isZ = String(axis).toLowerCase() === 'z';
   const axisLabel = isZ ? 'z' : 'y';
   const suffix = isZ ? 'z' : 'y';
-  if (sectionClass <= 2) {
-    const moduli = getSectionModuli(section, axis);
-    if (moduli.Wpl) return { W: moduli.Wpl, label: `Wpl,${axisLabel}`, source: moduli.source.Wpl, fallback: false, axis: suffix };
-    return { W: moduli.Wel, label: `Wel,${axisLabel} (fallback - no Wpl in DB)`, source: moduli.source.Wel, fallback: true, missing: `Wpl_${axisLabel}_mm3`, axis: suffix };
-  }
+  const forceElasticClass12 = options.class12ElasticDesign === true;
   const moduli = getSectionModuli(section, axis);
-  if (sectionClass === 3) return { W: moduli.Wel, label: `Wel,${axisLabel}`, source: moduli.source.Wel, fallback: false, axis: suffix };
-  if (moduli.Weff) return { W: moduli.Weff, label: `Weff,${axisLabel}`, source: moduli.source.Weff, fallback: false, axis: suffix };
+  if (sectionClass <= 2) {
+    if (forceElasticClass12) {
+      if (moduli.Wel) {
+        return {
+          W: moduli.Wel,
+          label: `Wel,${axisLabel}`,
+          source: moduli.source.Wel,
+          fallback: false,
+          axis: suffix,
+          resistanceBasis: 'elastic',
+          requestedElastic: true
+        };
+      }
+      return {
+        W: 0,
+        label: `Wel,${axisLabel} missing`,
+        source: null,
+        fallback: false,
+        unavailable: true,
+        missing: `Wel_${axisLabel}_mm3`,
+        axis: suffix,
+        resistanceBasis: 'elastic',
+        requestedElastic: true
+      };
+    }
+    if (moduli.Wpl) return { W: moduli.Wpl, label: `Wpl,${axisLabel}`, source: moduli.source.Wpl, fallback: false, axis: suffix, resistanceBasis: 'plastic' };
+    return { W: moduli.Wel, label: `Wel,${axisLabel} (fallback - no Wpl in DB)`, source: moduli.source.Wel, fallback: true, missing: `Wpl_${axisLabel}_mm3`, axis: suffix, resistanceBasis: 'elastic-fallback' };
+  }
+  if (sectionClass === 3) return { W: moduli.Wel, label: `Wel,${axisLabel}`, source: moduli.source.Wel, fallback: false, axis: suffix, resistanceBasis: 'elastic' };
+  if (moduli.Weff) return { W: moduli.Weff, label: `Weff,${axisLabel}`, source: moduli.source.Weff, fallback: false, axis: suffix, resistanceBasis: 'effective' };
   return {
     W: moduli.Wel || 0,
     label: `Weff,${axisLabel} unavailable (Wel,${axisLabel} shown for reference)`,
@@ -325,7 +349,8 @@ function getWForMRd(section, sectionClass, axis = 'y') {
     fallback: true,
     unavailable: true,
     missing: `Weff_${axisLabel}_mm3`,
-    axis: suffix
+    axis: suffix,
+    resistanceBasis: 'effective-unavailable'
   };
 }
 
@@ -674,13 +699,44 @@ function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sec
   return out;
 }
 
+function getShearArea(section, axis = 'z') {
+  const isY = String(axis).toLowerCase() === 'y';
+  return getSectionPropCandidates(section, isY
+    ? ['Avy_mm2', 'Av_y_mm2', 'Avy', 'Ayv_mm2']
+    : ['Avz_mm2', 'Av_z_mm2', 'Avz', 'Azv_mm2']);
+}
+
+function buildShearResistance(section, material, gammaM0, auditSettings, axis = 'z') {
+  const shearArea = getShearArea(section, axis);
+  const etaConfigured = positiveNumber(auditSettings?.shearFactorEta, 1);
+  const meta = {
+    axis,
+    etaConfigured,
+    etaUsed: null,
+    shearArea: shearArea?.value ?? null,
+    shearAreaSource: shearArea?.key || null,
+    notUsedReason: null,
+    warnings: []
+  };
+  if (!shearArea?.value) {
+    meta.notUsedReason = `Required shear area Av${axis} is missing from the section database.`;
+    meta.warnings.push(meta.notUsedReason);
+    return { Vrd: null, meta };
+  }
+  meta.etaUsed = etaConfigured;
+  const Vrd = (shearArea.value * material.fy * etaConfigured / (Math.sqrt(3) * gammaM0)) / 1e3;
+  return { Vrd, meta };
+}
+
 function buildSectionCheck(section, material, actions, axialEd, settings) {
   const sectionClass = Number(settings.sectionClass || 2);
   const gammaM0 = positiveNumber(settings.gammaM0, 1);
-  const Wsel = getWForMRd(section, sectionClass);
+  const auditSettings = settings.audit?.settings || {};
+  const Wsel = getWForMRd(section, sectionClass, 'y', auditSettings);
   const areas = getSectionAreas(section);
   const MyRd = (Wsel.W * material.fy / gammaM0) / 1e6;
-  const VzRd = (Number(section.Avz_mm2 || 0) * material.fy / (Math.sqrt(3) * gammaM0)) / 1e3;
+  const shear = buildShearResistance(section, material, gammaM0, auditSettings, 'z');
+  const VzRd = shear.Vrd ?? 0;
   const NtRd = ((areas.A || 0) * material.fy / gammaM0) / 1e3;
   const NcRd = (((sectionClass === 4 ? areas.Aeff : areas.A) || 0) * material.fy / gammaM0) / 1e3;
   const MyEd = actions.peakM.val;
@@ -702,6 +758,7 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
     momentRdForCheck,
     momentLabelForCheck: mv.available ? 'Mv,y,Rd' : 'My,Rd',
     mv,
+    shear,
     VzRd,
     NtRd,
     NcRd,
@@ -713,7 +770,7 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
     IR_My: MyRd > 0 ? MyEd / MyRd : Infinity,
     momentAvailable,
     passM: momentAvailable && IR_M < 1,
-    passV: IR_V < 1,
+    passV: Boolean(shear.Vrd) && IR_V < 1,
     passN: IR_N < 1
   };
 }
@@ -731,7 +788,8 @@ function axisUnavailable(axis, reason) {
 function buildMinorAxisCheck(section, material, actions, settings) {
   const sectionClass = Number(settings.sectionClass || 2);
   const gammaM0 = positiveNumber(settings.gammaM0, 1);
-  const Wsel = getWForMRd(section, sectionClass, 'z');
+  const auditSettings = settings.audit?.settings || {};
+  const Wsel = getWForMRd(section, sectionClass, 'z', auditSettings);
   const missing = [];
   if (!(calcI_mm4(section, 'z') > 0)) missing.push('Iz_mm4');
   if (!(Wsel.W > 0) || Wsel.unavailable) missing.push(Wsel.missing || 'Wel_z_mm3 / Wpl_z_mm3');
@@ -739,13 +797,13 @@ function buildMinorAxisCheck(section, material, actions, settings) {
   const MzEd = actions.peakM.val;
   const MzRd = (Wsel.W * material.fy / gammaM0) / 1e6;
   const IR_Mz = MzRd > 0 ? MzEd / MzRd : Infinity;
-  const Avy = getSectionPropCandidates(section, ['Avy_mm2', 'Av_y_mm2', 'Avy', 'Ayv_mm2']);
   const VzEd = actions.peakV.val;
   let VzRd = null;
   let IR_Vz = null;
   const warnings = [];
-  if (Avy?.value) {
-    VzRd = (Avy.value * material.fy / (Math.sqrt(3) * gammaM0)) / 1e3;
+  const shear = buildShearResistance(section, material, gammaM0, auditSettings, 'y');
+  if (shear.Vrd) {
+    VzRd = shear.Vrd;
     IR_Vz = VzRd > 0 ? VzEd / VzRd : Infinity;
   } else {
     warnings.push('Minor-axis shear resistance not available - required shear area Avy is missing from the section database.');
@@ -760,6 +818,7 @@ function buildMinorAxisCheck(section, material, actions, settings) {
     passM: IR_Mz < 1,
     VzEd,
     VzRd,
+    shear,
     IR_Vz,
     passV: IR_Vz === null ? null : IR_Vz < 1,
     warnings,
@@ -782,9 +841,73 @@ function buildAxisActionSummary(unit, majorUls, minorUls, check, minorCheck) {
     MzIR: minorCheck.available ? round(minorCheck.IR_Mz, 5) : null,
     VyIR: round(check.IR_V, 5),
     VzIR: minorCheck.available && minorCheck.IR_Vz !== null ? round(minorCheck.IR_Vz, 5) : null,
+    shearEta: {
+      y: check.shear?.meta || null,
+      z: minorCheck.available ? minorCheck.shear?.meta || null : null
+    },
+    bendingResistanceBasis: {
+      y: check.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective'),
+      z: minorCheck.available ? (minorCheck.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective')) : null,
+      MyRdBasis: check.Wsel?.label || null,
+      MzRdBasis: minorCheck.available ? minorCheck.Wsel?.label || null : null
+    },
     governingAxis: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'z' : 'y',
     minorAxisAvailable: Boolean(minorCheck.available),
     warnings: minorCheck.warnings || []
+  };
+}
+
+function buildConservativeInteractionCheck(check, minorCheck, auditSettings) {
+  const enabled = auditSettings?.conservativeNMyMz === true;
+  const result = {
+    enabled,
+    available: false,
+    ir: null,
+    pass: null,
+    warnings: [],
+    formula: 'NEd / NRd + MyEd / MyRd + MzEd / MzRd'
+  };
+  if (!enabled) return result;
+  const nRd = check.axialEd >= 0 ? check.NcRd : check.NtRd;
+  const required = [
+    ['NEd', Math.abs(check.axialEd)],
+    ['NRd', nRd],
+    ['MyEd', check.MyEd],
+    ['MyRd', check.MyRd],
+    ['MzEd', minorCheck.available ? minorCheck.MzEd : null],
+    ['MzRd', minorCheck.available ? minorCheck.MzRd : null]
+  ];
+  const actionLabels = new Set(['NEd', 'MyEd', 'MzEd']);
+  const missing = required
+    .map(([label, value]) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return label;
+      if (actionLabels.has(label)) return null;
+      return n > 0 ? null : label;
+    })
+    .filter(Boolean);
+  if (missing.length) {
+    result.warnings.push(`Conservative N + My + Mz check not available - required value missing: ${[...new Set(missing)].join(', ')}.`);
+    return result;
+  }
+  const irN = Math.abs(check.axialEd) / nRd;
+  const irMy = check.MyEd / check.MyRd;
+  const irMz = minorCheck.MzEd / minorCheck.MzRd;
+  const ir = irN + irMy + irMz;
+  return {
+    ...result,
+    available: true,
+    ir,
+    pass: ir < 1,
+    components: { irN, irMy, irMz },
+    values: {
+      NEd: Math.abs(check.axialEd),
+      NRd: nRd,
+      MyEd: check.MyEd,
+      MyRd: check.MyRd,
+      MzEd: minorCheck.MzEd,
+      MzRd: minorCheck.MzRd
+    }
   };
 }
 
@@ -1216,6 +1339,7 @@ function buildCalculationPackage(context) {
     deflPeak,
     deflIR,
     supportIR,
+    conservativeInteraction,
     IR_NM,
     passNM,
     passAll,
@@ -1228,7 +1352,11 @@ function buildCalculationPackage(context) {
     ...getSectionReportGeometry(section).warnings,
     ...(audit.metadataOnlyWarnings || []),
     ...((axisActions?.warnings || []).filter((warning) => warning && !String(warning).includes('No explicit Z-direction loads'))),
+    ...(check.shear?.meta?.warnings || []),
     ...(minorCheck?.available === false && rawLoads.udls.concat(rawLoads.points).some((load) => normaliseLoadDirection(load.direction, 'Y') === 'Z') ? (minorCheck.warnings || []) : []),
+    ...(conservativeInteraction?.warnings || []),
+    audit.settings.flangeBucklingIgnored ? 'Recorded for COLBEAM comparison; flange buckling ignored toggle is not yet used by the calculation engine.' : null,
+    audit.settings.webBucklingIgnored ? 'Recorded for COLBEAM comparison; web buckling ignored toggle is not yet used by the calculation engine.' : null,
     check.Wsel.unavailable ? `Required section property missing: ${check.Wsel.missing}. Class ${check.cls} resistance cannot be verified from the current database.` : null,
     check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
     ltb.enabled && !ltb.available && !ltb.notRequired ? `LTB unavailable: ${ltb.message}` : null,
@@ -1293,7 +1421,7 @@ function buildCalculationPackage(context) {
       ],
       derivations: [
         buildDerivation('M_y,Ed', 'Design bending action used in the code-check controls.', 'M_y,Ed = max |M_y(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakM.x, 5)} m`, valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort), 'Server beam analysis'),
-        buildDerivation('W_y', 'Section modulus selected from the section class.', 'Class 1-2: Wpl,y; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
+        buildDerivation('W_y', 'Section modulus selected from the section class and COLBEAM elastic-design toggle.', 'Class 1-2: Wpl,y unless elastic toggle is enabled; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
         buildDerivation('M_y,Rd', 'Major-axis cross-section bending resistance before high-shear reduction.', 'M_y,Rd = W_y f_y / gamma_M0', `${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(check.MyRd), unit.momentShort), 'EN 1993-1-1 6.2.5'),
         ...(check.mv?.trigger ? [
           buildDerivation('rho', 'High shear reduction factor because VEd exceeds 0.5 VRd.', 'rho = (2 VEd / VRd - 1)^2', `(2 x ${round(check.mv.ratio, 5)} - 1)^2`, round(check.mv.rho, 5), 'EN 1993-1-1 6.2.8'),
@@ -1319,24 +1447,26 @@ function buildCalculationPackage(context) {
       codeReference: 'EN 1993-1-1 Clause 6.2.6',
       equation: 'V_pl,Rd = A_v f_y / (sqrt(3) gamma_M0)',
       variables: [
-        { symbol: 'A_v,z', value: valueUnit(section.Avz_mm2 || 0, 'mm^2', 0) },
+        { symbol: 'A_v,z', value: valueUnit(check.shear?.meta?.shearArea || 0, 'mm^2', 0) },
+        { symbol: 'eta', value: check.shear?.meta?.etaUsed || check.shear?.meta?.etaConfigured || 1 },
         { symbol: 'f_y', value: valueUnit(material.fy, 'MPa', 0) },
         { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
         { symbol: 'V_z,Ed', value: valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort) }
       ],
       derivations: [
         buildDerivation('V_z,Ed', 'Design shear action used in the code-check controls.', 'V_z,Ed = max |V_z(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakV.x, 5)} m`, valueUnit(unit.fromBaseForce(check.VzEd), unit.forceShort), 'Server beam analysis'),
-        buildDerivation('A_v,z', 'Published shear area used for vertical shear resistance.', 'A_v,z = tabulated section shear area', valueUnit(section.Avz_mm2 || 0, 'mm^2', 0), valueUnit(section.Avz_mm2 || 0, 'mm^2', 0), 'Section database'),
-        buildDerivation('V_z,Rd', 'Plastic shear resistance.', 'V_z,Rd = A_v,z f_y / (sqrt(3) gamma_M0)', `${round(section.Avz_mm2 || 0, 0)} x ${round(material.fy, 0)} / (sqrt(3) x ${round(settings.gammaM0, 3)}) / 1000`, valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort), 'EN 1993-1-1 6.2.6'),
+        buildDerivation('A_v,z', 'Published shear area used for vertical shear resistance.', 'A_v,z = tabulated section shear area', valueUnit(check.shear?.meta?.shearArea || 0, 'mm^2', 0), valueUnit(check.shear?.meta?.shearArea || 0, 'mm^2', 0), 'Section database'),
+        buildDerivation('eta', 'COLBEAM audit shear factor applied only when a published shear area is available.', 'eta = configured shear factor', check.shear?.meta?.etaUsed || 'Not used', check.shear?.meta?.etaUsed || 'Not used', 'COLBEAM audit setting'),
+        buildDerivation('V_z,Rd', 'Plastic shear resistance.', 'V_z,Rd = eta A_v,z f_y / (sqrt(3) gamma_M0)', `${round(check.shear?.meta?.shearArea || 0, 0)} x ${round(check.shear?.meta?.etaUsed || 1, 3)} x ${round(material.fy, 0)} / (sqrt(3) x ${round(settings.gammaM0, 3)}) / 1000`, valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort), 'EN 1993-1-1 6.2.6'),
         buildDerivation('IR_V', 'Utilisation ratio shown in Section Control.', 'IR_V = V_z,Ed / V_z,Rd', `${round(unit.fromBaseForce(check.VzEd), 5)} / ${round(unit.fromBaseForce(check.VzRd), 5)}`, round(check.IR_V, 5), 'Code-check controls')
       ],
-      substitution: `${round(section.Avz_mm2 || 0, 0)} mm^2 x ${material.fy} N/mm^2 / (sqrt(3) x ${round(settings.gammaM0, 3)})`,
+      substitution: `${round(check.shear?.meta?.shearArea || 0, 0)} mm^2 x eta ${round(check.shear?.meta?.etaUsed || 1, 3)} x ${material.fy} N/mm^2 / (sqrt(3) x ${round(settings.gammaM0, 3)})`,
       unitConversion: 'N converted to kN by dividing by 1,000, then to display units.',
       result: `V_z,Rd = ${valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort)}`,
       resistance: valueUnit(unit.fromBaseForce(check.VzRd), unit.forceShort),
       utilisation: `IR = V_z,Ed / V_z,Rd = ${round(check.IR_V, 5)}`,
       status: passFail(check.passV),
-      warnings: []
+      warnings: check.shear?.meta?.warnings || []
     }),
     buildCalculationObject({
       id: 'axial-resistance',
@@ -1573,6 +1703,7 @@ function buildCodeCheckControls({
   deflAllow_mm,
   deflIR,
   passDefl,
+  conservativeInteraction,
   IR_NM,
   passNM
 }) {
@@ -1619,6 +1750,19 @@ function buildCodeCheckControls({
       passNM,
       ` ${comparisonText(IR_NM)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.1/6.2.9)`
     ));
+  }
+
+  if (conservativeInteraction?.enabled) {
+    if (conservativeInteraction.available) {
+      sectionLines.push(ratioLine(
+        `IR = NEd/NRd+My,Ed/My,Rd+Mz,Ed/Mz,Rd = ${force(conservativeInteraction.values.NEd)}/${force(conservativeInteraction.values.NRd)}+${moment(conservativeInteraction.values.MyEd)}/${moment(conservativeInteraction.values.MyRd)}+${moment(conservativeInteraction.values.MzEd)}/${moment(conservativeInteraction.values.MzRd)} = `,
+        conservativeInteraction.ir,
+        conservativeInteraction.pass,
+        ` ${comparisonText(conservativeInteraction.ir)} (conservative audit check)`
+      ));
+    } else {
+      sectionLines.push(infoLine(conservativeInteraction.warnings?.[0] || 'Conservative N + My + Mz check requested but unavailable.'));
+    }
   }
 
   sectionLines.push(ratioLine(
@@ -1790,6 +1934,7 @@ function calculateBeam(input) {
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
   const minorCheck = hasMinorLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Z-direction loads applied.');
   const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck);
+  const conservativeInteraction = buildConservativeInteractionCheck(check, minorCheck, audit.settings);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
   const endSupport = evaluateEndSupportCheck(check, uls, settings);
   const memberBuckling = evaluateMemberBuckling(section, material, check, L, ltb, settings);
@@ -1814,10 +1959,12 @@ function calculateBeam(input) {
     Math.abs(check.axialEd) > 1e-9 ? IR_NM : 0,
     memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0,
     minorCheck.available ? minorCheck.IR_Mz : 0,
-    minorCheck.available && minorCheck.IR_Vz !== null ? minorCheck.IR_Vz : 0
+    minorCheck.available && minorCheck.IR_Vz !== null ? minorCheck.IR_Vz : 0,
+    conservativeInteraction.enabled && conservativeInteraction.available ? conservativeInteraction.ir : 0
   );
   const passMinor = !minorCheck.available || minorCheck.pass;
-  const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor;
+  const passConservative = !conservativeInteraction.enabled || (conservativeInteraction.available && conservativeInteraction.pass);
+  const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor && passConservative;
   const maxReaction = Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
   const fullSectionProperties = getFullSectionProperties(section, check);
   const calculationPackage = buildCalculationPackage({
@@ -1845,6 +1992,7 @@ function calculateBeam(input) {
     deflPeak,
     deflIR,
     supportIR,
+    conservativeInteraction,
     IR_NM,
     passNM,
     passAll,
@@ -1897,7 +2045,41 @@ function calculateBeam(input) {
         momentResistance: round(unit.fromBaseMoment(minorCheck.MzRd), 5),
         shearResistance: minorCheck.VzRd ? round(unit.fromBaseForce(minorCheck.VzRd), 5) : null,
         warnings: minorCheck.warnings
-      } : { available: false, message: minorCheck.reason, warnings: minorCheck.warnings }
+      } : { available: false, message: minorCheck.reason, warnings: minorCheck.warnings },
+      conservativeInteraction: {
+        enabled: conservativeInteraction.enabled,
+        available: conservativeInteraction.available,
+        ir: conservativeInteraction.available ? round(conservativeInteraction.ir, 5) : null,
+        pass: conservativeInteraction.pass,
+        warnings: conservativeInteraction.warnings,
+        formula: conservativeInteraction.formula,
+        components: conservativeInteraction.available ? {
+          irN: round(conservativeInteraction.components.irN, 5),
+          irMy: round(conservativeInteraction.components.irMy, 5),
+          irMz: round(conservativeInteraction.components.irMz, 5)
+        } : null
+      },
+      sectionControlSettings: {
+        shearFactorEta: {
+          configured: check.shear?.meta?.etaConfigured ?? audit.settings.shearFactorEta,
+          majorAxisUsed: check.shear?.meta?.etaUsed ?? null,
+          majorAxisNotUsedReason: check.shear?.meta?.notUsedReason || null,
+          minorAxisUsed: minorCheck.available ? minorCheck.shear?.meta?.etaUsed ?? null : null,
+          minorAxisNotUsedReason: minorCheck.available ? minorCheck.shear?.meta?.notUsedReason || null : minorCheck.reason || null
+        },
+        class12ElasticDesign: audit.settings.class12ElasticDesign === true,
+        bendingResistanceBasis: axisActions.bendingResistanceBasis,
+        flangeBucklingIgnored: {
+          configured: audit.settings.flangeBucklingIgnored === true,
+          engineWired: false,
+          warning: audit.settings.flangeBucklingIgnored ? 'Recorded for COLBEAM comparison; not yet used by calculation engine.' : null
+        },
+        webBucklingIgnored: {
+          configured: audit.settings.webBucklingIgnored === true,
+          engineWired: false,
+          warning: audit.settings.webBucklingIgnored ? 'Recorded for COLBEAM comparison; not yet used by calculation engine.' : null
+        }
+      }
     },
     codeCheckControls: buildCodeCheckControls({
       unit,
@@ -1910,6 +2092,7 @@ function calculateBeam(input) {
       deflAllow_mm,
       deflIR,
       passDefl,
+      conservativeInteraction,
       IR_NM,
       passNM
     }),

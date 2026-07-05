@@ -463,3 +463,74 @@ The COLBEAM Audit Output now reads backend `actions.axis` and shows:
 - Mixed Y/Z loads produce separate `MyEd/MzEd` and separate utilisation ratios.
 - Missing minor-axis modulus reports a warning and does not fake `MzRd`.
 - Stage 4 custom ULS factors still affect both Y and Z direction analyses in custom mode.
+
+# COLBEAM Safe EC3 Section-Control Wiring - Stage 6
+
+Stage 6 wires only safe EC3 section-control settings that can be applied from existing section properties. It does not change LTB formulas, member buckling Method 1/2, Class 4 effective-property generation, support stiffness behaviour, or per-check EN 1990 6.10a/6.10b envelope selection.
+
+## Engine-Wired In Stage 6
+
+- `shearFactorEta` now scales shear resistance when the relevant published shear area exists.
+  - Major-axis/Y-direction legacy shear uses `Avz`.
+  - Minor-axis/Z-direction shear uses `Avy` only if present.
+  - Missing shear areas are warned and not inferred.
+- `class12ElasticDesign` now switches Class 1-2 bending resistance from plastic to elastic modulus when enabled.
+  - Major axis uses `Wel,y` instead of `Wpl,y`.
+  - Minor axis uses `Wel,z` instead of `Wpl,z`.
+  - Missing `Wel` values are warned and not replaced with `Wpl`.
+- `conservativeNMyMz` now adds an additional optional check:
+  - `NEd / NRd + MyEd / MyRd + MzEd / MzRd`
+  - It does not replace existing checks.
+  - It can govern only when enabled and all required values exist.
+
+## Still Metadata-Only After Stage 6
+
+- Flange buckling ignored toggle.
+- Web buckling ignored toggle.
+- LTB C3, kw, load height, shear-centre/eccentricity convention, restraint model, moment-gradient method, `lambdaLT,0`, and `beta`.
+- Member-buckling interaction method / COLBEAM Method label.
+- Auto section classification status and Class 4 effective-property mode.
+- Support bearing, web bearing, stiffener model, modal analysis status.
+- Per-check/per-effect EN 1990 6.10a/6.10b envelope selection.
+
+## Audit Output Changes
+
+The backend now returns `checks.sectionControlSettings`, and the COLBEAM Audit Output displays:
+
+- Eta configured.
+- Eta used or not-used reason.
+- Class 1-2 elastic toggle state.
+- Bending resistance basis: plastic / elastic / effective.
+- `MyRd` basis (`Wpl,y` or `Wel,y`).
+- `MzRd` basis (`Wpl,z` or `Wel,z`).
+- Conservative N+My+Mz check result when enabled.
+- Flange/web buckling metadata-only warnings when toggled.
+
+## Stage 6 Files Changed
+
+- `backend/services/calculation-service.js`: eta shear resistance, Class 1-2 elastic modulus selection, conservative interaction check, audit response metadata and code-check control line.
+- `backend/services/colbeam-audit-settings.js`: warning list updated so Stage 6-wired settings are no longer described as metadata-only; flange/web ignored toggles remain metadata-only.
+- `public/secure-app.js`: COLBEAM Audit Output now reads backend section-control settings.
+- `backend/tests/colbeam-stage6-section-control.js`: Stage 6 engine regression tests.
+- `package.json`: Stage 6 test included in `check` and `smoke`.
+- `COLBEAM_FEATURE_IMPLEMENTATION_NOTES.md`: Stage 6 documentation.
+
+## Stage 6 Tests Added
+
+- Eta changes shear resistance where `Avz` exists.
+- Missing shear area warns and does not fake resistance.
+- Class 1-2 elastic toggle changes `MyRd` where `Wpl,y` and `Wel,y` differ.
+- Class 1-2 elastic toggle changes `MzRd` where `Wpl,z` and `Wel,z` differ.
+- Missing `Wel` values warn and do not fall back to plastic resistance.
+- Conservative N+My+Mz check can govern when enabled.
+- Conservative check warns when required values are missing.
+- Default old cases remain unchanged.
+- Stage 4 custom factors still work.
+- Stage 5 Y/Z direction mapping still works.
+
+## Example Stage 6 Smoke Values
+
+- Plastic `MyRd`: `13.99055`; elastic `MyRd`: `12.141`.
+- Plastic `MzRd`: `3.24683`; elastic `MzRd`: `2.05261`.
+- Eta-adjusted major-axis shear resistance at `eta = 1.5`: `156.48646`.
+- Conservative interaction example IR: `1.71034`.
