@@ -544,13 +544,13 @@ function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values
   card.dataset.row = String(rowIndex);
   card.dataset.case = loadCase;
   if (userAdded) card.dataset.userAdded = 'true';
-  const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Z';
+  const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Y';
   card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${rowIndex + 1}</span><span>${esc(cfg.title)}</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
     <div class="load-entry-fields">${cfg.fields.map(([field, label]) => {
       const fallback = (field === 'x2') ? L : 0;
       const value = values[field] ?? fallback;
       return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${loadCase}" value="${esc(value)}"></div>`;
-    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option></select></div></div><div class="metadata-note">Recorded for COLBEAM comparison; not yet used by calculation engine.</div><div class="load-validation-note"></div>`;
+    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option></select></div></div><div class="metadata-note">Y uses the current major-axis engine. Z records/uses minor-axis actions where section data supports it.</div><div class="load-validation-note"></div>`;
   card.classList.toggle('is-loadcase-hidden', loadCase !== state.activeLoadCase);
   card.querySelector('.load-remove-btn')?.addEventListener('click', () => {
     card.remove();
@@ -577,7 +577,7 @@ function loadField(card, field, fallback = 0) {
 }
 
 function loadDirection(card) {
-  const value = String(card.querySelector('[data-field="direction"]')?.value || 'Z').toUpperCase();
+  const value = String(card.querySelector('[data-field="direction"]')?.value || 'Y').toUpperCase();
   return value === 'Y' ? 'Y' : 'Z';
 }
 
@@ -1031,7 +1031,7 @@ function uniqueTrapLoads(udls = []) {
     return {
       id: load.reportLabel || load.label,
       case: load.loadCase || 'Not available',
-      direction: load.direction || 'Z',
+      direction: load.direction || 'Y',
       q1: load.q1,
       q2: load.q2,
       x1: load.reportX1 ?? load.x1,
@@ -1052,6 +1052,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
   const rawLoads = result.loads?.raw || { udls: [], points: [] };
   const summary = result.summary || {};
   const checks = result.checks || {};
+  const axis = result.actions?.axis || {};
   const units = result.loads?.units || {};
   const combination = input.combination || {};
   const settings = input.settings || {};
@@ -1095,7 +1096,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     loadsActions: {
       udls: (rawLoads.udls || []).filter((load) => load.sourceType !== 'trap').map((load) => ({
         label: load.label,
-        direction: load.direction || 'Z',
+        direction: load.direction || 'Y',
         x1: load.x1,
         x2: load.x2,
         G: load.G,
@@ -1105,7 +1106,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       })),
       points: (rawLoads.points || []).filter((load) => !Number(load.M || 0)).map((load) => ({
         label: load.label,
-        direction: load.direction || 'Z',
+        direction: load.direction || 'Y',
         x: load.x,
         G: load.G,
         Q1: load.Q1,
@@ -1113,7 +1114,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       })),
       moments: (rawLoads.points || []).filter((load) => Number(load.M || 0)).map((load) => ({
         label: load.label,
-        direction: load.direction || 'Z',
+        direction: load.direction || 'Y',
         x: load.x,
         M: load.M,
         momentCase: load.momentCase
@@ -1123,10 +1124,10 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       selfWeight: input.model?.includeSelfWeight !== false,
       designActions: {
         NEd: checks.axial?.axialEd,
-        MyEd: summary.maxMoment,
-        MzEd: 'Not available',
-        VyEd: 'Not available',
-        VzEd: summary.maxShear,
+        MyEd: axis.MyEd ?? summary.maxMomentY ?? summary.maxMoment,
+        MzEd: axis.MzEd ?? summary.maxMomentZ ?? 'Not available',
+        VyEd: axis.VyEd ?? summary.maxShearY ?? summary.maxShear,
+        VzEd: axis.VzEd ?? summary.maxShearZ ?? 'Not available',
         units: { force: summary.forceUnit || units.force, moment: summary.momentUnit || units.moment }
       }
     },
@@ -1197,9 +1198,9 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     resistancesChecks: {
       NRd: axialCalc.resistance || 'Not available',
       MyRd: checks.moment?.resistance,
-      MzRd: 'Not available',
-      VyRd: 'Not available',
-      VzRd: checks.shear?.resistance,
+      MzRd: axis.MzRd ?? checks.minorAxis?.momentResistance ?? 'Not available',
+      VyRd: axis.VyRd ?? checks.shear?.resistance,
+      VzRd: axis.VzRd ?? checks.minorAxis?.shearResistance ?? 'Not available',
       bucklingResistances: memberCalc.resistance || 'Not available',
       ltbResistance: ltbCalc.resistance || 'Not available',
       utilisationRatios: {
@@ -1212,6 +1213,8 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
         ltb: checks.ltb?.ir,
         governing: summary.governingIR
       },
+      governingAxis: axis.governingAxis || 'y',
+      unsupportedAxisWarnings: axis.warnings || checks.minorAxis?.warnings || [],
       governingCheck: result.status,
       formulas: (result.calculationPackage?.calculations || []).map((calculation) => ({
         id: calculation.id,
@@ -1292,6 +1295,8 @@ function renderColbeamAudit(input, result) {
       ['Buckling resistances', payload.resistancesChecks.bucklingResistances],
       ['LTB resistance', payload.resistancesChecks.ltbResistance],
       ['Utilisation ratios', JSON.stringify(payload.resistancesChecks.utilisationRatios)],
+      ['Governing axis', payload.resistancesChecks.governingAxis],
+      ['Unsupported axis warnings', (payload.resistancesChecks.unsupportedAxisWarnings || []).join(' | ') || 'None'],
       ['Governing check/status', payload.resistancesChecks.governingCheck],
       ['Moment formula', payload.resistancesChecks.momentFormula],
       ['Shear formula', payload.resistancesChecks.shearFormula],
@@ -2050,23 +2055,23 @@ function applyLoads(loads = {}) {
     if (load.sourceType === 'trap' && load.segmentIndex && load.segmentIndex !== 1) return;
     if (load.sourceType === 'trap') {
       const lc = load.loadCase || 'G';
-      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Z' });
+      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Y' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const q = Number(load[lc] || 0);
-      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Z' });
+      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Y' });
     });
   });
   (loads.points || []).forEach((load) => {
     if (Number(load.M || 0)) {
       const lc = load.momentCase || 'G';
-      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Z' });
+      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Y' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const P = Number(load[lc] || 0);
-      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Z' });
+      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Y' });
     });
   });
   Object.entries(rows).forEach(([type, byCase]) => {

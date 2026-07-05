@@ -395,3 +395,71 @@ The COLBEAM Audit Output now shows:
 - Total SLS deflection: `17.88004`.
 - Variable-only SLS deflection: `12.62382`.
 - Imposed-only SLS deflection: `6.52956`.
+
+# COLBEAM Y/Z Load Direction Wiring - Stage 5
+
+Stage 5 wires only safe Y/Z action mapping. It does not change LTB formulas, member buckling Method 1/2, Class 4 effective properties, support stiffness behaviour, or per-check EN 1990 6.10a/6.10b envelope selection.
+
+## Engine-Wired In Stage 5
+
+- Missing/legacy load direction defaults to `Y` to preserve existing calculations and old saved projects.
+- Explicit `Y` loads are analysed through the existing major-axis beam engine.
+- Explicit `Z` loads are separated into a minor-axis beam analysis when `Iz` is available.
+- Mixed `Y` and `Z` loads keep separate action outputs:
+  - `MyEd`
+  - `MzEd`
+  - `VyEd`
+  - `VzEd`
+- The backend reports separate axis resistances and utilisation values in `actions.axis`.
+- Minor-axis bending check is available only when the section row has usable z-axis modulus data.
+
+## Section Properties Used
+
+Major-axis:
+- `Iy_mm4`
+- `Wel_y_mm3`
+- `Wpl_y_mm3`
+- `Weff_y_mm3` for Class 4 if available
+- Current published `Avz_mm2` is retained as the legacy major-axis shear resistance input.
+
+Minor-axis:
+- `Iz_mm4`
+- `Wel_z_mm3`
+- `Wpl_z_mm3`
+- `Weff_z_mm3` for Class 4 if available
+- `Avy_mm2` / equivalent aliases for minor-axis shear if ever present.
+
+## Unsupported Cases
+
+- Minor-axis shear resistance is not inferred from `Avz_mm2`. If `Avy` is missing, `VzRd` is reported as unavailable with a warning.
+- Sections without `Wel_z/Wpl_z/Weff_z` do not get fake minor-axis bending resistance. The API reports the missing property and leaves `MzRd` unavailable.
+- Existing code-check controls remain focused on the legacy major-axis control text. Minor-axis values are exposed in the COLBEAM Audit Output and JSON response for comparison.
+
+## Audit Output Changes
+
+The COLBEAM Audit Output now reads backend `actions.axis` and shows:
+
+- Raw load direction records.
+- `MyEd`, `MzEd`, `VyEd`, `VzEd`.
+- `MyRd`, `MzRd`, `VyRd`, `VzRd`.
+- Governing axis.
+- Unsupported axis warnings.
+
+## Stage 5 Files Changed
+
+- `backend/services/calculation-service.js`: axis-aware section property lookup, direction-filtered load analysis, minor-axis bending check, axis action summary and warnings.
+- `backend/services/colbeam-audit-settings.js`: warning text updated because Y/Z action tracking is now partly engine-wired.
+- `public/secure-app.js`: load-direction default changed to `Y`; audit output now displays backend axis results.
+- `public/app.js`: simplified frontend request path now defaults loads to `Y`.
+- `backend/tests/colbeam-stage5-load-directions.js`: tests Y, Z, mixed directions, missing z-modulus behaviour and Stage 4 custom factors with directions.
+- `package.json`: Stage 5 test included in `check` and `smoke`.
+- `COLBEAM_FEATURE_IMPLEMENTATION_NOTES.md`: Stage 5 documentation.
+
+## Stage 5 Tests Added
+
+- Y-direction UDL produces major-axis `MyEd`/`VyEd`.
+- Missing old direction defaults to Y and preserves old major-axis output.
+- Z-direction UDL produces minor-axis `MzEd` and `MzRd` where `Iz/Wz` exist.
+- Mixed Y/Z loads produce separate `MyEd/MzEd` and separate utilisation ratios.
+- Missing minor-axis modulus reports a warning and does not fake `MzRd`.
+- Stage 4 custom ULS factors still affect both Y and Z direction analyses in custom mode.

@@ -156,8 +156,8 @@ function readForm() {
     },
     axial: { G: Number(form.get('axialG') || 0), Q1: 0, Q2: 0, signConvention: 'positive_compression' },
     loads: {
-      udls: [{ label: 'Full-span UDL', direction: 'Z', x1: 0, x2: span, G: Number(form.get('udlG') || 0), Q1: Number(form.get('udlQ1') || 0), Q2: 0 }],
-      points: pointLoad > 0 ? [{ label: 'Point Q1', direction: 'Z', x: pointX, G: 0, Q1: pointLoad, Q2: 0 }] : []
+      udls: [{ label: 'Full-span UDL', direction: 'Y', x1: 0, x2: span, G: Number(form.get('udlG') || 0), Q1: Number(form.get('udlQ1') || 0), Q2: 0 }],
+      points: pointLoad > 0 ? [{ label: 'Point Q1', direction: 'Y', x: pointX, G: 0, Q1: pointLoad, Q2: 0 }] : []
     }
   };
 }

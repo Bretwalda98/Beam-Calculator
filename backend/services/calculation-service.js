@@ -175,10 +175,17 @@ function getSectionPropCandidates(section, keys, allowZero = false) {
   return null;
 }
 
-function getSectionModuli(section) {
-  const wel = getSectionPropCandidates(section, ['Wel_y_mm3', 'Wely_mm3', 'Wel_mm3_y', 'Wel_y']);
-  const wpl = getSectionPropCandidates(section, ['Wpl_y_mm3', 'Wply_mm3', 'Wpl_mm3_y', 'Wpl_y']);
-  const weff = getSectionPropCandidates(section, ['Weff_y_mm3', 'Weffy_mm3', 'Weff_mm3_y', 'Weff_y']);
+function getSectionModuli(section, axis = 'y') {
+  const isZ = String(axis).toLowerCase() === 'z';
+  const wel = getSectionPropCandidates(section, isZ
+    ? ['Wel_z_mm3', 'Welz_mm3', 'Wel_mm3_z', 'Wel_z']
+    : ['Wel_y_mm3', 'Wely_mm3', 'Wel_mm3_y', 'Wel_y']);
+  const wpl = getSectionPropCandidates(section, isZ
+    ? ['Wpl_z_mm3', 'Wplz_mm3', 'Wpl_mm3_z', 'Wpl_z']
+    : ['Wpl_y_mm3', 'Wply_mm3', 'Wpl_mm3_y', 'Wpl_y']);
+  const weff = getSectionPropCandidates(section, isZ
+    ? ['Weff_z_mm3', 'Weffz_mm3', 'Weff_mm3_z', 'Weff_z']
+    : ['Weff_y_mm3', 'Weffy_mm3', 'Weff_mm3_y', 'Weff_y']);
   return {
     Wel: wel?.value ?? null,
     Wpl: wpl?.value ?? null,
@@ -288,28 +295,37 @@ function getSectionLTBProps(section) {
   return { It: 0, Iz: 0, Iw: 0, estimated: true, status: 'missing', verified: false };
 }
 
-function calcI_mm4(section) {
-  const I = getSectionPropCandidates(section, ['Iy_mm4', 'Iyy_mm4', 'I_y_mm4']);
+function calcI_mm4(section, axis = 'y') {
+  const isZ = String(axis).toLowerCase() === 'z';
+  const I = getSectionPropCandidates(section, isZ
+    ? ['Iz_mm4', 'Izz_mm4', 'I_z_mm4', 'Iminor_mm4', 'Iz']
+    : ['Iy_mm4', 'Iyy_mm4', 'I_y_mm4']);
   if (I) return I.value;
-  const moduli = getSectionModuli(section);
-  return (moduli.Wel || 0) * ((section.h_mm || 0) / 2);
+  const moduli = getSectionModuli(section, axis);
+  const depth = isZ ? (section.b_mm || section.width_mm || 0) : (section.h_mm || section.d_mm || 0);
+  return (moduli.Wel || 0) * (depth / 2);
 }
 
-function getWForMRd(section, sectionClass) {
-  const moduli = getSectionModuli(section);
+function getWForMRd(section, sectionClass, axis = 'y') {
+  const isZ = String(axis).toLowerCase() === 'z';
+  const axisLabel = isZ ? 'z' : 'y';
+  const suffix = isZ ? 'z' : 'y';
   if (sectionClass <= 2) {
-    if (moduli.Wpl) return { W: moduli.Wpl, label: 'Wpl,y', source: moduli.source.Wpl, fallback: false };
-    return { W: moduli.Wel, label: 'Wel,y (fallback - no Wpl in DB)', source: moduli.source.Wel, fallback: true, missing: 'Wpl_y_mm3' };
+    const moduli = getSectionModuli(section, axis);
+    if (moduli.Wpl) return { W: moduli.Wpl, label: `Wpl,${axisLabel}`, source: moduli.source.Wpl, fallback: false, axis: suffix };
+    return { W: moduli.Wel, label: `Wel,${axisLabel} (fallback - no Wpl in DB)`, source: moduli.source.Wel, fallback: true, missing: `Wpl_${axisLabel}_mm3`, axis: suffix };
   }
-  if (sectionClass === 3) return { W: moduli.Wel, label: 'Wel,y', source: moduli.source.Wel, fallback: false };
-  if (moduli.Weff) return { W: moduli.Weff, label: 'Weff,y', source: moduli.source.Weff, fallback: false };
+  const moduli = getSectionModuli(section, axis);
+  if (sectionClass === 3) return { W: moduli.Wel, label: `Wel,${axisLabel}`, source: moduli.source.Wel, fallback: false, axis: suffix };
+  if (moduli.Weff) return { W: moduli.Weff, label: `Weff,${axisLabel}`, source: moduli.source.Weff, fallback: false, axis: suffix };
   return {
     W: moduli.Wel || 0,
-    label: 'Weff,y unavailable (Wel,y shown for reference)',
+    label: `Weff,${axisLabel} unavailable (Wel,${axisLabel} shown for reference)`,
     source: moduli.source.Wel,
     fallback: true,
     unavailable: true,
-    missing: 'Weff_y_mm3'
+    missing: `Weff_${axisLabel}_mm3`,
+    axis: suffix
   };
 }
 
@@ -608,6 +624,21 @@ function solveBeam({ L, supportType, E_MPa, I_mm4, loads, springs }) {
   };
 }
 
+function emptyBeamResult(L) {
+  const xs = Array.from({ length: 481 }, (_, i) => L * i / 480);
+  const zeros = xs.map(() => 0);
+  return {
+    xs,
+    V: zeros.slice(),
+    M: zeros.slice(),
+    defl: { xs, Y: zeros.slice(), peakY: { val: 0, x: 0, xL: 0, signed: 0 } },
+    reactions: { leftVertical: 0, rightVertical: 0, leftMoment: 0, rightMoment: 0, supportActions: [{ x: 0, V: 0, M: 0 }, { x: L, V: 0, M: 0 }] },
+    totals: { Ptot: 0, Qtot: 0 },
+    peakV: { val: 0, x: 0, xL: 0, signed: 0 },
+    peakM: { val: 0, x: 0, xL: 0, signed: 0 }
+  };
+}
+
 function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sectionClass) {
   const ratio = VzRd > 0 ? VzEd / VzRd : Infinity;
   const trigger = ratio > 0.5 + 1e-9;
@@ -684,6 +715,76 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
     passM: momentAvailable && IR_M < 1,
     passV: IR_V < 1,
     passN: IR_N < 1
+  };
+}
+
+function axisUnavailable(axis, reason) {
+  return {
+    axis,
+    available: false,
+    pass: null,
+    warnings: [reason],
+    reason
+  };
+}
+
+function buildMinorAxisCheck(section, material, actions, settings) {
+  const sectionClass = Number(settings.sectionClass || 2);
+  const gammaM0 = positiveNumber(settings.gammaM0, 1);
+  const Wsel = getWForMRd(section, sectionClass, 'z');
+  const missing = [];
+  if (!(calcI_mm4(section, 'z') > 0)) missing.push('Iz_mm4');
+  if (!(Wsel.W > 0) || Wsel.unavailable) missing.push(Wsel.missing || 'Wel_z_mm3 / Wpl_z_mm3');
+  if (missing.length) return axisUnavailable('z', `Minor-axis bending check not available - required section property missing: ${[...new Set(missing)].join(', ')}.`);
+  const MzEd = actions.peakM.val;
+  const MzRd = (Wsel.W * material.fy / gammaM0) / 1e6;
+  const IR_Mz = MzRd > 0 ? MzEd / MzRd : Infinity;
+  const Avy = getSectionPropCandidates(section, ['Avy_mm2', 'Av_y_mm2', 'Avy', 'Ayv_mm2']);
+  const VzEd = actions.peakV.val;
+  let VzRd = null;
+  let IR_Vz = null;
+  const warnings = [];
+  if (Avy?.value) {
+    VzRd = (Avy.value * material.fy / (Math.sqrt(3) * gammaM0)) / 1e3;
+    IR_Vz = VzRd > 0 ? VzEd / VzRd : Infinity;
+  } else {
+    warnings.push('Minor-axis shear resistance not available - required shear area Avy is missing from the section database.');
+  }
+  return {
+    axis: 'z',
+    available: true,
+    Wsel,
+    MzEd,
+    MzRd,
+    IR_Mz,
+    passM: IR_Mz < 1,
+    VzEd,
+    VzRd,
+    IR_Vz,
+    passV: IR_Vz === null ? null : IR_Vz < 1,
+    warnings,
+    pass: IR_Mz < 1 && (IR_Vz === null || IR_Vz < 1)
+  };
+}
+
+function buildAxisActionSummary(unit, majorUls, minorUls, check, minorCheck) {
+  const currentVyRd = check.VzRd;
+  return {
+    MyEd: round(unit.fromBaseMoment(majorUls.peakM.val), 5),
+    MzEd: round(unit.fromBaseMoment(minorUls.peakM.val), 5),
+    VyEd: round(unit.fromBaseForce(majorUls.peakV.val), 5),
+    VzEd: round(unit.fromBaseForce(minorUls.peakV.val), 5),
+    MyRd: round(unit.fromBaseMoment(check.MyRd), 5),
+    MzRd: minorCheck.available ? round(unit.fromBaseMoment(minorCheck.MzRd), 5) : null,
+    VyRd: round(unit.fromBaseForce(currentVyRd), 5),
+    VzRd: minorCheck.available && minorCheck.VzRd ? round(unit.fromBaseForce(minorCheck.VzRd), 5) : null,
+    MyIR: round(check.IR_My, 5),
+    MzIR: minorCheck.available ? round(minorCheck.IR_Mz, 5) : null,
+    VyIR: round(check.IR_V, 5),
+    VzIR: minorCheck.available && minorCheck.IR_Vz !== null ? round(minorCheck.IR_Vz, 5) : null,
+    governingAxis: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'z' : 'y',
+    minorAxisAvailable: Boolean(minorCheck.available),
+    warnings: minorCheck.warnings || []
   };
 }
 
@@ -877,7 +978,7 @@ function normaliseLoads(input, section, L, unit) {
       label: String(load.label || `UDL ${index + 1}`).slice(0, 80),
       x1,
       x2,
-      direction: normaliseLoadDirection(load.direction, 'Z'),
+      direction: normaliseLoadDirection(load.direction, 'Y'),
       sourceType: load.sourceType || 'uniform',
       reportLabel: load.reportLabel,
       q1: finiteNumber(load.q1, 0),
@@ -900,15 +1001,25 @@ function normaliseLoads(input, section, L, unit) {
       Q1: finiteNumber(load.Q1, 0),
       Q2: finiteNumber(load.Q2, 0),
       M,
-      direction: normaliseLoadDirection(load.direction, 'Z'),
+      direction: normaliseLoadDirection(load.direction, 'Y'),
       momentCase: ['G', 'Q1', 'Q2'].includes(load.momentCase) ? load.momentCase : 'G'
     });
   });
   if (model.includeSelfWeight !== false && section.mass_kg_m > 0) {
     const sw = unit.key === 'tonne' ? (section.mass_kg_m / 1000) : (section.mass_kg_m * g / 1000);
-    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, direction: 'Z', G: sw, Q1: 0, Q2: 0, isSelf: true });
+    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, direction: 'Y', G: sw, Q1: 0, Q2: 0, isSelf: true });
   }
   return raw;
+}
+
+function filterLoadsByDirection(raw, direction) {
+  const target = normaliseLoadDirection(direction, 'Y');
+  return {
+    points: raw.points.filter((load) => normaliseLoadDirection(load.direction, 'Y') === target),
+    udls: raw.udls.filter((load) => normaliseLoadDirection(load.direction, 'Y') === target),
+    supportXs: raw.supportXs.slice(),
+    mode: raw.mode
+  };
 }
 
 function applyCombo(raw, coeff, unit, options = {}) {
@@ -1096,6 +1207,8 @@ function buildCalculationPackage(context) {
     sls,
     slsCombo,
     check,
+    minorCheck,
+    axisActions,
     ltb,
     endSupport,
     memberBuckling,
@@ -1114,6 +1227,8 @@ function buildCalculationPackage(context) {
   const warnings = [
     ...getSectionReportGeometry(section).warnings,
     ...(audit.metadataOnlyWarnings || []),
+    ...((axisActions?.warnings || []).filter((warning) => warning && !String(warning).includes('No explicit Z-direction loads'))),
+    ...(minorCheck?.available === false && rawLoads.udls.concat(rawLoads.points).some((load) => normaliseLoadDirection(load.direction, 'Y') === 'Z') ? (minorCheck.warnings || []) : []),
     check.Wsel.unavailable ? `Required section property missing: ${check.Wsel.missing}. Class ${check.cls} resistance cannot be verified from the current database.` : null,
     check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
     ltb.enabled && !ltb.available && !ltb.notRequired ? `LTB unavailable: ${ltb.message}` : null,
@@ -1622,24 +1737,37 @@ function calculateBeam(input) {
   }
   const lc = getLC(input.combination || {});
   const rawLoads = normaliseLoads(input, section, L, unit);
+  const majorRawLoads = filterLoadsByDirection(rawLoads, 'Y');
+  const minorRawLoads = filterLoadsByDirection(rawLoads, 'Z');
+  const hasMinorLoads = minorRawLoads.points.length > 0 || minorRawLoads.udls.length > 0;
   const springs = {
     left: finiteNumber(input.model?.springLeftPct, 100),
     right: finiteNumber(input.model?.springRightPct, 100)
   };
-  const evalCombo = (coeff, options = {}) => solveBeam({
+  const evalCombo = (coeff, options = {}, axis = 'y') => {
+    const axisI = calcI_mm4(section, axis);
+    if (!(axisI > 0)) {
+      const err = new Error(`Selected section does not have a usable ${axis === 'z' ? 'minor' : 'major'}-axis inertia.`);
+      err.statusCode = 400;
+      throw err;
+    }
+    const axisRawLoads = axis === 'z' ? minorRawLoads : majorRawLoads;
+    return solveBeam({
     L,
     supportType,
     E_MPa: material.E,
-    I_mm4: I,
-    loads: applyCombo(rawLoads, coeff, unit, options),
+    I_mm4: axisI,
+    loads: applyCombo(axisRawLoads, coeff, unit, options),
     springs
-  });
+    });
+  };
   let uls;
+  let minorUls;
   let ulsNote;
   let ulsCoeff;
   if (lc.key === 'en1990_610ab') {
-    const a = evalCombo(lc.uls);
-    const b = evalCombo(lc.uls.alt);
+    const a = evalCombo(lc.uls, {}, 'y');
+    const b = evalCombo(lc.uls.alt, {}, 'y');
     if ((b.peakM?.val || 0) > (a.peakM?.val || 0)) {
       uls = b;
       ulsNote = lc.uls.alt.note;
@@ -1650,15 +1778,18 @@ function calculateBeam(input) {
       ulsCoeff = lc.uls;
     }
   } else {
-    uls = evalCombo(lc.uls);
+    uls = evalCombo(lc.uls, {}, 'y');
     ulsNote = lc.uls.note;
     ulsCoeff = lc.uls;
   }
+  minorUls = hasMinorLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
   const slsCombo = buildSlsCombination(lc, audit);
-  const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight });
+  const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
   const axialRaw = input.axial || {};
   const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
+  const minorCheck = hasMinorLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Z-direction loads applied.');
+  const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
   const endSupport = evaluateEndSupportCheck(check, uls, settings);
   const memberBuckling = evaluateMemberBuckling(section, material, check, L, ltb, settings);
@@ -1681,9 +1812,12 @@ function calculateBeam(input) {
     supportIR,
     ltb.enabled && ltb.available ? ltb.IR_LT : 0,
     Math.abs(check.axialEd) > 1e-9 ? IR_NM : 0,
-    memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0
+    memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0,
+    minorCheck.available ? minorCheck.IR_Mz : 0,
+    minorCheck.available && minorCheck.IR_Vz !== null ? minorCheck.IR_Vz : 0
   );
-  const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling;
+  const passMinor = !minorCheck.available || minorCheck.pass;
+  const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor;
   const maxReaction = Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
   const fullSectionProperties = getFullSectionProperties(section, check);
   const calculationPackage = buildCalculationPackage({
@@ -1702,6 +1836,8 @@ function calculateBeam(input) {
     sls,
     slsCombo,
     check,
+    minorCheck,
+    axisActions,
     ltb,
     endSupport,
     memberBuckling,
@@ -1733,8 +1869,12 @@ function calculateBeam(input) {
     summary: {
       passAll,
       governingIR: round(governingIR, 5),
-      maxMoment: round(unit.fromBaseMoment(uls.peakM.val), 5),
-      maxShear: round(unit.fromBaseForce(uls.peakV.val), 5),
+      maxMoment: round(Math.max(Math.abs(axisActions.MyEd || 0), Math.abs(axisActions.MzEd || 0)), 5),
+      maxMomentY: round(axisActions.MyEd, 5),
+      maxMomentZ: round(axisActions.MzEd, 5),
+      maxShear: round(Math.max(Math.abs(axisActions.VyEd || 0), Math.abs(axisActions.VzEd || 0)), 5),
+      maxShearY: round(axisActions.VyEd, 5),
+      maxShearZ: round(axisActions.VzEd, 5),
       maxReaction: round(unit.fromBaseForce(maxReaction), 5),
       deflection: round(deflPeak, 5),
       deflectionLimit: round(deflAllow_mm, 5),
@@ -1749,7 +1889,15 @@ function calculateBeam(input) {
       ltb: ltb.enabled ? { ir: ltb.available ? round(ltb.IR_LT, 5) : null, pass: Boolean(ltb.pass), available: Boolean(ltb.available), notRequired: Boolean(ltb.notRequired), message: ltb.message || null } : { enabled: false },
       support: { ir: round(supportIR, 5), pass: passSupport },
       combined: { ir: round(IR_NM, 5), pass: passNM },
-      memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false }
+      memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false },
+      minorAxis: minorCheck.available ? {
+        ir: round(minorCheck.IR_Mz, 5),
+        pass: Boolean(minorCheck.pass),
+        available: true,
+        momentResistance: round(unit.fromBaseMoment(minorCheck.MzRd), 5),
+        shearResistance: minorCheck.VzRd ? round(unit.fromBaseForce(minorCheck.VzRd), 5) : null,
+        warnings: minorCheck.warnings
+      } : { available: false, message: minorCheck.reason, warnings: minorCheck.warnings }
     },
     codeCheckControls: buildCodeCheckControls({
       unit,
@@ -1792,6 +1940,7 @@ function calculateBeam(input) {
     actions: {
       ulsNote,
       slsNote: lc.sls.note,
+      axis: axisActions,
       reactions: (uls.reactions.supportActions || []).map((r, index) => ({ support: index + 1, x: round(r.x, 5), vertical: round(unit.fromBaseForce(r.V || 0), 5), moment: round(unit.fromBaseMoment(r.M || 0), 5) })),
       peakMoment: { value: round(unit.fromBaseMoment(uls.peakM.val), 5), x: round(uls.peakM.x, 5), signed: round(unit.fromBaseMoment(uls.peakM.signed), 5) },
       peakShear: { value: round(unit.fromBaseForce(uls.peakV.val), 5), x: round(uls.peakV.x, 5), signed: round(unit.fromBaseForce(uls.peakV.signed), 5) }
