@@ -66,12 +66,18 @@ outputControlIds.forEach((id) => {
 
 assert.ok(secureApp.includes('data-field="direction"'), 'Load cards should render direction selectors.');
 assert.ok(secureApp.includes('function loadDirection'), 'secure-app.js should collect load direction selectors.');
-assert.ok(indexHtml.includes('Recorded for COLBEAM comparison; not yet used by calculation engine.'), 'Metadata-only warning should be visible.');
-assert.ok(indexHtml.includes('Current engine uses simplified interaction; COLBEAM Method 1/2 recorded for comparison.'), 'Simplified interaction warning should be visible.');
-assert.ok(indexHtml.includes('COLBEAM Audit Output'), 'COLBEAM audit output panel should be visible.');
-assert.ok(secureApp.includes('function buildColbeamAuditPayload'), 'secure-app.js should build COLBEAM audit payload.');
-assert.ok(secureApp.includes('function renderColbeamAudit'), 'secure-app.js should render COLBEAM audit output.');
-assert.ok(secureApp.includes('colbeam-audit-output.json'), 'secure-app.js should support audit JSON download.');
+assert.ok(indexHtml.includes('Recorded for reference comparison; not yet used by calculation engine.'), 'Metadata-only warning should be visible.');
+assert.ok(indexHtml.includes('Current engine uses simplified interaction; reference Method 1/2 recorded for comparison.'), 'Simplified interaction warning should be visible.');
+assert.ok(indexHtml.includes('Advanced EC3 Audit Output'), 'Advanced EC3 audit output panel should be visible.');
+assert.ok(indexHtml.includes('id="axisOverview"'), 'index.html should include the axis overview mount point.');
+assert.ok(indexHtml.includes('Force elastic resistance for Class 1-2 sections'), 'Class 1-2 forced-elastic wording should be visible.');
+assert.ok(indexHtml.includes('Class 1 has plastic hinge capacity with rotation capacity'), 'EC3 class help text should use Eurocode-consistent wording.');
+assert.ok(secureApp.includes('function buildColbeamAuditPayload'), 'secure-app.js should build audit payload.');
+assert.ok(secureApp.includes('function renderColbeamAudit'), 'secure-app.js should render audit output.');
+assert.ok(secureApp.includes('function renderAxisOverview'), 'secure-app.js should render major/minor/combined axis overview.');
+assert.ok(secureApp.includes('minorAxisOverview'), 'secure-app.js should render the minor-axis overview card.');
+assert.ok(secureApp.includes('combinedAxisOverview'), 'secure-app.js should render the combined axis overview card.');
+assert.ok(secureApp.includes('advanced-ec3-audit-output.json'), 'secure-app.js should support audit JSON download.');
 
 console.log('colbeam ui controls ok', {
   controls: requiredControlIds.length
