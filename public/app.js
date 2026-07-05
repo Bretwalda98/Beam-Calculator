@@ -72,6 +72,8 @@ function readForm() {
   const pointLoad = Number(form.get('pointQ1') || 0);
   const pointX = Number(form.get('pointX') || 0);
   const reportDate = form.get('date') || new Date().toISOString().slice(0, 10);
+  const includeSelfWeight = form.get('includeSelfWeight') === 'on';
+  const nationalAnnex = form.get('nationalAnnex') || 'UK National Annex / project default';
   return {
     metadata: {
       projectName: form.get('projectName'),
@@ -88,7 +90,7 @@ function readForm() {
       approvedBy: form.get('approvedBy'),
       date: reportDate,
       designCode: form.get('designCode') || 'EN 1993-1-1',
-      nationalAnnex: form.get('nationalAnnex') || 'UK National Annex / project default',
+      nationalAnnex,
       notes: form.get('notes')
     },
     section: { family: form.get('sectionFamily'), name: form.get('sectionName') },
@@ -97,9 +99,20 @@ function readForm() {
     model: {
       span,
       supportType: form.get('supportType'),
-      includeSelfWeight: form.get('includeSelfWeight') === 'on'
+      includeSelfWeight,
+      colbeamSupportMappingLabel: 'Current support mapping',
+      supportEquivalenceNote: 'Support equivalence to COLBEAM EC3 has not been independently verified.'
     },
-    combination: { combination: form.get('combination'), psiQ1: 0.7, psiQ2: 0.7 },
+    combination: {
+      combination: form.get('combination'),
+      psiQ1: 0.7,
+      psiQ2: 0.7,
+      customULSFactors: { G: 1.35, Q1: 1.5, Q2: 1.5 },
+      customSLSFactors: { G: 1, Q1: 1, Q2: 0.7 },
+      perCheckEnvelope: false,
+      slsDeflectionBasis: 'total',
+      slsIncludeSelfWeight: includeSelfWeight
+    },
     settings: {
       sectionClass: Number(form.get('sectionClass')),
       gammaM0: Number(form.get('gammaM0')),
@@ -112,12 +125,39 @@ function readForm() {
       ltbC2: 0,
       ltbModel: 'rolled',
       endPostType: 'flexible',
-      webStiffener: 'none'
+      webStiffener: 'none',
+      colbeamAudit: {
+        auditProfile: 'current',
+        materialVariantLabel: '',
+        nationalAnnexLabel: nationalAnnex,
+        coefficientSource: 'Backend EN 1990/EN 1993 defaults',
+        autoSectionClassificationStatus: 'manual',
+        class4EffectivePropertiesMode: 'not_available',
+        shearFactorEta: 1,
+        class12ElasticDesign: false,
+        conservativeNMyMz: false,
+        flangeBucklingIgnored: false,
+        webBucklingIgnored: false,
+        ltbC3: 0,
+        ltbKw: 1,
+        ltbLoadHeight: 'shear_centre',
+        ltbShearCentreConvention: 'not_applied',
+        ltbRestraintModel: 'current',
+        ltbMomentGradientMethod: 'manual',
+        lambdaLT0: 0.4,
+        beta: 0.75,
+        memberBucklingInteractionMethod: 'current',
+        colbeamInteractionMethodLabel: 'Source to be confirmed',
+        supportBearingModel: 'current_screening',
+        webBearingModel: 'current_screening',
+        stiffenerModel: 'current_screening',
+        modalAnalysisStatus: 'not implemented'
+      }
     },
-    axial: { G: Number(form.get('axialG') || 0), Q1: 0, Q2: 0 },
+    axial: { G: Number(form.get('axialG') || 0), Q1: 0, Q2: 0, signConvention: 'positive_compression' },
     loads: {
-      udls: [{ label: 'Full-span UDL', x1: 0, x2: span, G: Number(form.get('udlG') || 0), Q1: Number(form.get('udlQ1') || 0), Q2: 0 }],
-      points: pointLoad > 0 ? [{ label: 'Point Q1', x: pointX, G: 0, Q1: pointLoad, Q2: 0 }] : []
+      udls: [{ label: 'Full-span UDL', direction: 'Z', x1: 0, x2: span, G: Number(form.get('udlG') || 0), Q1: Number(form.get('udlQ1') || 0), Q2: 0 }],
+      points: pointLoad > 0 ? [{ label: 'Point Q1', direction: 'Z', x: pointX, G: 0, Q1: pointLoad, Q2: 0 }] : []
     }
   };
 }

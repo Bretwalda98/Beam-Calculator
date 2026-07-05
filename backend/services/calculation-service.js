@@ -1,5 +1,6 @@
 const { getMaterialForSection } = require('../data/materials');
 const { getSection, getSectionSourceInfo } = require('./sections-service');
+const { normaliseLoadDirection, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
 const { randomUUID } = require('crypto');
 
 const g = 9.81;
@@ -93,6 +94,27 @@ function getLC(input = {}) {
   const psi1 = clamp(finiteNumber(input.psiQ1, 0.7), 0, 1);
   const psi2 = clamp(finiteNumber(input.psiQ2, 0.7), 0, 1);
   const psiText = (n) => (n === 1 ? psi1 : psi2).toFixed(1);
+  const customULS = input.customULSFactors || {};
+  const customSLS = input.customSLSFactors || {};
+  const coeffText = (coeff) => `${fmtControl(coeff.cG, 2)}*G + ${fmtControl(coeff.cQ1, 2)}*Q1 + ${fmtControl(coeff.cQ2, 2)}*Q2`;
+  if (key === 'custom_colbeam') {
+    const uls = {
+      cG: finiteNumber(customULS.G, 1.35),
+      cQ1: finiteNumber(customULS.Q1, 1.5),
+      cQ2: finiteNumber(customULS.Q2, 1.5)
+    };
+    const sls = {
+      cG: finiteNumber(customSLS.G, 1),
+      cQ1: finiteNumber(customSLS.Q1, 1),
+      cQ2: finiteNumber(customSLS.Q2, psi2)
+    };
+    return {
+      key,
+      name: 'Custom / COLBEAM audit factors',
+      uls: { ...uls, note: `ULS: Custom audit LC = ${coeffText(uls)}` },
+      sls: { ...sls, note: `SLS: Custom audit LC = ${coeffText(sls)}` }
+    };
+  }
   if (key === 'basic') {
     return {
       key,
@@ -855,6 +877,14 @@ function normaliseLoads(input, section, L, unit) {
       label: String(load.label || `UDL ${index + 1}`).slice(0, 80),
       x1,
       x2,
+      direction: normaliseLoadDirection(load.direction, 'Z'),
+      sourceType: load.sourceType || 'uniform',
+      reportLabel: load.reportLabel,
+      q1: finiteNumber(load.q1, 0),
+      q2: finiteNumber(load.q2, 0),
+      loadCase: load.loadCase,
+      reportX1: finiteNumber(load.reportX1, x1),
+      reportX2: finiteNumber(load.reportX2, x2),
       G: finiteNumber(load.G, 0),
       Q1: finiteNumber(load.Q1, 0),
       Q2: finiteNumber(load.Q2, 0)
@@ -870,17 +900,18 @@ function normaliseLoads(input, section, L, unit) {
       Q1: finiteNumber(load.Q1, 0),
       Q2: finiteNumber(load.Q2, 0),
       M,
+      direction: normaliseLoadDirection(load.direction, 'Z'),
       momentCase: ['G', 'Q1', 'Q2'].includes(load.momentCase) ? load.momentCase : 'G'
     });
   });
   if (model.includeSelfWeight !== false && section.mass_kg_m > 0) {
     const sw = unit.key === 'tonne' ? (section.mass_kg_m / 1000) : (section.mass_kg_m * g / 1000);
-    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, G: sw, Q1: 0, Q2: 0, isSelf: true });
+    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, direction: 'Z', G: sw, Q1: 0, Q2: 0, isSelf: true });
   }
   return raw;
 }
 
-function applyCombo(raw, coeff, unit) {
+function applyCombo(raw, coeff, unit, options = {}) {
   return {
     points_kN: raw.points.filter((p) => Math.abs(p.M || 0) <= 1e-12).map((p) => ({
       label: p.label,
@@ -897,10 +928,40 @@ function applyCombo(raw, coeff, unit) {
       x1: u.x1,
       x2: u.x2,
       isSelf: Boolean(u.isSelf),
-      w: unit.toBaseUdl(coeff.cG * u.G + coeff.cQ1 * u.Q1 + coeff.cQ2 * u.Q2)
+      w: unit.toBaseUdl((u.isSelf && options.excludeSelfWeight ? 0 : coeff.cG) * u.G + coeff.cQ1 * u.Q1 + coeff.cQ2 * u.Q2)
     })).filter((u) => Math.abs(u.w) > 1e-12 && u.x2 > u.x1),
     supportXs: raw.supportXs.slice(),
     mode: raw.mode
+  };
+}
+
+function buildSlsCombination(lc, audit) {
+  const basis = audit?.combination?.slsDeflectionBasis || 'total';
+  const includeSelfWeight = audit?.combination?.slsIncludeSelfWeight !== false;
+  if (basis === 'imposed-only') {
+    return {
+      coeff: { cG: 0, cQ1: lc.sls.cQ1, cQ2: 0, note: 'SLS deflection basis: imposed-only, LC = Q1 only' },
+      excludeSelfWeight: true,
+      basis,
+      includeSelfWeight: false,
+      note: 'SLS deflection basis: imposed-only, LC = Q1 only'
+    };
+  }
+  if (basis === 'variable-only') {
+    return {
+      coeff: { cG: 0, cQ1: lc.sls.cQ1, cQ2: lc.sls.cQ2, note: `SLS deflection basis: variable-only, LC = ${fmtControl(lc.sls.cQ1, 2)}*Q1 + ${fmtControl(lc.sls.cQ2, 2)}*Q2` },
+      excludeSelfWeight: true,
+      basis,
+      includeSelfWeight: false,
+      note: `SLS deflection basis: variable-only, LC = ${fmtControl(lc.sls.cQ1, 2)}*Q1 + ${fmtControl(lc.sls.cQ2, 2)}*Q2`
+    };
+  }
+  return {
+    coeff: { ...lc.sls, note: `${lc.sls.note}${includeSelfWeight ? '' : ' (self-weight excluded from SLS deflection)'}` },
+    excludeSelfWeight: !includeSelfWeight,
+    basis: 'total',
+    includeSelfWeight,
+    note: `${lc.sls.note}${includeSelfWeight ? '' : ' (self-weight excluded from SLS deflection)'}`
   };
 }
 
@@ -1033,6 +1094,7 @@ function buildCalculationPackage(context) {
     rawLoads,
     uls,
     sls,
+    slsCombo,
     check,
     ltb,
     endSupport,
@@ -1047,9 +1109,11 @@ function buildCalculationPackage(context) {
     governingIR,
     maxReaction
   } = context;
+  const audit = settings.audit || normaliseColbeamAuditInput(input);
   const source = getSectionSourceInfo(section);
   const warnings = [
     ...getSectionReportGeometry(section).warnings,
+    ...(audit.metadataOnlyWarnings || []),
     check.Wsel.unavailable ? `Required section property missing: ${check.Wsel.missing}. Class ${check.cls} resistance cannot be verified from the current database.` : null,
     check.Wsel.fallback ? `Section modulus fallback used: ${check.Wsel.label}.` : null,
     ltb.enabled && !ltb.available && !ltb.notRequired ? `LTB unavailable: ${ltb.message}` : null,
@@ -1065,16 +1129,19 @@ function buildCalculationPackage(context) {
       variables: [
         { symbol: 'Combination', value: lc.name },
         { symbol: 'ULS selected', value: ulsNote || lc.uls.note },
+        { symbol: 'COLBEAM audit profile', value: audit.settings.auditProfile },
+        { symbol: 'Per-check 6.10a/b envelope', value: audit.combination.perCheckEnvelope ? 'Recorded only - not engine-wired in Stage 1' : 'Off' },
+        { symbol: 'SLS deflection basis', value: `${audit.combination.slsDeflectionBasis}; self-weight ${audit.combination.slsIncludeSelfWeight ? 'included' : 'excluded'} metadata recorded only` },
         { symbol: 'Design code', value: input.metadata?.designCode || 'EN 1993-1-1' },
         { symbol: 'National Annex', value: input.metadata?.nationalAnnex || 'UK National Annex / project default' }
       ],
-      substitution: `${ulsNote || lc.uls.note}; ${lc.sls.note}`,
+      substitution: `${ulsNote || lc.uls.note}; ${slsCombo?.note || lc.sls.note}`,
       unitConversion: 'Loads entered in project units are converted to kN and kN m internally before design checks.',
-      result: `ULS: ${ulsNote || lc.uls.note}`,
+      result: `ULS: ${ulsNote || lc.uls.note}; SLS: ${slsCombo?.note || lc.sls.note}`,
       resistance: 'Not applicable',
       utilisation: 'Not applicable',
       status: 'INFO',
-      warnings: []
+      warnings: audit.metadataOnlyWarnings || []
     }),
     buildCalculationObject({
       id: 'support-reactions',
@@ -1191,7 +1258,7 @@ function buildCalculationPackage(context) {
         { symbol: 'delta_max', value: valueUnit(deflPeak, 'mm') }
       ],
       derivations: [
-        buildDerivation('delta_max', 'Maximum serviceability deflection from the SLS beam analysis.', 'delta_max = max |delta(x)| from SLS analysis', lc.sls.note, valueUnit(deflPeak, 'mm'), 'Server beam analysis'),
+        buildDerivation('delta_max', 'Maximum serviceability deflection from the SLS beam analysis.', 'delta_max = max |delta(x)| from SLS analysis', slsCombo?.note || lc.sls.note, valueUnit(deflPeak, 'mm'), 'Server beam analysis'),
         buildDerivation('delta_allow / dzMax', 'Allowable deflection used in the code-check controls.', 'dzMax = L / limit', `${round(L * 1000, 0)} / ${round(settings.deflectionLimit, 0)}`, valueUnit(deflAllow_mm, 'mm'), 'Project deflection limit'),
         buildDerivation('IR_defl', 'Deflection utilisation ratio shown in Deflection Control.', 'IR = dz / dzMax', `${round(deflPeak, 5)} / ${round(deflAllow_mm, 5)}`, round(deflIR, 5), 'Code-check controls')
       ],
@@ -1356,7 +1423,11 @@ function buildCalculationPackage(context) {
     nationalAnnex: input.metadata?.nationalAnnex || 'UK National Annex / project default',
     assumptions: [
       `Support condition modelled as ${SUPPORT_LABELS[supportType] || supportType}.`,
+      `COLBEAM support mapping: ${audit.model.colbeamSupportMappingLabel}. ${audit.model.supportEquivalenceNote}`,
       `Load combination: ${lc.name}.`,
+      `SLS deflection basis used: ${slsCombo?.basis || 'total'}; self-weight ${slsCombo?.includeSelfWeight === false ? 'excluded' : 'included'} for SLS deflection.`,
+      `Custom ULS factors recorded for audit: G=${audit.combination.customULSFactors.G}, Q1=${audit.combination.customULSFactors.Q1}, Q2=${audit.combination.customULSFactors.Q2}.`,
+      `Custom SLS factors recorded for audit: G=${audit.combination.customSLSFactors.G}, Q1=${audit.combination.customSLSFactors.Q1}, Q2=${audit.combination.customSLSFactors.Q2}.`,
       rawLoads.udls.some((u) => u.isSelf) ? 'Self weight included from section mass.' : 'Self weight not included.',
       `gamma_M0 = ${settings.gammaM0}; gamma_M1 = ${settings.gammaM1}.`,
       settings.enableLTB ? `LTB enabled with ${settings.ltbRestraints} intermediate restraints.` : 'LTB disabled by user input.',
@@ -1370,6 +1441,7 @@ function buildCalculationPackage(context) {
       checkedBy: input.metadata?.checkedBy || '-',
       approvedBy: input.metadata?.approvedBy || '-'
     }],
+    colbeamAudit: audit,
     warnings,
     calculations
   };
@@ -1518,6 +1590,7 @@ function calculateBeam(input) {
     throw err;
   }
   const unit = getUnit(input.units);
+  const audit = normaliseColbeamAuditInput(input);
   const settings = {
     gammaM0: positiveNumber(input.settings?.gammaM0, 1),
     gammaM1: positiveNumber(input.settings?.gammaM1, 1),
@@ -1537,7 +1610,8 @@ function calculateBeam(input) {
     bucklingCurveY: input.settings?.bucklingCurveY || 'auto',
     bucklingCurveZ: input.settings?.bucklingCurveZ || 'auto',
     kyy: finiteNumber(input.settings?.kyy, 1),
-    kzy: finiteNumber(input.settings?.kzy, 0.6)
+    kzy: finiteNumber(input.settings?.kzy, 0.6),
+    audit
   };
   const material = getMaterialForSection(input.material?.grade || 'S355', section);
   const I = calcI_mm4(section);
@@ -1552,12 +1626,12 @@ function calculateBeam(input) {
     left: finiteNumber(input.model?.springLeftPct, 100),
     right: finiteNumber(input.model?.springRightPct, 100)
   };
-  const evalCombo = (coeff) => solveBeam({
+  const evalCombo = (coeff, options = {}) => solveBeam({
     L,
     supportType,
     E_MPa: material.E,
     I_mm4: I,
-    loads: applyCombo(rawLoads, coeff, unit),
+    loads: applyCombo(rawLoads, coeff, unit, options),
     springs
   });
   let uls;
@@ -1580,7 +1654,8 @@ function calculateBeam(input) {
     ulsNote = lc.uls.note;
     ulsCoeff = lc.uls;
   }
-  const sls = evalCombo(lc.sls);
+  const slsCombo = buildSlsCombination(lc, audit);
+  const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight });
   const axialRaw = input.axial || {};
   const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
@@ -1625,6 +1700,7 @@ function calculateBeam(input) {
     rawLoads,
     uls,
     sls,
+    slsCombo,
     check,
     ltb,
     endSupport,
@@ -1651,7 +1727,8 @@ function calculateBeam(input) {
       units: unit.key,
       material: material.grade,
       section: { family: section.family, name: section.name },
-      combination: lc.name
+      combination: lc.name,
+      colbeamAudit: audit
     },
     summary: {
       passAll,
@@ -1697,7 +1774,19 @@ function calculateBeam(input) {
       },
       combinations: {
         uls: ulsNote,
-        sls: lc.sls.note
+        sls: slsCombo.note,
+        ulsCoefficients: { cG: round(ulsCoeff.cG, 6), cQ1: round(ulsCoeff.cQ1, 6), cQ2: round(ulsCoeff.cQ2, 6) },
+        slsCoefficients: { cG: round(slsCombo.coeff.cG, 6), cQ1: round(slsCombo.coeff.cQ1, 6), cQ2: round(slsCombo.coeff.cQ2, 6) },
+        slsDeflectionBasis: slsCombo.basis,
+        slsIncludeSelfWeight: slsCombo.includeSelfWeight,
+        perCheckEnvelopeEngineWired: false
+      },
+      colbeamAudit: {
+        directions: {
+          udls: rawLoads.udls.map((load) => ({ label: load.label, direction: load.direction || 'Z' })),
+          points: rawLoads.points.map((load) => ({ label: load.label, direction: load.direction || 'Z' }))
+        },
+        axialSignConvention: audit.axial.signConvention
       }
     },
     actions: {

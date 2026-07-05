@@ -1520,6 +1520,20 @@ body.plan-plus .ad-slot{display:none!important}
 .multi-load-card,#axialLoadCard,.axial-load-cases,.axial-load-cases label{min-width:0;max-width:100%}
 #axialLoadCard{overflow:hidden}
 #axialLoadCard input{width:100%;max-width:100%;min-width:0}
+.metadata-note{padding:8px 10px;border:1px dashed rgba(var(--accent-rgb),.36);border-radius:8px;background:rgba(var(--accent-rgb),.055);color:var(--muted);font-size:10.5px;line-height:1.45}
+.metadata-note strong{color:var(--text)}
+.metadata-chip{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:3px 8px;border-radius:999px;background:rgba(var(--accent-rgb),.08);color:var(--accent);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.colbeam-block{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--panel-2)}
+.colbeam-block .mini-title{margin-bottom:8px}
+.load-direction-field select{min-height:32px!important;margin:0!important;padding:5px 7px!important}
+.audit-output-panel{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+.audit-output-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.audit-section{margin:10px 0;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)}
+.audit-section h4{margin:0 0 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.audit-table{width:100%;border-collapse:collapse;font-size:11px}
+.audit-table th,.audit-table td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.audit-table th{width:38%;color:var(--muted);font-weight:750}
+.audit-json-note{font-size:10.5px;color:var(--muted);line-height:1.45}
 .mini-table .head>*,.mini-table .row>*{min-width:0}
 .trap-grid{border:0!important;background:transparent!important}
 .trap-grid>.head{display:none!important}
@@ -3071,6 +3085,7 @@ body.layout-tablet .input-scroll-stack{
             <option value="en1990_610a">EN 1990 Eq 6.10a</option>
             <option value="en1990_610b">EN 1990 Eq 6.10b</option>
             <option value="en1990_610ab">EN 1990 Eq 6.10a/b</option>
+            <option value="custom_colbeam">Custom / COLBEAM audit factors</option>
           </select>
         </label>
         <label>γM0
@@ -3082,6 +3097,34 @@ body.layout-tablet .input-scroll-stack{
         <label>ψ factor Q2 (secondary)
           <input id="psi_q2" type="number" min="0" max="1" step="0.05" value="0.7">
         </label>
+        <div class="full colbeam-block">
+          <div class="mini-title">COLBEAM load combination audit</div>
+          <div class="compact-grid">
+            <label>Custom ULS G factor
+              <input id="customUlsG" type="number" min="0" max="3" step="0.05" value="1.35">
+            </label>
+            <label>Custom ULS Q1 factor
+              <input id="customUlsQ1" type="number" min="0" max="3" step="0.05" value="1.50">
+            </label>
+            <label>Custom ULS Q2 factor
+              <input id="customUlsQ2" type="number" min="0" max="3" step="0.05" value="1.50">
+            </label>
+            <label>Custom SLS G factor
+              <input id="customSlsG" type="number" min="0" max="3" step="0.05" value="1.00">
+            </label>
+            <label>Custom SLS Q1 factor
+              <input id="customSlsQ1" type="number" min="0" max="3" step="0.05" value="1.00">
+            </label>
+            <label>Custom SLS Q2 factor
+              <input id="customSlsQ2" type="number" min="0" max="3" step="0.05" value="0.70">
+            </label>
+            <div class="full inline-check">
+              <input id="perCheckEnvelope" type="checkbox">
+              <span>Per-check EN 1990 6.10a/6.10b envelope</span>
+            </div>
+            <div id="customCombinationFormula" class="metadata-note full">Custom factors are metadata-only in this stage.</div>
+          </div>
+        </div>
         <label class="full combination-preview-label">Combination preview
           <textarea id="lc_preview" class="mono combination-preview-box" rows="8" readonly></textarea>
         </label>
@@ -3097,7 +3140,23 @@ body.layout-tablet .input-scroll-stack{
                 <input id="springRightPct" type="number" min="0" max="100" step="1" value="100">
               </label>
               <div id="springHelp" class="micro-note full">0% behaves like a free end vertically. 100% behaves close to a stiff support.</div>
+              <div class="metadata-note full"><strong>COLBEAM spring equivalence:</strong> spring percentages are reused as the current support-restraint assumption and recorded for comparison.</div>
             </div>
+          </div>
+        </div>
+        <div class="full colbeam-block">
+          <div class="mini-title">COLBEAM support mapping</div>
+          <div class="compact-grid">
+            <label>Support mapping label
+              <input id="colbeamSupportMappingLabel" type="text" value="Current support mapping">
+            </label>
+            <label class="full">Support equivalence note
+              <textarea id="supportEquivalenceNote" rows="2">Support equivalence to COLBEAM EC3 has not been independently verified.</textarea>
+            </label>
+            <label class="full">Spring restraint equivalence note
+              <textarea id="springEquivalenceNote" rows="2">Spring percentages are recorded for COLBEAM comparison; no COLBEAM-specific spring mapping is applied yet.</textarea>
+            </label>
+            <div class="metadata-note full">Recorded for COLBEAM comparison; not yet used by calculation engine.</div>
           </div>
         </div>
       </div>
@@ -3171,6 +3230,77 @@ body.layout-tablet .input-scroll-stack{
           <input id="includeSW" type="checkbox" checked>
           <span>Include section self‑weight as full-span G UDL</span>
         </div>
+        <label>SLS deflection basis
+          <select id="slsDeflectionBasis">
+            <option value="total" selected>Total</option>
+            <option value="imposed-only">Imposed-only</option>
+            <option value="variable-only">Variable-only</option>
+          </select>
+        </label>
+        <div class="full inline-check">
+          <input id="slsIncludeSelfWeight" type="checkbox" checked>
+          <span>SLS self-weight included for COLBEAM comparison</span>
+        </div>
+        <div class="full colbeam-block">
+          <div class="mini-title">COLBEAM material and section setup</div>
+          <div class="compact-grid">
+            <label>Material variant
+              <select id="materialVariantLabel">
+                <option value="" selected>Other / unknown</option>
+                <option value="N/NL">N / NL</option>
+                <option value="M/ML">M / ML</option>
+                <option value="H">H</option>
+              </select>
+            </label>
+            <label>National Annex label
+              <input id="colbeamNationalAnnexLabel" type="text" value="UK National Annex">
+            </label>
+            <label class="full">Coefficient source
+              <input id="coefficientSource" type="text" value="Backend EN 1990/EN 1993 defaults">
+            </label>
+            <label>Auto classification status
+              <select id="autoSectionClassificationStatus">
+                <option value="manual" selected>Manual / designer selected</option>
+                <option value="pending">Pending COLBEAM audit</option>
+                <option value="not implemented">Not implemented</option>
+              </select>
+            </label>
+            <label>Class 4 effective mode
+              <select id="class4EffectivePropertiesMode">
+                <option value="not_available" selected>Not available</option>
+                <option value="manual">Manual</option>
+                <option value="database">Database</option>
+                <option value="auto">Automatic</option>
+              </select>
+            </label>
+            <div class="metadata-note full">Variant recorded for COLBEAM comparison; current engine uses strength grade only.</div>
+          </div>
+        </div>
+        <div class="full colbeam-block">
+          <div class="mini-title">COLBEAM section-control assumptions</div>
+          <div class="compact-grid">
+            <label>Shear factor eta
+              <input id="shearFactorEta" type="number" min="0.1" max="2" step="0.05" value="1.00">
+            </label>
+            <div class="inline-check">
+              <input id="class12ElasticDesign" type="checkbox">
+              <span>Class 1-2 elastic design</span>
+            </div>
+            <div class="inline-check">
+              <input id="conservativeNMyMz" type="checkbox">
+              <span>Conservative N + My + Mz</span>
+            </div>
+            <div class="inline-check">
+              <input id="flangeBucklingIgnored" type="checkbox">
+              <span>Flange buckling not taken into account</span>
+            </div>
+            <div class="inline-check">
+              <input id="webBucklingIgnored" type="checkbox">
+              <span>Web buckling not taken into account</span>
+            </div>
+            <div class="metadata-note full">Recorded for COLBEAM comparison; not yet used by calculation engine.</div>
+          </div>
+        </div>
         <div id="sec_summary" class="micro-note full"></div>
       </div>
       </div>
@@ -3232,6 +3362,13 @@ body.layout-tablet .input-scroll-stack{
                 </label>
               </div>
               <div class="micro-note" id="axialNote">Positive = compression. Axial actions use the same G/Q load cases and input units as the other loads.</div>
+              <label>Axial sign convention
+                <select id="axialSignConvention">
+                  <option value="positive_compression" selected>Positive = compression</option>
+                  <option value="positive_tension">Positive = tension</option>
+                </select>
+              </label>
+              <div class="metadata-note">Recorded for COLBEAM comparison; not yet used by calculation engine.</div>
             </div>
           </div>
         </div>
@@ -3264,8 +3401,20 @@ body.layout-tablet .input-scroll-stack{
                 <option value="d">d</option>
               </select>
             </label>
+            <label>Member interaction method
+              <select id="memberBucklingInteractionMethod">
+                <option value="current" selected>Current simplified</option>
+                <option value="ec3_annex_a">EC3 Annex A</option>
+                <option value="ec3_annex_b">EC3 Annex B</option>
+                <option value="colbeam">COLBEAM Method 1/2</option>
+              </select>
+            </label>
+            <label>COLBEAM interaction label
+              <input id="colbeamInteractionMethodLabel" type="text" value="Source to be confirmed">
+            </label>
           </div>
           <div class="micro-note" style="margin-top:8px">When N,Ed is compression, the app adds member buckling resistance and major-axis interaction checks.</div>
+          <div class="metadata-note" style="margin-top:8px">Current engine uses simplified interaction; COLBEAM Method 1/2 recorded for comparison.</div>
         </div>
       </div>
       <details class="helper-toggle">
@@ -3311,6 +3460,52 @@ body.layout-tablet .input-scroll-stack{
         <label>γM1
           <input id="gammaM1" type="number" min="0.8" max="1.3" step="0.05" value="1.00">
         </label>
+        <label>LTB C1
+          <input id="ltbC1" type="number" min="0.1" step="0.05" value="1.00">
+        </label>
+        <label>LTB C2
+          <input id="ltbC2" type="number" step="0.05" value="0.00">
+        </label>
+        <label>LTB C3
+          <input id="ltbC3" type="number" step="0.05" value="0.00">
+        </label>
+        <label>LTB kw
+          <input id="ltbKw" type="number" min="0.1" step="0.05" value="1.00">
+        </label>
+        <label>COLBEAM load height
+          <select id="colbeamLtbLoadHeight">
+            <option value="shear_centre" selected>Shear centre</option>
+            <option value="top_flange">Top flange</option>
+            <option value="bottom_flange">Bottom flange</option>
+            <option value="centroid">Centroid</option>
+          </select>
+        </label>
+        <label>Shear-centre / eccentricity convention
+          <input id="ltbShearCentreConvention" type="text" value="not_applied">
+        </label>
+        <label>LTB restraint model
+          <select id="ltbRestraintModel">
+            <option value="current" selected>Current</option>
+            <option value="colbeam">COLBEAM</option>
+            <option value="manual">Manual</option>
+            <option value="full_span">Full span</option>
+            <option value="restraint_points">Restraint points</option>
+          </select>
+        </label>
+        <label>Moment-gradient method
+          <select id="ltbMomentGradientMethod">
+            <option value="manual" selected>Manual C-factors</option>
+            <option value="auto_from_diagram">Auto from diagram</option>
+            <option value="colbeam_default">COLBEAM default</option>
+          </select>
+        </label>
+        <label>lambdaLT,0
+          <input id="lambdaLT0" type="number" min="0" max="2" step="0.05" value="0.40">
+        </label>
+        <label>beta
+          <input id="ltbBeta" type="number" min="0.1" max="2" step="0.05" value="0.75">
+        </label>
+        <div class="metadata-note full">LTB C3, kw, load height, restraint model, moment-gradient method, lambdaLT,0 and beta are recorded for COLBEAM comparison; not yet used by calculation engine.</div>
       </div>
     </div>
   </details>
@@ -3334,6 +3529,19 @@ body.layout-tablet .input-scroll-stack{
         <label>Stiffener spacing a (mm)
           <input id="stiffenerA" type="number" min="0" step="10" value="5000">
         </label>
+        <label>Support bearing model
+          <input id="supportBearingModel" type="text" value="current_screening">
+        </label>
+        <label>Web bearing model
+          <input id="webBearingModel" type="text" value="current_screening">
+        </label>
+        <label>Stiffener model
+          <input id="stiffenerModel" type="text" value="current_screening">
+        </label>
+        <label>Modal analysis status
+          <input id="modalAnalysisStatus" type="text" value="not implemented" readonly>
+        </label>
+        <div class="metadata-note full">Support bearing, web bearing, stiffener model and modal analysis status are recorded for COLBEAM comparison; not yet used by calculation engine.</div>
       </div>
     </div>
   </details>
@@ -3446,6 +3654,14 @@ body.layout-tablet .input-scroll-stack{
         <div id="codeChecksPanel" class="code-checks-only">
           <div class="section-title">Code checks</div>
           <div id="codeChecks"></div>
+        </div>
+        <div id="colbeamAuditPanel" class="audit-output-panel">
+          <div class="section-title">COLBEAM Audit Output</div>
+          <div class="audit-output-actions">
+            <button type="button" class="btn" id="copyColbeamAuditJson">Copy audit JSON</button>
+            <button type="button" class="btn" id="downloadColbeamAuditJson">Download audit JSON</button>
+          </div>
+          <div id="colbeamAuditOutput" class="audit-json-note">Run a calculation to populate COLBEAM audit output.</div>
         </div>
       </div>
     </div>

@@ -259,6 +259,11 @@ function setValue(id, value) {
   if (el) el.value = value ?? '';
 }
 
+function setChecked(id, value) {
+  const el = $(id);
+  if (el) el.checked = Boolean(value);
+}
+
 function selectedSectionId() {
   return $('sec_size')?.selectedOptions?.[0]?.dataset.sectionId || '';
 }
@@ -539,12 +544,13 @@ function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values
   card.dataset.row = String(rowIndex);
   card.dataset.case = loadCase;
   if (userAdded) card.dataset.userAdded = 'true';
+  const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Z';
   card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${rowIndex + 1}</span><span>${esc(cfg.title)}</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
     <div class="load-entry-fields">${cfg.fields.map(([field, label]) => {
       const fallback = (field === 'x2') ? L : 0;
       const value = values[field] ?? fallback;
       return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${loadCase}" value="${esc(value)}"></div>`;
-    }).join('')}</div><div class="load-validation-note"></div>`;
+    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option></select></div></div><div class="metadata-note">Recorded for COLBEAM comparison; not yet used by calculation engine.</div><div class="load-validation-note"></div>`;
   card.classList.toggle('is-loadcase-hidden', loadCase !== state.activeLoadCase);
   card.querySelector('.load-remove-btn')?.addEventListener('click', () => {
     card.remove();
@@ -568,6 +574,11 @@ function loadField(card, field, fallback = 0) {
   const raw = card.querySelector(`[data-field="${field}"]`)?.value;
   const value = Number(raw);
   return Number.isFinite(value) ? value : fallback;
+}
+
+function loadDirection(card) {
+  const value = String(card.querySelector('[data-field="direction"]')?.value || 'Z').toUpperCase();
+  return value === 'Y' ? 'Y' : 'Z';
 }
 
 function setLoadError(card, errors) {
@@ -612,17 +623,17 @@ function readLoads() {
     $$(`.load-entry-card[data-load-type="uniform"][data-case="${lc}"]`).forEach((card) => {
       const q = loadField(card, 'q', 0);
       if (!q && !card?.dataset.userAdded) return;
-      udls.push({ label: `U${udls.length + 1}`, x1: loadField(card, 'x1', 0), x2: loadField(card, 'x2', span), G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
+      udls.push({ label: `U${udls.length + 1}`, direction: loadDirection(card), x1: loadField(card, 'x1', 0), x2: loadField(card, 'x2', span), G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
     });
     $$(`.load-entry-card[data-load-type="point"][data-case="${lc}"]`).forEach((card) => {
       const p = loadField(card, 'P', 0);
       if (!p && !card?.dataset.userAdded) return;
-      points.push({ label: `P${points.length + 1}`, x: loadField(card, 'x', 0), G: lc === 'G' ? p : 0, Q1: lc === 'Q1' ? p : 0, Q2: lc === 'Q2' ? p : 0 });
+      points.push({ label: `P${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), G: lc === 'G' ? p : 0, Q1: lc === 'Q1' ? p : 0, Q2: lc === 'Q2' ? p : 0 });
     });
     $$(`.load-entry-card[data-load-type="moment"][data-case="${lc}"]`).forEach((card) => {
       const m = loadField(card, 'M', 0);
       if (!m && !card?.dataset.userAdded) return;
-      points.push({ label: `M${points.length + 1}`, x: loadField(card, 'x', 0), M: m, momentCase: lc, G: 0, Q1: 0, Q2: 0 });
+      points.push({ label: `M${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), M: m, momentCase: lc, G: 0, Q1: 0, Q2: 0 });
     });
     $$(`.load-entry-card[data-load-type="trap"][data-case="${lc}"]`).forEach((card) => {
       const q1 = loadField(card, 'q1', 0);
@@ -631,16 +642,57 @@ function readLoads() {
       const sourceLabel = `T${countLoadCards('trap', lc) ? Number(card.dataset.row || 0) + 1 : udls.length + 1}`;
       const x1 = loadField(card, 'x1', 0);
       const x2 = loadField(card, 'x2', span);
+      const direction = loadDirection(card);
       const dx = (x2 - x1) / trapSegments;
       for (let i = 0; i < trapSegments; i += 1) {
         const xa = x1 + i * dx;
         const xb = xa + dx;
         const q = q1 + (q2 - q1) * ((i + 0.5) / trapSegments);
-        udls.push({ label: `${sourceLabel}.${i + 1}`, sourceType: 'trap', reportLabel: sourceLabel, q1, q2, loadCase: lc, reportX1: x1, reportX2: x2, x1: xa, x2: xb, G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
+        udls.push({ label: `${sourceLabel}.${i + 1}`, sourceType: 'trap', reportLabel: sourceLabel, direction, q1, q2, loadCase: lc, reportX1: x1, reportX2: x2, x1: xa, x2: xb, G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
       }
     });
   });
   return { udls, points };
+}
+
+function colbeamAuditInputDefaults() {
+  return {
+    customULSFactors: { G: num('customUlsG', 1.35), Q1: num('customUlsQ1', 1.5), Q2: num('customUlsQ2', 1.5) },
+    customSLSFactors: { G: num('customSlsG', 1), Q1: num('customSlsQ1', 1), Q2: num('customSlsQ2', num('psi_q2', 0.7)) },
+    perCheckEnvelope: $('perCheckEnvelope')?.checked === true,
+    slsDeflectionBasis: $('slsDeflectionBasis')?.value || 'total',
+    slsIncludeSelfWeight: $('slsIncludeSelfWeight')?.checked !== false
+  };
+}
+
+function colbeamAuditSetupDefaults() {
+  return {
+    auditProfile: 'current',
+    materialVariantLabel: $('materialVariantLabel')?.value || '',
+    nationalAnnexLabel: txt('colbeamNationalAnnexLabel', txt('nationalAnnex', 'UK National Annex')),
+    coefficientSource: txt('coefficientSource', 'Backend EN 1990/EN 1993 defaults'),
+    autoSectionClassificationStatus: $('autoSectionClassificationStatus')?.value || 'manual',
+    class4EffectivePropertiesMode: $('class4EffectivePropertiesMode')?.value || 'not_available',
+    shearFactorEta: num('shearFactorEta', 1),
+    class12ElasticDesign: $('class12ElasticDesign')?.checked === true,
+    conservativeNMyMz: $('conservativeNMyMz')?.checked === true,
+    flangeBucklingIgnored: $('flangeBucklingIgnored')?.checked === true,
+    webBucklingIgnored: $('webBucklingIgnored')?.checked === true,
+    ltbC3: num('ltbC3', 0),
+    ltbKw: num('ltbKw', 1),
+    ltbLoadHeight: $('colbeamLtbLoadHeight')?.value || 'shear_centre',
+    ltbShearCentreConvention: txt('ltbShearCentreConvention', 'not_applied'),
+    ltbRestraintModel: $('ltbRestraintModel')?.value || 'current',
+    ltbMomentGradientMethod: $('ltbMomentGradientMethod')?.value || 'manual',
+    lambdaLT0: num('lambdaLT0', 0.4),
+    beta: num('ltbBeta', 0.75),
+    memberBucklingInteractionMethod: $('memberBucklingInteractionMethod')?.value || 'current',
+    colbeamInteractionMethodLabel: txt('colbeamInteractionMethodLabel', 'Source to be confirmed'),
+    supportBearingModel: txt('supportBearingModel', 'current_screening'),
+    webBearingModel: txt('webBearingModel', 'current_screening'),
+    stiffenerModel: txt('stiffenerModel', 'current_screening'),
+    modalAnalysisStatus: txt('modalAnalysisStatus', 'not implemented')
+  };
 }
 
 function readMetadata() {
@@ -768,6 +820,23 @@ function buildCombinationPreview() {
     };
   }
 
+  if (key === 'custom_colbeam') {
+    const custom = colbeamAuditInputDefaults();
+    return {
+      name: 'Custom / COLBEAM audit factors',
+      source: 'User-entered custom ULS/SLS factors for COLBEAM comparison. These factors are engine-wired only in this custom mode.',
+      use: 'ULS custom factors are used for resistance checks; SLS custom factors are used for deflection/serviceability checks, then adjusted by the selected SLS deflection basis.',
+      validation: basis.validation,
+      lines: [
+        'Selected: Custom / COLBEAM audit factors',
+        `ULS strength checks: LC_ULS = ${fmtCoeff(custom.customULSFactors.G)}G + ${fmtCoeff(custom.customULSFactors.Q1)}Q1 + ${fmtCoeff(custom.customULSFactors.Q2)}Q2`,
+        `SLS deflection checks: LC_SLS = ${fmtCoeff(custom.customSLSFactors.G)}G + ${fmtCoeff(custom.customSLSFactors.Q1)}Q1 + ${fmtCoeff(custom.customSLSFactors.Q2)}Q2`,
+        `SLS basis: ${custom.slsDeflectionBasis}; self-weight ${custom.slsIncludeSelfWeight ? 'included' : 'excluded'} for SLS deflection`,
+        `Per-check 6.10a/b envelope: ${custom.perCheckEnvelope ? 'recorded only, not engine-wired' : 'off'}`
+      ]
+    };
+  }
+
   return {
     name: 'EN 1990 Eq 6.10',
     source: 'BS EN 1990 Eq 6.10 for ULS; Eq 6.14a style SLS serviceability combination.',
@@ -787,6 +856,11 @@ function updateLCPreview() {
   const preview = buildCombinationPreview();
   const box = $('lc_preview');
   if (box) box.value = preview.lines.join('\n');
+  const custom = colbeamAuditInputDefaults();
+  const customFormula = $('customCombinationFormula');
+  if (customFormula) {
+    customFormula.innerHTML = `<span class="metadata-chip">Metadata-only</span> Active custom formula: ULS = ${fmtCoeff(custom.customULSFactors.G)}G + ${fmtCoeff(custom.customULSFactors.Q1)}Q1 + ${fmtCoeff(custom.customULSFactors.Q2)}Q2; SLS = ${fmtCoeff(custom.customSLSFactors.G)}G + ${fmtCoeff(custom.customSLSFactors.Q1)}Q1 + ${fmtCoeff(custom.customSLSFactors.Q2)}Q2. Per-check envelope: ${custom.perCheckEnvelope ? 'recorded on' : 'off'}.`;
+  }
   const meta = $('lc_preview_meta');
   if (meta) {
     meta.innerHTML = [
@@ -812,9 +886,11 @@ function buildRequest() {
       supportType: $('supportType')?.value || 'ss',
       includeSelfWeight: $('includeSW')?.checked !== false,
       springLeftPct: num('springLeftPct', 100),
-      springRightPct: num('springRightPct', 100)
+      springRightPct: num('springRightPct', 100),
+      colbeamSupportMappingLabel: txt('colbeamSupportMappingLabel', 'Current support mapping'),
+      supportEquivalenceNote: `${txt('supportEquivalenceNote', 'Support equivalence to COLBEAM EC3 has not been independently verified.')} ${txt('springEquivalenceNote', '')}`.trim()
     },
-    combination: { combination: $('load_combo')?.value || 'en1990_610', psiQ1: num('psi_q1', 0.7), psiQ2: num('psi_q2', 0.7) },
+    combination: { combination: $('load_combo')?.value || 'en1990_610', psiQ1: num('psi_q1', 0.7), psiQ2: num('psi_q2', 0.7), ...colbeamAuditInputDefaults() },
     settings: {
       sectionClass: Number($('sec_class')?.value === '12' ? 2 : $('sec_class')?.value || 2),
       gammaM0: num('gammaM0', 1),
@@ -833,9 +909,10 @@ function buildRequest() {
       bucklingCurveZ: $('bucklingCurveZ')?.value || 'auto',
       endPostType: $('endPostType')?.value || 'flexible',
       webStiffener: $('webStiffener')?.value || 'none',
-      stiffenerA: num('stiffenerA', 5000)
+      stiffenerA: num('stiffenerA', 5000),
+      colbeamAudit: colbeamAuditSetupDefaults()
     },
-    axial: { G: num('axialG', 0), Q1: num('axialQ1', 0), Q2: num('axialQ2', 0) },
+    axial: { G: num('axialG', 0), Q1: num('axialQ1', 0), Q2: num('axialQ2', 0), signConvention: $('axialSignConvention')?.value || 'positive_compression' },
     loads: readLoads()
   };
 }
@@ -914,13 +991,313 @@ function renderResult(input, result) {
   renderDetails(result);
   renderTables(result);
   renderWarnings(result);
+  renderColbeamAudit(input, result);
   setChartPayloads(result.diagrams?.series || [], s);
   queueVisualRedraw('calculation');
 }
 
 function renderUnavailable(message) {
   const html = `<div class="result-block bad">${esc(message || 'Calculation service unavailable. Please try again.')}</div>`;
-  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
+  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables', 'colbeamAuditOutput'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
+}
+
+function auditValue(value, fallback = 'Not available') {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : fallback;
+  return value;
+}
+
+function auditRows(rows) {
+  return `<table class="audit-table"><tbody>${rows.map(([key, value]) => `<tr><th>${esc(key)}</th><td>${esc(String(auditValue(value)))}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function auditSection(title, rows) {
+  return `<section class="audit-section"><h4>${esc(title)}</h4>${auditRows(rows)}</section>`;
+}
+
+function auditListSection(title, rows, headers) {
+  const body = rows.length
+    ? rows.map((row) => `<tr>${headers.map((header) => `<td>${esc(String(auditValue(row[header], '')))}</td>`).join('')}</tr>`).join('')
+    : `<tr><td colspan="${headers.length}">Not available</td></tr>`;
+  return `<section class="audit-section"><h4>${esc(title)}</h4><table class="audit-table"><thead><tr>${headers.map((header) => `<th>${esc(header)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></section>`;
+}
+
+function uniqueTrapLoads(udls = []) {
+  const seen = new Set();
+  return (udls || []).filter((load) => load.sourceType === 'trap').map((load) => {
+    const key = `${load.reportLabel || load.label}|${load.loadCase || ''}|${load.reportX1}|${load.reportX2}|${load.q1}|${load.q2}|${load.direction}`;
+    if (seen.has(key)) return null;
+    seen.add(key);
+    return {
+      id: load.reportLabel || load.label,
+      case: load.loadCase || 'Not available',
+      direction: load.direction || 'Z',
+      q1: load.q1,
+      q2: load.q2,
+      x1: load.reportX1 ?? load.x1,
+      x2: load.reportX2 ?? load.x2
+    };
+  }).filter(Boolean);
+}
+
+function getCalcObject(result, id) {
+  return (result.calculationPackage?.calculations || []).find((calculation) => calculation.id === id) || {};
+}
+
+function buildColbeamAuditPayload(input = {}, result = {}) {
+  const audit = result.inputEcho?.colbeamAudit || result.calculationPackage?.colbeamAudit || {};
+  const setup = audit.settings || {};
+  const comboAudit = audit.combination || {};
+  const modelAudit = audit.model || {};
+  const rawLoads = result.loads?.raw || { udls: [], points: [] };
+  const summary = result.summary || {};
+  const checks = result.checks || {};
+  const units = result.loads?.units || {};
+  const combination = input.combination || {};
+  const settings = input.settings || {};
+  const ltbCalc = getCalcObject(result, 'ltb');
+  const memberCalc = getCalcObject(result, 'member-buckling');
+  const momentCalc = getCalcObject(result, 'bending-resistance');
+  const shearCalc = getCalcObject(result, 'shear-resistance');
+  const axialCalc = getCalcObject(result, 'axial-resistance');
+  const warnings = [...(result.calculationPackage?.warnings || []), ...(result.sectionProperties?.dimensions?.warnings || [])];
+  return {
+    generatedAt: result.generatedAt || new Date().toISOString(),
+    general: {
+      engineProfile: setup.auditProfile || 'current',
+      colbeamComparisonReference: setup.colbeamInteractionMethodLabel || 'Source to be confirmed',
+      nationalAnnexLabel: setup.nationalAnnexLabel || input.metadata?.nationalAnnex || 'Not available',
+      coefficientSource: setup.coefficientSource || 'Not available',
+      engineVersion: 'v34.3.0',
+      metadataOnlyWarnings: warnings
+    },
+    sectionMaterial: {
+      family: input.section?.family || result.inputEcho?.section?.family,
+      section: input.section?.name || result.inputEcho?.section?.name,
+      steelGrade: input.material?.grade || result.inputEcho?.material,
+      materialVariant: setup.materialVariantLabel || 'Other / unknown',
+      sectionClass: settings.sectionClass,
+      autoClassificationStatus: setup.autoSectionClassificationStatus,
+      class4EffectivePropertiesMode: setup.class4EffectivePropertiesMode
+    },
+    geometrySupport: {
+      span: input.model?.span || result.inputEcho?.span,
+      supportType: input.model?.supportType || result.inputEcho?.supportType,
+      colbeamSupportMappingLabel: modelAudit.colbeamSupportMappingLabel,
+      supportEquivalenceNote: modelAudit.supportEquivalenceNote,
+      springLeftPct: input.model?.springLeftPct,
+      springRightPct: input.model?.springRightPct,
+      endSupportAssumptions: `${settings.endPostType || 'Not available'}; web stiffener ${settings.webStiffener || 'Not available'}`,
+      supportBearingModel: setup.supportBearingModel,
+      webBearingModel: setup.webBearingModel,
+      stiffenerModel: setup.stiffenerModel
+    },
+    loadsActions: {
+      udls: (rawLoads.udls || []).filter((load) => load.sourceType !== 'trap').map((load) => ({
+        label: load.label,
+        direction: load.direction || 'Z',
+        x1: load.x1,
+        x2: load.x2,
+        G: load.G,
+        Q1: load.Q1,
+        Q2: load.Q2,
+        selfWeight: Boolean(load.isSelf)
+      })),
+      points: (rawLoads.points || []).filter((load) => !Number(load.M || 0)).map((load) => ({
+        label: load.label,
+        direction: load.direction || 'Z',
+        x: load.x,
+        G: load.G,
+        Q1: load.Q1,
+        Q2: load.Q2
+      })),
+      moments: (rawLoads.points || []).filter((load) => Number(load.M || 0)).map((load) => ({
+        label: load.label,
+        direction: load.direction || 'Z',
+        x: load.x,
+        M: load.M,
+        momentCase: load.momentCase
+      })),
+      trapezoidal: uniqueTrapLoads(rawLoads.udls || []),
+      axial: { ...(input.axial || {}), NEd: checks.axial?.axialEd, signConvention: audit.axial?.signConvention || input.axial?.signConvention },
+      selfWeight: input.model?.includeSelfWeight !== false,
+      designActions: {
+        NEd: checks.axial?.axialEd,
+        MyEd: summary.maxMoment,
+        MzEd: 'Not available',
+        VyEd: 'Not available',
+        VzEd: summary.maxShear,
+        units: { force: summary.forceUnit || units.force, moment: summary.momentUnit || units.moment }
+      }
+    },
+    loadCombinations: {
+      type: input.combination?.combination || result.inputEcho?.combination,
+      en1990Mode: result.inputEcho?.combination || input.combination?.combination,
+      customULSFactorsConfigured: comboAudit.customULSFactors || combination.customULSFactors,
+      customSLSFactorsConfigured: comboAudit.customSLSFactors || combination.customSLSFactors,
+      ulsFactorsUsed: result.loads?.combinations?.ulsCoefficients || 'Not available',
+      slsFactorsUsed: result.loads?.combinations?.slsCoefficients || 'Not available',
+      psiQ1: combination.psiQ1,
+      psiQ2: combination.psiQ2,
+      perCheckEnvelope: comboAudit.perCheckEnvelope,
+      perCheckEnvelopeEngineWired: result.loads?.combinations?.perCheckEnvelopeEngineWired === true,
+      activeULSFormula: result.loads?.combinations?.uls,
+      activeSLSFormula: result.loads?.combinations?.sls,
+      governingCombinationEffect: result.actions?.ulsNote || result.loads?.combinations?.uls || 'Not available'
+    },
+    deflection: {
+      enabled: true,
+      limit: settings.deflectionLimit,
+      slsDeflectionBasis: result.loads?.combinations?.slsDeflectionBasis || comboAudit.slsDeflectionBasis,
+      slsSelfWeightIncluded: result.loads?.combinations?.slsIncludeSelfWeight ?? comboAudit.slsIncludeSelfWeight,
+      calculatedDeflection: summary.deflection,
+      deflectionLimit: summary.deflectionLimit,
+      utilisation: checks.deflection?.ir,
+      pass: checks.deflection?.pass
+    },
+    ec3Factors: {
+      gammaM0: { value: settings.gammaM0, status: 'engine-wired' },
+      gammaM1: { value: settings.gammaM1, status: 'engine-wired' },
+      shearFactorEta: { value: setup.shearFactorEta, status: 'metadata-only' }
+    },
+    bucklingLtb: {
+      Ky: settings.bucklingKy,
+      Kz: settings.bucklingKz,
+      bucklingCurveY: settings.bucklingCurveY,
+      bucklingCurveZ: settings.bucklingCurveZ,
+      ltbEnabled: settings.enableLTB,
+      ltbK: settings.ltbK,
+      C1: settings.ltbC1,
+      C2: settings.ltbC2,
+      C3: setup.ltbC3,
+      kw: setup.ltbKw,
+      loadHeight: setup.ltbLoadHeight,
+      shearCentreConvention: setup.ltbShearCentreConvention,
+      restraintModel: setup.ltbRestraintModel,
+      momentGradientMethod: setup.ltbMomentGradientMethod,
+      lambdaLT0: setup.lambdaLT0,
+      beta: setup.beta,
+      engineValues: checks.ltb || {},
+      formula: ltbCalc.equation || 'Not available',
+      codeReference: ltbCalc.codeReference || 'Not available',
+      warnings: ltbCalc.warnings || []
+    },
+    interactionSectionControl: {
+      memberBucklingInteractionMethod: setup.memberBucklingInteractionMethod,
+      colbeamInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
+      class12ElasticDesign: setup.class12ElasticDesign,
+      conservativeNMyMz: setup.conservativeNMyMz,
+      flangeBucklingIgnored: setup.flangeBucklingIgnored,
+      webBucklingIgnored: setup.webBucklingIgnored,
+      modalAnalysisStatus: setup.modalAnalysisStatus,
+      memberBucklingEngineValues: checks.memberBuckling || {},
+      formula: memberCalc.equation || 'Not available',
+      codeReference: memberCalc.codeReference || 'Not available'
+    },
+    resistancesChecks: {
+      NRd: axialCalc.resistance || 'Not available',
+      MyRd: checks.moment?.resistance,
+      MzRd: 'Not available',
+      VyRd: 'Not available',
+      VzRd: checks.shear?.resistance,
+      bucklingResistances: memberCalc.resistance || 'Not available',
+      ltbResistance: ltbCalc.resistance || 'Not available',
+      utilisationRatios: {
+        moment: checks.moment?.ir,
+        shear: checks.shear?.ir,
+        axial: checks.axial?.ir,
+        deflection: checks.deflection?.ir,
+        combined: checks.combined?.ir,
+        memberBuckling: checks.memberBuckling?.ir,
+        ltb: checks.ltb?.ir,
+        governing: summary.governingIR
+      },
+      governingCheck: result.status,
+      formulas: (result.calculationPackage?.calculations || []).map((calculation) => ({
+        id: calculation.id,
+        title: calculation.title,
+        codeReference: calculation.codeReference,
+        equation: calculation.equation,
+        result: calculation.result,
+        resistance: calculation.resistance,
+        utilisation: calculation.utilisation,
+        status: calculation.status
+      })),
+      momentFormula: momentCalc.equation || 'Not available',
+      shearFormula: shearCalc.equation || 'Not available'
+    }
+  };
+}
+
+function renderColbeamAudit(input, result) {
+  const host = $('colbeamAuditOutput');
+  if (!host) return;
+  const payload = buildColbeamAuditPayload(input, result);
+  window._lastColbeamAuditPayload = payload;
+  const warnings = payload.general.metadataOnlyWarnings || [];
+  host.innerHTML = [
+    auditSection('1. General audit info', [
+      ['Engine/profile', payload.general.engineProfile],
+      ['COLBEAM comparison mode/reference', payload.general.colbeamComparisonReference],
+      ['National Annex label', payload.general.nationalAnnexLabel],
+      ['Coefficient source', payload.general.coefficientSource],
+      ['Engine version', payload.general.engineVersion],
+      ['Metadata-only warnings', warnings.length ? warnings.join(' | ') : 'None']
+    ]),
+    auditSection('2. Section/material', Object.entries(payload.sectionMaterial)),
+    auditSection('3. Geometry/support', Object.entries(payload.geometrySupport)),
+    auditListSection('4a. UDL loads', payload.loadsActions.udls, ['label', 'direction', 'x1', 'x2', 'G', 'Q1', 'Q2', 'selfWeight']),
+    auditListSection('4b. Point loads', payload.loadsActions.points, ['label', 'direction', 'x', 'G', 'Q1', 'Q2']),
+    auditListSection('4c. Moment loads', payload.loadsActions.moments, ['label', 'direction', 'x', 'M', 'momentCase']),
+    auditListSection('4d. Trapezoidal loads', payload.loadsActions.trapezoidal, ['id', 'case', 'direction', 'q1', 'q2', 'x1', 'x2']),
+    auditSection('4e. Actions', [
+      ['Axial sign convention', payload.loadsActions.axial.signConvention],
+      ['Selfweight on/off', payload.loadsActions.selfWeight ? 'On' : 'Off'],
+      ['NEd', payload.loadsActions.designActions.NEd],
+      ['MyEd', payload.loadsActions.designActions.MyEd],
+      ['MzEd', payload.loadsActions.designActions.MzEd],
+      ['VyEd', payload.loadsActions.designActions.VyEd],
+      ['VzEd', payload.loadsActions.designActions.VzEd],
+      ['Units', JSON.stringify(payload.loadsActions.designActions.units)]
+    ]),
+    auditSection('5. Load combinations', [
+      ['Load combination type', payload.loadCombinations.type],
+      ['EN 1990 mode', payload.loadCombinations.en1990Mode],
+      ['Custom ULS factors configured', JSON.stringify(payload.loadCombinations.customULSFactorsConfigured || {})],
+      ['Custom SLS factors configured', JSON.stringify(payload.loadCombinations.customSLSFactorsConfigured || {})],
+      ['ULS factors used', JSON.stringify(payload.loadCombinations.ulsFactorsUsed || {})],
+      ['SLS factors used', JSON.stringify(payload.loadCombinations.slsFactorsUsed || {})],
+      ['psiQ1', payload.loadCombinations.psiQ1],
+      ['psiQ2', payload.loadCombinations.psiQ2],
+      ['Per-check 6.10a/b envelope', payload.loadCombinations.perCheckEnvelope],
+      ['Per-check envelope engine-wired', payload.loadCombinations.perCheckEnvelopeEngineWired],
+      ['Active ULS formula', payload.loadCombinations.activeULSFormula],
+      ['Active SLS formula', payload.loadCombinations.activeSLSFormula],
+      ['Governing combination/effect', payload.loadCombinations.governingCombinationEffect]
+    ]),
+    auditSection('6. Deflection', Object.entries(payload.deflection)),
+    auditSection('7. EC3 factors', [
+      ['gammaM0', `${payload.ec3Factors.gammaM0.value} (${payload.ec3Factors.gammaM0.status})`],
+      ['gammaM1', `${payload.ec3Factors.gammaM1.value} (${payload.ec3Factors.gammaM1.status})`],
+      ['shear factor eta', `${payload.ec3Factors.shearFactorEta.value} (${payload.ec3Factors.shearFactorEta.status})`]
+    ]),
+    auditSection('8. Buckling and LTB', Object.entries(payload.bucklingLtb).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
+    auditSection('9. Interaction and section control', Object.entries(payload.interactionSectionControl).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
+    auditSection('10. Resistances and checks', [
+      ['NRd', payload.resistancesChecks.NRd],
+      ['MyRd', payload.resistancesChecks.MyRd],
+      ['MzRd', payload.resistancesChecks.MzRd],
+      ['VyRd', payload.resistancesChecks.VyRd],
+      ['VzRd', payload.resistancesChecks.VzRd],
+      ['Buckling resistances', payload.resistancesChecks.bucklingResistances],
+      ['LTB resistance', payload.resistancesChecks.ltbResistance],
+      ['Utilisation ratios', JSON.stringify(payload.resistancesChecks.utilisationRatios)],
+      ['Governing check/status', payload.resistancesChecks.governingCheck],
+      ['Moment formula', payload.resistancesChecks.momentFormula],
+      ['Shear formula', payload.resistancesChecks.shearFormula],
+      ['Formula/check objects', `${payload.resistancesChecks.formulas.length} available in exported JSON`]
+    ])
+  ].join('');
 }
 
 function checkStatus(check) {
@@ -1539,6 +1916,12 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
+function colbeamAuditJsonBlob() {
+  const payload = window._lastColbeamAuditPayload || (state.last ? buildColbeamAuditPayload(state.last.input, state.last.result) : null);
+  if (!payload) throw new Error('Run a calculation before exporting COLBEAM audit output.');
+  return new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+}
+
 function saveLocalProject() {
   const payload = { schemaVersion: 3, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
   localStorage.setItem('beam_project_secure_draft_v1', JSON.stringify(payload));
@@ -1572,11 +1955,52 @@ function applyInput(input = {}) {
   if (input.combination?.combination) $('load_combo').value = input.combination.combination;
   if (input.combination?.psiQ1 !== undefined) $('psi_q1').value = input.combination.psiQ1;
   if (input.combination?.psiQ2 !== undefined) $('psi_q2').value = input.combination.psiQ2;
+  if (input.combination?.customULSFactors) {
+    setValue('customUlsG', input.combination.customULSFactors.G ?? 1.35);
+    setValue('customUlsQ1', input.combination.customULSFactors.Q1 ?? 1.5);
+    setValue('customUlsQ2', input.combination.customULSFactors.Q2 ?? 1.5);
+  }
+  if (input.combination?.customSLSFactors) {
+    setValue('customSlsG', input.combination.customSLSFactors.G ?? 1);
+    setValue('customSlsQ1', input.combination.customSLSFactors.Q1 ?? 1);
+    setValue('customSlsQ2', input.combination.customSLSFactors.Q2 ?? 0.7);
+  }
+  setChecked('perCheckEnvelope', input.combination?.perCheckEnvelope === true);
+  if (input.combination?.slsDeflectionBasis) setValue('slsDeflectionBasis', input.combination.slsDeflectionBasis);
+  setChecked('slsIncludeSelfWeight', input.combination?.slsIncludeSelfWeight !== false);
+  if (input.model?.colbeamSupportMappingLabel) setValue('colbeamSupportMappingLabel', input.model.colbeamSupportMappingLabel);
+  if (input.model?.supportEquivalenceNote) setValue('supportEquivalenceNote', input.model.supportEquivalenceNote);
+  const audit = input.settings?.colbeamAudit || input.settings?.audit || {};
+  setValue('materialVariantLabel', audit.materialVariantLabel || '');
+  setValue('colbeamNationalAnnexLabel', audit.nationalAnnexLabel || input.metadata?.nationalAnnex || 'UK National Annex');
+  setValue('coefficientSource', audit.coefficientSource || 'Backend EN 1990/EN 1993 defaults');
+  setValue('autoSectionClassificationStatus', audit.autoSectionClassificationStatus || 'manual');
+  setValue('class4EffectivePropertiesMode', audit.class4EffectivePropertiesMode || 'not_available');
+  setValue('shearFactorEta', audit.shearFactorEta ?? 1);
+  setChecked('class12ElasticDesign', audit.class12ElasticDesign === true);
+  setChecked('conservativeNMyMz', audit.conservativeNMyMz === true);
+  setChecked('flangeBucklingIgnored', audit.flangeBucklingIgnored === true);
+  setChecked('webBucklingIgnored', audit.webBucklingIgnored === true);
+  setValue('ltbC3', audit.ltbC3 ?? 0);
+  setValue('ltbKw', audit.ltbKw ?? 1);
+  setValue('colbeamLtbLoadHeight', audit.ltbLoadHeight || 'shear_centre');
+  setValue('ltbShearCentreConvention', audit.ltbShearCentreConvention || 'not_applied');
+  setValue('ltbRestraintModel', audit.ltbRestraintModel || 'current');
+  setValue('ltbMomentGradientMethod', audit.ltbMomentGradientMethod || 'manual');
+  setValue('lambdaLT0', audit.lambdaLT0 ?? 0.4);
+  setValue('ltbBeta', audit.beta ?? 0.75);
+  setValue('memberBucklingInteractionMethod', audit.memberBucklingInteractionMethod || 'current');
+  setValue('colbeamInteractionMethodLabel', audit.colbeamInteractionMethodLabel || 'Source to be confirmed');
+  setValue('supportBearingModel', audit.supportBearingModel || 'current_screening');
+  setValue('webBearingModel', audit.webBearingModel || 'current_screening');
+  setValue('stiffenerModel', audit.stiffenerModel || 'current_screening');
+  setValue('modalAnalysisStatus', audit.modalAnalysisStatus || 'not implemented');
   updateLCPreview();
   if (input.axial) {
     setValue('axialG', input.axial.G || 0);
     setValue('axialQ1', input.axial.Q1 || 0);
     setValue('axialQ2', input.axial.Q2 || 0);
+    setValue('axialSignConvention', input.axial.signConvention || 'positive_compression');
   }
   applyLoads(input.loads || {});
 }
@@ -1626,23 +2050,23 @@ function applyLoads(loads = {}) {
     if (load.sourceType === 'trap' && load.segmentIndex && load.segmentIndex !== 1) return;
     if (load.sourceType === 'trap') {
       const lc = load.loadCase || 'G';
-      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span });
+      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Z' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const q = Number(load[lc] || 0);
-      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span });
+      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Z' });
     });
   });
   (loads.points || []).forEach((load) => {
     if (Number(load.M || 0)) {
       const lc = load.momentCase || 'G';
-      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0 });
+      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Z' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const P = Number(load[lc] || 0);
-      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0 });
+      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Z' });
     });
   });
   Object.entries(rows).forEach(([type, byCase]) => {
@@ -1811,7 +2235,7 @@ function bindEvents() {
   $('sec_series')?.addEventListener('change', () => { populateSectionNames(); recalculateDebounced(); });
   $('sec_size')?.addEventListener('change', () => { updateSectionPreview(); recalculateDebounced(); });
   $('sec_class')?.addEventListener('change', () => renderSectionUseSummary(state.currentSectionPreview));
-  ['load_combo', 'psi_q1', 'psi_q2'].forEach((id) => {
+  ['load_combo', 'psi_q1', 'psi_q2', 'customUlsG', 'customUlsQ1', 'customUlsQ2', 'customSlsG', 'customSlsQ1', 'customSlsQ2', 'perCheckEnvelope'].forEach((id) => {
     $(id)?.addEventListener('input', updateLCPreview);
     $(id)?.addEventListener('change', updateLCPreview);
   });
@@ -1898,6 +2322,16 @@ function bindEvents() {
   $('newProjectBtn')?.addEventListener('click', startNewProject);
   $('openProjectBtn')?.addEventListener('click', showStartScreen);
   $('downloadProjectBtn')?.addEventListener('click', () => downloadBlob(new Blob([JSON.stringify({ input: buildRequest(), result: state.last?.result || null }, null, 2)], { type: 'application/json' }), 'beam-project.json'));
+  $('copyColbeamAuditJson')?.addEventListener('click', async () => {
+    const blob = colbeamAuditJsonBlob();
+    const text = await blob.text();
+    await navigator.clipboard.writeText(text);
+    setSaveStatus('COLBEAM audit JSON copied.', 'ok');
+  });
+  $('downloadColbeamAuditJson')?.addEventListener('click', () => {
+    downloadBlob(colbeamAuditJsonBlob(), 'colbeam-audit-output.json');
+    setSaveStatus('COLBEAM audit JSON downloaded.', 'ok');
+  });
   $('projectFileInput')?.addEventListener('change', async (event) => {
     const file = event.target.files?.[0]; if (!file) return;
     const payload = JSON.parse(await file.text());
