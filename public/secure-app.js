@@ -1152,6 +1152,10 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
   const shearCalc = getCalcObject(result, 'shear-resistance');
   const axialCalc = getCalcObject(result, 'axial-resistance');
   const warnings = [...(result.calculationPackage?.warnings || []), ...(result.sectionProperties?.dimensions?.warnings || [])];
+  const bendingBasis = checks.sectionControlSettings?.bendingResistanceBasis || {};
+  const resistanceBasis = setup.class12ElasticDesign
+    ? 'forced elastic'
+    : (bendingBasis.y || (settings.sectionClass === 4 ? 'effective' : settings.sectionClass === 3 ? 'elastic' : 'plastic'));
   return {
     generatedAt: result.generatedAt || new Date().toISOString(),
     general: {
@@ -1283,11 +1287,11 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       referenceInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
       class12ElasticDesign: setup.class12ElasticDesign,
       conservativeNMyMz: setup.conservativeNMyMz,
-      bendingResistanceBasis: checks.sectionControlSettings?.bendingResistanceBasis || 'Not available',
-      MyRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MyRdBasis || 'Not available',
-      MzRdBasis: checks.sectionControlSettings?.bendingResistanceBasis?.MzRdBasis || 'Not available',
+      bendingResistanceBasis: bendingBasis || 'Not available',
+      MyRdBasis: bendingBasis.MyRdBasis || 'Not available',
+      MzRdBasis: bendingBasis.MzRdBasis || 'Not available',
       sectionClass: input.settings?.sectionClass || result.inputEcho?.sectionClass || 'Not available',
-      resistanceBasis: checks.sectionControlSettings?.bendingResistanceBasis?.y || 'Not available',
+      resistanceBasis,
       conservativeInteractionResult: checks.conservativeInteraction || 'Not available',
       flangeBucklingIgnored: setup.flangeBucklingIgnored,
       webBucklingIgnored: setup.webBucklingIgnored,
@@ -1395,7 +1399,28 @@ function renderColbeamAudit(input, result) {
       ['eta not used reason', payload.ec3Factors.shearFactorEta.notUsedReason || 'None']
     ]),
     auditSection('8. Buckling and LTB', Object.entries(payload.bucklingLtb).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
-    auditSection('9. Interaction and section control', Object.entries(payload.interactionSectionControl).map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : value])),
+    auditSection('9. Interaction and section control', [
+      ['Section class', payload.interactionSectionControl.sectionClass],
+      ['Resistance basis', payload.interactionSectionControl.resistanceBasis],
+      ['Bending resistance basis', typeof payload.interactionSectionControl.bendingResistanceBasis === 'object' ? JSON.stringify(payload.interactionSectionControl.bendingResistanceBasis) : payload.interactionSectionControl.bendingResistanceBasis],
+      ['MyRd basis', payload.interactionSectionControl.MyRdBasis],
+      ['MzRd basis', payload.interactionSectionControl.MzRdBasis],
+      ['Force elastic resistance for Class 1-2 sections', payload.interactionSectionControl.class12ElasticDesign ? 'On' : 'Off'],
+      ['Conservative N + My + Mz', payload.interactionSectionControl.conservativeNMyMz ? 'On' : 'Off'],
+      ['Conservative N + My + Mz result', typeof payload.interactionSectionControl.conservativeInteractionResult === 'object' ? JSON.stringify(payload.interactionSectionControl.conservativeInteractionResult) : payload.interactionSectionControl.conservativeInteractionResult],
+      ['Member buckling interaction method', payload.interactionSectionControl.memberBucklingInteractionMethod],
+      ['Reference interaction method', payload.interactionSectionControl.referenceInteractionMethodLabel],
+      ['Flange buckling not taken into account', payload.interactionSectionControl.flangeBucklingIgnored ? 'On' : 'Off'],
+      ['Flange buckling engine-wired', payload.interactionSectionControl.flangeBucklingIgnoredEngineWired],
+      ['Flange buckling warning', payload.interactionSectionControl.flangeBucklingWarning || 'None'],
+      ['Web buckling not taken into account', payload.interactionSectionControl.webBucklingIgnored ? 'On' : 'Off'],
+      ['Web buckling engine-wired', payload.interactionSectionControl.webBucklingIgnoredEngineWired],
+      ['Web buckling warning', payload.interactionSectionControl.webBucklingWarning || 'None'],
+      ['Modal analysis status', payload.interactionSectionControl.modalAnalysisStatus],
+      ['Member buckling engine values', JSON.stringify(payload.interactionSectionControl.memberBucklingEngineValues || {})],
+      ['Formula', payload.interactionSectionControl.formula],
+      ['Code reference', payload.interactionSectionControl.codeReference]
+    ]),
     auditSection('10. Resistances and checks', [
       ['NRd', payload.resistancesChecks.NRd],
       ['MyRd', payload.resistancesChecks.MyRd],

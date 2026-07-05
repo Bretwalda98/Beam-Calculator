@@ -77,6 +77,9 @@ assert.ok(secureApp.includes('function renderColbeamAudit'), 'secure-app.js shou
 assert.ok(secureApp.includes('function renderAxisOverview'), 'secure-app.js should render major/minor/combined axis overview.');
 assert.ok(secureApp.includes('minorAxisOverview'), 'secure-app.js should render the minor-axis overview card.');
 assert.ok(secureApp.includes('combinedAxisOverview'), 'secure-app.js should render the combined axis overview card.');
+assert.ok(secureApp.includes('Resistance basis'), 'Audit output should show a friendly resistance basis label.');
+assert.ok(secureApp.includes('MyRd basis'), 'Audit output should show a friendly MyRd basis label.');
+assert.ok(secureApp.includes('MzRd basis'), 'Audit output should show a friendly MzRd basis label.');
 assert.ok(secureApp.includes('advanced-ec3-audit-output.json'), 'secure-app.js should support audit JSON download.');
 
 console.log('colbeam ui controls ok', {
