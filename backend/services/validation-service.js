@@ -1,6 +1,7 @@
 const SUPPORTED_SUPPORTS = new Set(['ss', 'cantilever', 'fixed_fixed', 'fixed_roller', 'spring_spring', 'spring_roller']);
 const SUPPORTED_UNITS = new Set(['tonne', 'kn']);
 const SUPPORTED_MATERIALS = new Set(['S235', 'S275', 'S355']);
+const { LOAD_DIRECTIONS, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
 
 function fail(message, code = 'validation_error') {
   const err = new Error(message);
@@ -47,6 +48,18 @@ function validateCalculationRequest(input = {}) {
   assertRange(settings.gammaM1 ?? 1, 0.5, 2, 'gammaM1');
   assertRange(settings.deflectionLimit ?? 300, 50, 1000, 'Deflection limit');
   assertRange(settings.sectionClass ?? 2, 1, 4, 'Section class');
+  const audit = normaliseColbeamAuditInput(input);
+  assertRange(audit.combination.customULSFactors.G, 0, 3, 'Custom ULS G factor');
+  assertRange(audit.combination.customULSFactors.Q1, 0, 3, 'Custom ULS Q1 factor');
+  assertRange(audit.combination.customULSFactors.Q2, 0, 3, 'Custom ULS Q2 factor');
+  assertRange(audit.combination.customSLSFactors.G, 0, 3, 'Custom SLS G factor');
+  assertRange(audit.combination.customSLSFactors.Q1, 0, 3, 'Custom SLS Q1 factor');
+  assertRange(audit.combination.customSLSFactors.Q2, 0, 3, 'Custom SLS Q2 factor');
+  assertRange(audit.settings.shearFactorEta, 0.1, 2, 'Shear factor eta');
+  assertRange(audit.settings.ltbC3, -10, 10, 'LTB C3');
+  assertRange(audit.settings.ltbKw, 0.1, 5, 'LTB kw');
+  assertRange(audit.settings.lambdaLT0, 0, 2, 'lambdaLT0');
+  assertRange(audit.settings.beta, 0.1, 2, 'beta');
 
   const checkLoadCaseValues = (load, prefix) => {
     ['G', 'Q1', 'Q2'].forEach((key) => optionalFinite(load[key], 0, `${prefix} ${key}`));
@@ -54,6 +67,7 @@ function validateCalculationRequest(input = {}) {
 
   (input.loads?.udls || []).forEach((load, index) => {
     const prefix = `Uniform load ${index + 1}`;
+    if (load.direction && !LOAD_DIRECTIONS.has(String(load.direction).toUpperCase())) fail(`${prefix} direction must be Y or Z.`);
     const x1 = validateLoadPosition(load.x1 ?? 0, L, `${prefix} x1`);
     const x2 = validateLoadPosition(load.x2 ?? L, L, `${prefix} x2`);
     if (x2 <= x1) fail(`${prefix} x2 must be greater than x1.`);
@@ -62,6 +76,7 @@ function validateCalculationRequest(input = {}) {
 
   (input.loads?.points || []).forEach((load, index) => {
     const prefix = Math.abs(Number(load.M || 0)) > 0 ? `Moment load ${index + 1}` : `Point load ${index + 1}`;
+    if (load.direction && !LOAD_DIRECTIONS.has(String(load.direction).toUpperCase())) fail(`${prefix} direction must be Y or Z.`);
     validateLoadPosition(load.x ?? 0, L, `${prefix} x`);
     optionalFinite(load.M, 0, `${prefix} M`);
     if (load.momentCase && !['G', 'Q1', 'Q2'].includes(load.momentCase)) fail(`${prefix} moment case must be G, Q1 or Q2.`);
