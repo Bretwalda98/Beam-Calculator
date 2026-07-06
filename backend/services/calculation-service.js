@@ -835,6 +835,8 @@ function buildAxisActionSummary(unit, zDirectionUls, yDirectionUls, check, minor
     MzEd: round(unit.fromBaseMoment(yDirectionUls.peakM.val), 5),
     VzEd: round(unit.fromBaseForce(zDirectionUls.peakV.val), 5),
     VyEd: round(unit.fromBaseForce(yDirectionUls.peakV.val), 5),
+    zDeflection: round(directionFlags.zDeflection ?? 0, 5),
+    yDeflection: round(directionFlags.yDeflection ?? 0, 5),
     MyRd: round(unit.fromBaseMoment(check.MyRd), 5),
     MzRd: minorCheck.available ? round(unit.fromBaseMoment(minorCheck.MzRd), 5) : null,
     VzRd: round(unit.fromBaseForce(check.VzRd), 5),
@@ -1918,6 +1920,7 @@ function calculateBeam(input) {
   };
   let uls;
   let minorUls;
+  let minorSls;
   let ulsNote;
   let ulsCoeff;
   if (lc.key === 'en1990_610ab') {
@@ -1940,11 +1943,17 @@ function calculateBeam(input) {
   minorUls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
   const slsCombo = buildSlsCombination(lc, audit);
   const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
+  minorSls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'z') : emptyBeamResult(L);
   const axialRaw = input.axial || {};
   const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
   const minorCheck = hasYDirectionLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Y-direction loads applied.');
-  const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck, { hasZDirectionLoads, hasYDirectionLoads });
+  const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck, {
+    hasZDirectionLoads,
+    hasYDirectionLoads,
+    zDeflection: sls.defl.peakY.val,
+    yDeflection: minorSls.defl.peakY.val
+  });
   const conservativeInteraction = buildConservativeInteractionCheck(check, minorCheck, audit.settings);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
   const endSupport = evaluateEndSupportCheck(check, uls, settings);

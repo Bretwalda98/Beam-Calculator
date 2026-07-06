@@ -45,6 +45,7 @@ const y = calculateBeam(yInput);
 assert.strictEqual(y.actions.axis.MyEd, 0);
 assert.ok(y.actions.axis.MzEd > 0, 'Y-direction UDL should produce weak-axis MzEd when Iz exists.');
 assert.ok(y.actions.axis.VyEd > 0, 'Y-direction UDL should produce weak-axis shear VyEd.');
+assert.ok(y.actions.axis.yDeflection > 0, 'Y-direction UDL should produce y-deflection from the minor-axis SLS solve.');
 assert.strictEqual(y.actions.axis.governingDirection, 'Y');
 assert.ok(y.checks.minorAxis.available, 'Y-direction load should activate the weak-axis check.');
 
@@ -60,6 +61,8 @@ const z = calculateBeam(zInput);
 assert.ok(z.actions.axis.MyEd > 0, 'Z-direction UDL should produce strong-axis MyEd.');
 assert.strictEqual(z.actions.axis.MzEd, 0);
 assert.ok(z.actions.axis.VzEd > 0, 'Z-direction UDL should produce strong-axis shear VzEd.');
+assert.ok(z.actions.axis.zDeflection > 0, 'Z-direction UDL should produce z-deflection from the strong-axis SLS solve.');
+assert.strictEqual(z.actions.axis.yDeflection, 0);
 assert.strictEqual(z.actions.axis.governingDirection, 'Z');
 assert.strictEqual(z.checks.minorAxis.available, false);
 assert.ok(/No explicit Y-direction loads/.test(z.checks.minorAxis.message), 'Z-only case should record that no Y load is applied.');

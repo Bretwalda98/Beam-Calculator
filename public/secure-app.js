@@ -1055,7 +1055,7 @@ function buildAxisOverviewModels(result = {}) {
     demand: {
       MyEd: axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit),
       VzEd: axisValue(axis.VzEd ?? s.maxShearZ ?? s.maxShear, forceUnit),
-      zDeflection: axisValue(s.deflection, 'mm')
+      zDeflection: axisValue(axis.zDeflection ?? s.deflection, 'mm')
     },
     resistance: {
       MyRd: axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
@@ -1079,7 +1079,7 @@ function buildAxisOverviewModels(result = {}) {
     demand: {
       MzEd: axisValue(axis.MzEd ?? s.maxMomentZ ?? 0, momentUnit),
       VyEd: axisValue(axis.VyEd ?? s.maxShearY ?? 0, forceUnit),
-      yDeflection: yDemand ? 'Not yet calculated separately' : '0 mm'
+      yDeflection: yDemand ? axisValue(axis.yDeflection, 'mm') : '0 mm'
     },
     resistance: {
       MzRd: yDemand ? axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit) : 'Not governing',

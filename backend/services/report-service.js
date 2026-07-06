@@ -447,7 +447,7 @@ function formatDirectionOverviewRows(result = {}) {
     zRows: [
       ['My,Ed', axisValue(axis.MyEd || 0, moment)],
       ['Vz,Ed', axisValue(axis.VzEd || 0, force)],
-      ['z-deflection', axisValue(summary.deflection || 0, 'mm')],
+      ['z-deflection', axisValue(axis.zDeflection ?? summary.deflection ?? 0, 'mm')],
       ['My,Rd', axisValue(axis.MyRd ?? checks.moment?.resistance, moment)],
       ['Vz,Rd', axisValue(axis.VzRd ?? checks.shear?.resistance, force)],
       ['My utilisation', axisValue(hasZ ? (axis.MyIR ?? checks.moment?.ir) : 0, '', 3)],
@@ -459,7 +459,7 @@ function formatDirectionOverviewRows(result = {}) {
     yRows: [
       ['Mz,Ed', axisValue(axis.MzEd || 0, moment)],
       ['Vy,Ed', axisValue(axis.VyEd || 0, force)],
-      ['y-deflection', hasY ? 'Not yet calculated separately' : '0 mm'],
+      ['y-deflection', hasY ? axisValue(axis.yDeflection, 'mm') : '0 mm'],
       ['Mz,Rd', hasY ? axisValue(axis.MzRd ?? checks.minorAxis?.momentResistance, moment) : 'Not governing'],
       ['Vy,Rd', hasY ? axisValue(axis.VyRd ?? checks.minorAxis?.shearResistance, force) : 'Not governing'],
       ['Mz utilisation', axisValue(hasY ? (axis.MzIR ?? checks.minorAxis?.ir) : 0, '', 3)],
