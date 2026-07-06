@@ -19,7 +19,10 @@ const forbidden = [
   'function buildReportHTML',
   'function runCalc',
   'My,Rd = Wpl',
-  'Eurocode resistance checks remain Free'
+  'Eurocode resistance checks remain Free',
+  'COLBEAM',
+  'Colbeam',
+  'colbeam'
 ];
 
 function walk(target) {

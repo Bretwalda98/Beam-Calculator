@@ -78,7 +78,7 @@ zElasticInput.settings.colbeamAudit.class12ElasticDesign = true;
 const zElastic = calculateBeam(zElasticInput);
 assert.ok(zElastic.checks.minorAxis.momentResistance < zPlastic.checks.minorAxis.momentResistance, 'Class 1-2 elastic toggle should reduce MzRd when Wel,z < Wpl,z.');
 assert.strictEqual(zElastic.checks.sectionControlSettings.bendingResistanceBasis.MzRdBasis, 'Wel,z');
-assert.ok(zElastic.checks.minorAxis.warnings.some((warning) => warning.includes('Avy')), 'Missing Avy warning should remain visible for minor-axis shear.');
+assert.ok(zElastic.actions.axis.VzRd > 0, 'Completed dataset should provide Avy-based minor-axis shear resistance.');
 
 PROFILE_DB.TEST_STAGE6 = [{
   name: 'MISSING_AVZ',

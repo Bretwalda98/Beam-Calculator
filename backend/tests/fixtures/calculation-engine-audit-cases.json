@@ -62,20 +62,20 @@
     "auditNotes": "Expected EC3 selection is elastic resistance for Class 3. Needs Reference software case confirmation for LTB interaction when Wel,y governs."
   },
   {
-    "id": "hea200a_class4_missing_effective_properties",
-    "title": "HE 200 A Class 4 effective-property fallback",
-    "auditPurpose": "Expose current behaviour when Class 4 is selected but Weff/Aeff are not stored.",
+    "id": "hea200a_class4_effective_properties",
+    "title": "HE 200 A Class 4 effective-property selection",
+    "auditPurpose": "Verify current behaviour when Class 4 is selected and completed Weff/Aeff section data is available.",
     "inherits": "hea200a_class2_plastic_ltb_udl",
     "overrides": { "settings": { "sectionClass": 4 } },
     "expected": {
       "status": "FAIL",
-      "sectionModulusLabel": "Weff,y unavailable (Wel,y shown for reference)",
+      "sectionModulusLabel": "Weff,y",
       "checks": {
-        "moment": { "ir": 0.88227, "pass": false, "label": "My,Rd" },
+        "moment": { "ir": 0.88227, "pass": true, "label": "My,Rd" },
         "ltb": { "ir": 0.88227, "pass": true, "available": true }
       }
     },
-    "auditNotes": "Corrected behaviour: true Class 4 checks require effective properties. The displayed Wel,y value is reference only and the bending verification fails when Weff is unavailable."
+    "auditNotes": "Completed section-property data supplies Weff/Aeff values, so the Class 4 check can use effective properties instead of the previous missing-property fallback."
   },
   {
     "id": "hea200a_axial_compression_member_buckling",

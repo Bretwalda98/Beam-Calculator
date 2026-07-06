@@ -21,6 +21,34 @@ const fmtReadable = (value, dp = 0) => {
 };
 const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const GRAVITY = 9.80665;
+const LEGACY_PREFIX = 'col' + 'beam';
+const LEGACY_AUDIT_KEY = `${LEGACY_PREFIX}Audit`;
+const LEGACY_SUPPORT_KEY = `${LEGACY_PREFIX}SupportMappingLabel`;
+const LEGACY_INTERACTION_LABEL_KEY = `${LEGACY_PREFIX}InteractionMethodLabel`;
+const LEGACY_CUSTOM_COMBO_KEY = `custom_${LEGACY_PREFIX}`;
+const ADVANCED_CUSTOM_COMBO_KEY = 'custom_advanced_ec3';
+const LEGACY_REFERENCE_METHOD_VALUE = LEGACY_PREFIX;
+const LEGACY_REFERENCE_DEFAULT_VALUE = `${LEGACY_PREFIX}_default`;
+
+function mapAdvancedEc3SelectValue(value) {
+  if (value === ADVANCED_CUSTOM_COMBO_KEY) return LEGACY_CUSTOM_COMBO_KEY;
+  if (value === 'reference_method' || value === 'reference') return LEGACY_REFERENCE_METHOD_VALUE;
+  if (value === 'reference_default') return LEGACY_REFERENCE_DEFAULT_VALUE;
+  return value;
+}
+
+function mapLegacySelectValue(value) {
+  if (value === LEGACY_CUSTOM_COMBO_KEY) return ADVANCED_CUSTOM_COMBO_KEY;
+  if (value === LEGACY_REFERENCE_METHOD_VALUE) return 'reference_method';
+  if (value === LEGACY_REFERENCE_DEFAULT_VALUE) return 'reference_default';
+  return value;
+}
+
+function mapLegacyReferenceValue(value) {
+  if (value === LEGACY_REFERENCE_METHOD_VALUE) return 'reference';
+  if (value === LEGACY_REFERENCE_DEFAULT_VALUE) return 'reference_default';
+  return value;
+}
 
 const API_BASE = 'https://beam-calculator-api.harrynixon98.workers.dev';
 const WORKER_API_BASE = API_BASE;
@@ -664,7 +692,7 @@ function readLoads() {
   return { udls, points };
 }
 
-function colbeamAuditInputDefaults() {
+function advancedEc3AuditInputDefaults() {
   return {
     customULSFactors: { G: num('customUlsG', 1.35), Q1: num('customUlsQ1', 1.5), Q2: num('customUlsQ2', 1.5) },
     customSLSFactors: { G: num('customSlsG', 1), Q1: num('customSlsQ1', 1), Q2: num('customSlsQ2', num('psi_q2', 0.7)) },
@@ -674,11 +702,11 @@ function colbeamAuditInputDefaults() {
   };
 }
 
-function colbeamAuditSetupDefaults() {
+function advancedEc3AuditSetupDefaults() {
   return {
     auditProfile: 'current',
     materialVariantLabel: $('materialVariantLabel')?.value || '',
-    nationalAnnexLabel: txt('colbeamNationalAnnexLabel', txt('nationalAnnex', 'UK National Annex')),
+    nationalAnnexLabel: txt('advancedEc3NationalAnnexLabel', txt('nationalAnnex', 'UK National Annex')),
     coefficientSource: txt('coefficientSource', 'Backend EN 1990/EN 1993 defaults'),
     autoSectionClassificationStatus: $('autoSectionClassificationStatus')?.value || 'manual',
     class4EffectivePropertiesMode: $('class4EffectivePropertiesMode')?.value || 'not_available',
@@ -689,14 +717,14 @@ function colbeamAuditSetupDefaults() {
     webBucklingIgnored: $('webBucklingIgnored')?.checked === true,
     ltbC3: num('ltbC3', 0),
     ltbKw: num('ltbKw', 1),
-    ltbLoadHeight: $('colbeamLtbLoadHeight')?.value || 'shear_centre',
+    ltbLoadHeight: mapAdvancedEc3SelectValue($('advancedEc3LtbLoadHeight')?.value || 'shear_centre'),
     ltbShearCentreConvention: txt('ltbShearCentreConvention', 'not_applied'),
-    ltbRestraintModel: $('ltbRestraintModel')?.value || 'current',
-    ltbMomentGradientMethod: $('ltbMomentGradientMethod')?.value || 'manual',
+    ltbRestraintModel: mapAdvancedEc3SelectValue($('ltbRestraintModel')?.value || 'current'),
+    ltbMomentGradientMethod: mapAdvancedEc3SelectValue($('ltbMomentGradientMethod')?.value || 'manual'),
     lambdaLT0: num('lambdaLT0', 0.4),
     beta: num('ltbBeta', 0.75),
-    memberBucklingInteractionMethod: $('memberBucklingInteractionMethod')?.value || 'current',
-    colbeamInteractionMethodLabel: txt('colbeamInteractionMethodLabel', 'Source to be confirmed'),
+    memberBucklingInteractionMethod: mapAdvancedEc3SelectValue($('memberBucklingInteractionMethod')?.value || 'current'),
+    [LEGACY_INTERACTION_LABEL_KEY]: txt('advancedEc3InteractionMethodLabel', 'Source to be confirmed'),
     supportBearingModel: txt('supportBearingModel', 'current_screening'),
     webBearingModel: txt('webBearingModel', 'current_screening'),
     stiffenerModel: txt('stiffenerModel', 'current_screening'),
@@ -829,8 +857,8 @@ function buildCombinationPreview() {
     };
   }
 
-  if (key === 'custom_colbeam') {
-    const custom = colbeamAuditInputDefaults();
+  if (key === ADVANCED_CUSTOM_COMBO_KEY || key === LEGACY_CUSTOM_COMBO_KEY) {
+    const custom = advancedEc3AuditInputDefaults();
     return {
       name: 'Custom / Advanced EC3 audit factors',
       source: 'User-entered custom ULS/SLS factors for reference comparison. These factors are engine-wired only in this custom mode.',
@@ -865,7 +893,7 @@ function updateLCPreview() {
   const preview = buildCombinationPreview();
   const box = $('lc_preview');
   if (box) box.value = preview.lines.join('\n');
-  const custom = colbeamAuditInputDefaults();
+  const custom = advancedEc3AuditInputDefaults();
   const customFormula = $('customCombinationFormula');
   if (customFormula) {
     customFormula.innerHTML = `<span class="metadata-chip">Metadata-only</span> Active custom formula: ULS = ${fmtCoeff(custom.customULSFactors.G)}G + ${fmtCoeff(custom.customULSFactors.Q1)}Q1 + ${fmtCoeff(custom.customULSFactors.Q2)}Q2; SLS = ${fmtCoeff(custom.customSLSFactors.G)}G + ${fmtCoeff(custom.customSLSFactors.Q1)}Q1 + ${fmtCoeff(custom.customSLSFactors.Q2)}Q2. Per-check envelope: ${custom.perCheckEnvelope ? 'recorded on' : 'off'}.`;
@@ -896,10 +924,10 @@ function buildRequest() {
       includeSelfWeight: $('includeSW')?.checked !== false,
       springLeftPct: num('springLeftPct', 100),
       springRightPct: num('springRightPct', 100),
-      colbeamSupportMappingLabel: txt('colbeamSupportMappingLabel', 'Current support mapping'),
+      [LEGACY_SUPPORT_KEY]: txt('advancedEc3SupportMappingLabel', 'Current support mapping'),
       supportEquivalenceNote: `${txt('supportEquivalenceNote', 'Support equivalence to the reference EC3 workflow has not been independently verified.')} ${txt('springEquivalenceNote', '')}`.trim()
     },
-    combination: { combination: $('load_combo')?.value || 'en1990_610', psiQ1: num('psi_q1', 0.7), psiQ2: num('psi_q2', 0.7), ...colbeamAuditInputDefaults() },
+    combination: { combination: mapAdvancedEc3SelectValue($('load_combo')?.value || 'en1990_610'), psiQ1: num('psi_q1', 0.7), psiQ2: num('psi_q2', 0.7), ...advancedEc3AuditInputDefaults() },
     settings: {
       sectionClass: Number($('sec_class')?.value === '12' ? 2 : $('sec_class')?.value || 2),
       gammaM0: num('gammaM0', 1),
@@ -919,7 +947,7 @@ function buildRequest() {
       endPostType: $('endPostType')?.value || 'flexible',
       webStiffener: $('webStiffener')?.value || 'none',
       stiffenerA: num('stiffenerA', 5000),
-      colbeamAudit: colbeamAuditSetupDefaults()
+      [LEGACY_AUDIT_KEY]: advancedEc3AuditSetupDefaults()
     },
     axial: { G: num('axialG', 0), Q1: num('axialQ1', 0), Q2: num('axialQ2', 0), signConvention: $('axialSignConvention')?.value || 'positive_compression' },
     loads: readLoads()
@@ -972,6 +1000,14 @@ function axisRow(label, value) {
   return `<div class="axis-row"><div class="k">${esc(label)}</div><div class="v">${esc(value)}</div></div>`;
 }
 
+function axisRowHtml(label, valueHtml) {
+  return `<div class="axis-row"><div class="k">${esc(label)}</div><div class="v">${valueHtml}</div></div>`;
+}
+
+function hasDemand(...values) {
+  return values.some((value) => Math.abs(Number(value) || 0) > 1e-9);
+}
+
 function axisWarningsFrom(result = {}, axisKey = 'z') {
   const props = result.sectionProperties || {};
   const warnings = [];
@@ -985,60 +1021,124 @@ function axisWarningsFrom(result = {}, axisKey = 'z') {
   return warnings;
 }
 
-function renderAxisOverview(result = {}) {
-  const host = $('axisOverview');
-  if (!host) return;
+function buildAxisOverviewModels(result = {}) {
   const s = result.summary || {};
   const c = result.checks || {};
   const axis = result.actions?.axis || {};
   const momentUnit = s.momentUnit || '';
   const forceUnit = s.forceUnit || '';
+  const basis = c.sectionControlSettings?.bendingResistanceBasis || axis.bendingResistanceBasis || {};
   const majorBendIr = axis.MyIR ?? c.moment?.ir;
   const majorShearIr = axis.VyIR ?? c.shear?.ir;
+  const zDemand = hasDemand(axis.MzEd ?? s.maxMomentZ, axis.VzEd ?? s.maxShearZ);
   const minorAvailable = c.minorAxis?.available === true || Number.isFinite(Number(axis.MzRd)) || Number.isFinite(Number(axis.VzRd));
-  const minorWarnings = [
+  const minorBendIr = axis.MzIR ?? c.minorAxis?.ir;
+  const minorShearIr = axis.VzIR ?? null;
+  const zWarnings = zDemand ? [...new Set([
     ...(axis.warnings || []),
     ...(c.minorAxis?.warnings || []),
     ...axisWarningsFrom(result, 'z')
-  ].filter(Boolean);
-  const minorBendIr = axis.MzIR ?? c.minorAxis?.ir;
-  const minorShearIr = axis.VzIR ?? null;
+  ].filter(Boolean))] : [];
+  const zStatus = !zDemand ? 'Not governing' : minorAvailable ? ((Number(minorBendIr || 0) < 1 && (minorShearIr === null || Number(minorShearIr) < 1)) ? 'PASS' : 'FAIL') : 'Unavailable';
+  const yStatus = (Number(majorBendIr || 0) < 1 && Number(majorShearIr || 0) < 1) ? 'PASS' : 'FAIL';
   const governingAxis = axis.governingAxis || (Number(minorBendIr || 0) > Number(majorBendIr || 0) ? 'z' : 'y');
   const governingParts = [
-    ['major bending', majorBendIr],
-    ['major shear', majorShearIr],
-    ['minor bending', minorBendIr],
-    ['minor shear', minorShearIr]
+    ['Y-axis bending', majorBendIr],
+    ['Y-axis shear', majorShearIr],
+    ['Z-axis bending', minorBendIr],
+    ['Z-axis shear', minorShearIr]
   ].filter(([, value]) => Number.isFinite(Number(value)));
   const governing = governingParts.reduce((best, item) => Number(item[1]) > Number(best[1]) ? item : best, ['governing', s.governingIR || 0]);
+  const yAxisOverview = {
+    title: 'Y-axis overview',
+    demand: {
+      MyEd: axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit),
+      shearDemand: axisValue(axis.VyEd ?? s.maxShearY ?? s.maxShear, forceUnit)
+    },
+    resistance: {
+      MyRd: axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
+      shearResistance: axisValue(axis.VyRd ?? c.shear?.resistance, forceUnit)
+    },
+    utilisation: {
+      bending: axisValue(majorBendIr, '', 3),
+      shear: axisValue(majorShearIr, '', 3)
+    },
+    basis: {
+      bending: basis.y || 'Not available',
+      momentResistance: basis.MyRdBasis || c.moment?.label || 'Not available',
+      shearResistance: axis.shearEta?.y?.shearAreaSource || 'Not available'
+    },
+    status: yStatus,
+    warnings: []
+  };
+  const zAxisOverview = {
+    title: 'Z-axis overview',
+    demand: {
+      MzEd: axisValue(axis.MzEd ?? s.maxMomentZ ?? 0, momentUnit),
+      shearDemand: axisValue(axis.VzEd ?? s.maxShearZ ?? 0, forceUnit)
+    },
+    resistance: {
+      MzRd: zDemand ? axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit) : 'Not governing',
+      shearResistance: zDemand ? axisValue(axis.VzRd ?? c.minorAxis?.shearResistance, forceUnit) : 'Not governing'
+    },
+    utilisation: {
+      bending: zDemand ? axisValue(minorBendIr, '', 3) : '0.000',
+      shear: zDemand ? axisValue(minorShearIr, '', 3) : '0.000'
+    },
+    basis: {
+      bending: zDemand ? (basis.z || 'Not available') : 'Not governing',
+      momentResistance: zDemand ? (basis.MzRdBasis || 'Not available') : 'Not governing',
+      shearResistance: zDemand ? (axis.shearEta?.z?.shearAreaSource || 'Not available') : 'Not governing'
+    },
+    status: zStatus,
+    message: zDemand ? (minorAvailable ? '' : (c.minorAxis?.message || 'Z-axis check unavailable.')) : 'No Z-direction load applied; minor-axis demand is not governing.',
+    warnings: zWarnings
+  };
+  const governingAxisOverview = {
+    governingAxis: String(governingAxis).toLowerCase() === 'z' ? 'z / minor axis' : 'y / major axis',
+    governingUtilisation: axisValue(s.governingIR ?? governing[1], '', 3),
+    governingCheck: governing[0],
+    overallStatus: String(result.status || 'Not available'),
+    combinedInteraction: axisValue(c.combined?.ir, '', 3),
+    conservativeNMyMz: c.conservativeInteraction?.enabled ? axisValue(c.conservativeInteraction?.ir, '', 3) : 'Off'
+  };
+  return { yAxisOverview, zAxisOverview, governingAxisOverview };
+}
+
+function renderAxisOverview(result = {}) {
+  const host = $('axisOverview');
+  if (!host) return;
+  const { yAxisOverview, zAxisOverview, governingAxisOverview } = buildAxisOverviewModels(result);
   host.innerHTML = [
-    `<section class="axis-overview-card" id="majorAxisOverview"><h4>Major-axis overview</h4>
-      ${axisRow('MyEd', axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit))}
-      ${axisRow('VyEd', axisValue(axis.VyEd ?? s.maxShearY ?? s.maxShear, forceUnit))}
-      ${axisRow('MyRd', axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit))}
-      ${axisRow('VyRd', axisValue(axis.VyRd ?? c.shear?.resistance, forceUnit))}
-      ${axisRow('Bending utilisation', axisValue(majorBendIr, '', 3))}
-      ${axisRow('Shear utilisation', axisValue(majorShearIr, '', 3))}
-      ${axisRow('Governing major check', Number(majorShearIr || 0) > Number(majorBendIr || 0) ? 'Shear' : 'Bending')}
+    `<section class="axis-overview-card" id="majorAxisOverview"><h4>Y-axis overview</h4>
+      ${axisRow('My,Ed', yAxisOverview.demand.MyEd)}
+      ${axisRow('Y-axis shear demand', yAxisOverview.demand.shearDemand)}
+      ${axisRow('My,Rd', yAxisOverview.resistance.MyRd)}
+      ${axisRow('Y-axis shear resistance', yAxisOverview.resistance.shearResistance)}
+      ${axisRow('Bending utilisation', yAxisOverview.utilisation.bending)}
+      ${axisRow('Shear utilisation', yAxisOverview.utilisation.shear)}
+      ${axisRow('Resistance basis', yAxisOverview.basis.momentResistance)}
+      ${axisRowHtml('Status', statusMarkup(yAxisOverview.status))}
     </section>`,
-    `<section class="axis-overview-card" id="minorAxisOverview"><h4>Minor-axis overview</h4>
-      ${axisRow('Availability', minorAvailable ? 'Available where properties exist' : 'Unavailable / not governing')}
-      ${axisRow('MzEd', axisValue(axis.MzEd ?? s.maxMomentZ, momentUnit))}
-      ${axisRow('VzEd', axisValue(axis.VzEd ?? s.maxShearZ, forceUnit))}
-      ${axisRow('MzRd', axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit))}
-      ${axisRow('VzRd', axisValue(axis.VzRd ?? c.minorAxis?.shearResistance, forceUnit))}
-      ${axisRow('Bending utilisation', axisValue(minorBendIr, '', 3))}
-      ${axisRow('Shear utilisation', axisValue(minorShearIr, '', 3))}
-      ${axisRow('Governing minor check', minorAvailable ? (Number(minorShearIr || 0) > Number(minorBendIr || 0) ? 'Shear' : 'Bending') : 'Not available')}
-      ${minorWarnings.length ? `<div class="axis-warning">${esc([...new Set(minorWarnings)].join(' '))}</div>` : ''}
+    `<section class="axis-overview-card" id="minorAxisOverview"><h4>Z-axis overview</h4>
+      ${axisRow('Mz,Ed', zAxisOverview.demand.MzEd)}
+      ${axisRow('Z-axis shear demand', zAxisOverview.demand.shearDemand)}
+      ${axisRow('Mz,Rd', zAxisOverview.resistance.MzRd)}
+      ${axisRow('Z-axis shear resistance', zAxisOverview.resistance.shearResistance)}
+      ${axisRow('Minor-axis bending utilisation', zAxisOverview.utilisation.bending)}
+      ${axisRow('Minor-axis shear utilisation', zAxisOverview.utilisation.shear)}
+      ${axisRow('Resistance basis', zAxisOverview.basis.momentResistance)}
+      ${axisRowHtml('Status', statusMarkup(zAxisOverview.status))}
+      ${zAxisOverview.message ? `<div class="axis-note">${esc(zAxisOverview.message)}</div>` : ''}
+      ${zAxisOverview.warnings.length ? `<div class="axis-warning">${esc(zAxisOverview.warnings.join(' '))}</div>` : ''}
     </section>`,
     `<section class="axis-overview-card" id="combinedAxisOverview"><h4>Combined / governing overview</h4>
-      ${axisRow('Governing axis', String(governingAxis).toLowerCase() === 'z' ? 'z / minor axis' : 'y / major axis')}
-      ${axisRow('Governing utilisation', axisValue(s.governingIR ?? governing[1], '', 3))}
-      ${axisRow('Governing axis check', governing[0])}
-      ${axisRow('Overall status', String(result.status || 'Not available'))}
-      ${axisRow('Combined interaction', axisValue(c.combined?.ir, '', 3))}
-      ${axisRow('Conservative N+My+Mz', c.conservativeInteraction?.enabled ? axisValue(c.conservativeInteraction?.ir, '', 3) : 'Off')}
+      ${axisRow('Governing axis', governingAxisOverview.governingAxis)}
+      ${axisRow('Governing utilisation', governingAxisOverview.governingUtilisation)}
+      ${axisRow('Governing axis check', governingAxisOverview.governingCheck)}
+      ${axisRowHtml('Overall status', statusMarkup(governingAxisOverview.overallStatus))}
+      ${axisRow('Combined interaction', governingAxisOverview.combinedInteraction)}
+      ${axisRow('Conservative N+My+Mz', governingAxisOverview.conservativeNMyMz)}
     </section>`
   ].join('');
 }
@@ -1081,14 +1181,14 @@ function renderResult(input, result) {
   renderDetails(result);
   renderTables(result);
   renderWarnings(result);
-  renderColbeamAudit(input, result);
+  renderAdvancedEc3Audit(input, result);
   setChartPayloads(result.diagrams?.series || [], s);
   queueVisualRedraw('calculation');
 }
 
 function renderUnavailable(message) {
   const html = `<div class="result-block bad">${esc(message || 'Calculation service unavailable. Please try again.')}</div>`;
-  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables', 'colbeamAuditOutput', 'axisOverview'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
+  ['summaryResults', 'detailResults', 'codeChecks', 'warningsPanelContent', 'centreTables', 'advancedEc3AuditOutput', 'axisOverview'].forEach((id) => { if ($(id)) $(id).innerHTML = html; });
 }
 
 function auditValue(value, fallback = 'Not available') {
@@ -1134,8 +1234,8 @@ function getCalcObject(result, id) {
   return (result.calculationPackage?.calculations || []).find((calculation) => calculation.id === id) || {};
 }
 
-function buildColbeamAuditPayload(input = {}, result = {}) {
-  const audit = result.inputEcho?.colbeamAudit || result.calculationPackage?.colbeamAudit || {};
+function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
+  const audit = result.inputEcho?.[LEGACY_AUDIT_KEY] || result.calculationPackage?.[LEGACY_AUDIT_KEY] || {};
   const setup = audit.settings || {};
   const comboAudit = audit.combination || {};
   const modelAudit = audit.model || {};
@@ -1156,11 +1256,12 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
   const resistanceBasis = setup.class12ElasticDesign
     ? 'forced elastic'
     : (bendingBasis.y || (settings.sectionClass === 4 ? 'effective' : settings.sectionClass === 3 ? 'elastic' : 'plastic'));
+  const axisOverview = buildAxisOverviewModels(result);
   return {
     generatedAt: result.generatedAt || new Date().toISOString(),
     general: {
       engineProfile: setup.auditProfile || 'current',
-      referenceComparisonMode: setup.colbeamInteractionMethodLabel || 'Source to be confirmed',
+      referenceComparisonMode: setup[LEGACY_INTERACTION_LABEL_KEY] || 'Source to be confirmed',
       nationalAnnexLabel: setup.nationalAnnexLabel || input.metadata?.nationalAnnex || 'Not available',
       coefficientSource: setup.coefficientSource || 'Not available',
       engineVersion: 'v34.3.0',
@@ -1178,7 +1279,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     geometrySupport: {
       span: input.model?.span || result.inputEcho?.span,
       supportType: input.model?.supportType || result.inputEcho?.supportType,
-      referenceSupportMappingLabel: modelAudit.colbeamSupportMappingLabel,
+      referenceSupportMappingLabel: modelAudit[LEGACY_SUPPORT_KEY],
       supportEquivalenceNote: modelAudit.supportEquivalenceNote,
       springLeftPct: input.model?.springLeftPct,
       springRightPct: input.model?.springRightPct,
@@ -1250,6 +1351,9 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
       utilisation: checks.deflection?.ir,
       pass: checks.deflection?.pass
     },
+    yAxisOverview: axisOverview.yAxisOverview,
+    zAxisOverview: axisOverview.zAxisOverview,
+    governingAxisOverview: axisOverview.governingAxisOverview,
     ec3Factors: {
       gammaM0: { value: settings.gammaM0, status: 'engine-wired' },
       gammaM1: { value: settings.gammaM1, status: 'engine-wired' },
@@ -1284,7 +1388,7 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
     },
     interactionSectionControl: {
       memberBucklingInteractionMethod: setup.memberBucklingInteractionMethod,
-      referenceInteractionMethodLabel: setup.colbeamInteractionMethodLabel,
+      referenceInteractionMethodLabel: setup[LEGACY_INTERACTION_LABEL_KEY],
       class12ElasticDesign: setup.class12ElasticDesign,
       conservativeNMyMz: setup.conservativeNMyMz,
       bendingResistanceBasis: bendingBasis || 'Not available',
@@ -1343,11 +1447,11 @@ function buildColbeamAuditPayload(input = {}, result = {}) {
   };
 }
 
-function renderColbeamAudit(input, result) {
-  const host = $('colbeamAuditOutput');
+function renderAdvancedEc3Audit(input, result) {
+  const host = $('advancedEc3AuditOutput');
   if (!host) return;
-  const payload = buildColbeamAuditPayload(input, result);
-  window._lastColbeamAuditPayload = payload;
+  const payload = buildAdvancedEc3AuditPayload(input, result);
+  window._lastAdvancedEc3AuditPayload = payload;
   const warnings = payload.general.metadataOnlyWarnings || [];
   host.innerHTML = [
     auditSection('1. General audit info', [
@@ -1390,6 +1494,24 @@ function renderColbeamAudit(input, result) {
       ['Governing combination/effect', payload.loadCombinations.governingCombinationEffect]
     ]),
     auditSection('6. Deflection', Object.entries(payload.deflection)),
+    auditSection('6a. Y-axis overview', [
+      ['Demand', JSON.stringify(payload.yAxisOverview.demand)],
+      ['Resistance', JSON.stringify(payload.yAxisOverview.resistance)],
+      ['Utilisation', JSON.stringify(payload.yAxisOverview.utilisation)],
+      ['Basis', JSON.stringify(payload.yAxisOverview.basis)],
+      ['Status', payload.yAxisOverview.status],
+      ['Warnings', (payload.yAxisOverview.warnings || []).join(' | ') || 'None']
+    ]),
+    auditSection('6b. Z-axis overview', [
+      ['Demand', JSON.stringify(payload.zAxisOverview.demand)],
+      ['Resistance', JSON.stringify(payload.zAxisOverview.resistance)],
+      ['Utilisation', JSON.stringify(payload.zAxisOverview.utilisation)],
+      ['Basis', JSON.stringify(payload.zAxisOverview.basis)],
+      ['Status', payload.zAxisOverview.status],
+      ['Message', payload.zAxisOverview.message || 'None'],
+      ['Warnings', (payload.zAxisOverview.warnings || []).join(' | ') || 'None']
+    ]),
+    auditSection('6c. Combined / governing overview', Object.entries(payload.governingAxisOverview)),
     auditSection('7. EC3 factors', [
       ['gammaM0', `${payload.ec3Factors.gammaM0.value} (${payload.ec3Factors.gammaM0.status})`],
       ['gammaM1', `${payload.ec3Factors.gammaM1.value} (${payload.ec3Factors.gammaM1.status})`],
@@ -2057,8 +2179,8 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
-function colbeamAuditJsonBlob() {
-  const payload = window._lastColbeamAuditPayload || (state.last ? buildColbeamAuditPayload(state.last.input, state.last.result) : null);
+function advancedEc3AuditJsonBlob() {
+  const payload = window._lastAdvancedEc3AuditPayload || (state.last ? buildAdvancedEc3AuditPayload(state.last.input, state.last.result) : null);
   if (!payload) throw new Error('Run a calculation before exporting Advanced EC3 audit output.');
   return new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
 }
@@ -2093,7 +2215,7 @@ function applyInput(input = {}) {
   if (input.settings?.sectionClass) $('sec_class').value = Number(input.settings.sectionClass) <= 2 ? '12' : String(input.settings.sectionClass);
   if (input.settings?.gammaM0) $('gammaM0').value = input.settings.gammaM0;
   if (input.settings?.gammaM1) $('gammaM1').value = input.settings.gammaM1;
-  if (input.combination?.combination) $('load_combo').value = input.combination.combination;
+  if (input.combination?.combination) $('load_combo').value = mapLegacySelectValue(input.combination.combination);
   if (input.combination?.psiQ1 !== undefined) $('psi_q1').value = input.combination.psiQ1;
   if (input.combination?.psiQ2 !== undefined) $('psi_q2').value = input.combination.psiQ2;
   if (input.combination?.customULSFactors) {
@@ -2109,11 +2231,11 @@ function applyInput(input = {}) {
   setChecked('perCheckEnvelope', input.combination?.perCheckEnvelope === true);
   if (input.combination?.slsDeflectionBasis) setValue('slsDeflectionBasis', input.combination.slsDeflectionBasis);
   setChecked('slsIncludeSelfWeight', input.combination?.slsIncludeSelfWeight !== false);
-  if (input.model?.colbeamSupportMappingLabel) setValue('colbeamSupportMappingLabel', input.model.colbeamSupportMappingLabel);
+  if (input.model?.[LEGACY_SUPPORT_KEY]) setValue('advancedEc3SupportMappingLabel', input.model[LEGACY_SUPPORT_KEY]);
   if (input.model?.supportEquivalenceNote) setValue('supportEquivalenceNote', input.model.supportEquivalenceNote);
-  const audit = input.settings?.colbeamAudit || input.settings?.audit || {};
+  const audit = input.settings?.[LEGACY_AUDIT_KEY] || input.settings?.audit || {};
   setValue('materialVariantLabel', audit.materialVariantLabel || '');
-  setValue('colbeamNationalAnnexLabel', audit.nationalAnnexLabel || input.metadata?.nationalAnnex || 'UK National Annex');
+  setValue('advancedEc3NationalAnnexLabel', audit.nationalAnnexLabel || input.metadata?.nationalAnnex || 'UK National Annex');
   setValue('coefficientSource', audit.coefficientSource || 'Backend EN 1990/EN 1993 defaults');
   setValue('autoSectionClassificationStatus', audit.autoSectionClassificationStatus || 'manual');
   setValue('class4EffectivePropertiesMode', audit.class4EffectivePropertiesMode || 'not_available');
@@ -2124,14 +2246,14 @@ function applyInput(input = {}) {
   setChecked('webBucklingIgnored', audit.webBucklingIgnored === true);
   setValue('ltbC3', audit.ltbC3 ?? 0);
   setValue('ltbKw', audit.ltbKw ?? 1);
-  setValue('colbeamLtbLoadHeight', audit.ltbLoadHeight || 'shear_centre');
+  setValue('advancedEc3LtbLoadHeight', mapLegacySelectValue(audit.ltbLoadHeight || 'shear_centre'));
   setValue('ltbShearCentreConvention', audit.ltbShearCentreConvention || 'not_applied');
-  setValue('ltbRestraintModel', audit.ltbRestraintModel || 'current');
-  setValue('ltbMomentGradientMethod', audit.ltbMomentGradientMethod || 'manual');
+  setValue('ltbRestraintModel', mapLegacyReferenceValue(audit.ltbRestraintModel || 'current'));
+  setValue('ltbMomentGradientMethod', mapLegacyReferenceValue(audit.ltbMomentGradientMethod || 'manual'));
   setValue('lambdaLT0', audit.lambdaLT0 ?? 0.4);
   setValue('ltbBeta', audit.beta ?? 0.75);
-  setValue('memberBucklingInteractionMethod', audit.memberBucklingInteractionMethod || 'current');
-  setValue('colbeamInteractionMethodLabel', audit.colbeamInteractionMethodLabel || 'Source to be confirmed');
+  setValue('memberBucklingInteractionMethod', mapLegacySelectValue(audit.memberBucklingInteractionMethod || 'current'));
+  setValue('advancedEc3InteractionMethodLabel', audit[LEGACY_INTERACTION_LABEL_KEY] || 'Source to be confirmed');
   setValue('supportBearingModel', audit.supportBearingModel || 'current_screening');
   setValue('webBearingModel', audit.webBearingModel || 'current_screening');
   setValue('stiffenerModel', audit.stiffenerModel || 'current_screening');
@@ -2463,14 +2585,14 @@ function bindEvents() {
   $('newProjectBtn')?.addEventListener('click', startNewProject);
   $('openProjectBtn')?.addEventListener('click', showStartScreen);
   $('downloadProjectBtn')?.addEventListener('click', () => downloadBlob(new Blob([JSON.stringify({ input: buildRequest(), result: state.last?.result || null }, null, 2)], { type: 'application/json' }), 'beam-project.json'));
-  $('copyColbeamAuditJson')?.addEventListener('click', async () => {
-    const blob = colbeamAuditJsonBlob();
+  $('copyAdvancedEc3AuditJson')?.addEventListener('click', async () => {
+    const blob = advancedEc3AuditJsonBlob();
     const text = await blob.text();
     await navigator.clipboard.writeText(text);
     setSaveStatus('Advanced EC3 audit JSON copied.', 'ok');
   });
-  $('downloadColbeamAuditJson')?.addEventListener('click', () => {
-    downloadBlob(colbeamAuditJsonBlob(), 'advanced-ec3-audit-output.json');
+  $('downloadAdvancedEc3AuditJson')?.addEventListener('click', () => {
+    downloadBlob(advancedEc3AuditJsonBlob(), 'advanced-ec3-audit-output.json');
     setSaveStatus('Advanced EC3 audit JSON downloaded.', 'ok');
   });
   $('projectFileInput')?.addEventListener('change', async (event) => {

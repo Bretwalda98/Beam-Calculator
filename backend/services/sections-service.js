@@ -1,4 +1,10 @@
 const { PROFILE_DB } = require('../data/sections-database');
+let COMPLETE_PROFILE_DB = {};
+try {
+  ({ COMPLETE_PROFILE_DB = {} } = require('../../artifacts/section-properties/sections-database-complete.generated.js'));
+} catch (err) {
+  COMPLETE_PROFILE_DB = {};
+}
 
 const FAMILY_ORDER = ['UB', 'UC', 'UBP', 'J', 'PFC', 'CH', 'RHS', 'HEA', 'HEB', 'HEM', 'HEAA', 'IPE', 'IPN', 'UPE', 'UPN'];
 
@@ -54,7 +60,8 @@ function getSection(family, name) {
   const rows = PROFILE_DB[key] || [];
   const section = rows.find((row) => row.name === name);
   if (!section) return null;
-  return { ...section, family: key };
+  const complete = (COMPLETE_PROFILE_DB[key] || []).find((row) => row.name === name);
+  return { ...section, ...(complete || {}), family: key };
 }
 
 function getSectionById(id) {

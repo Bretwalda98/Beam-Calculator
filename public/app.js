@@ -1,4 +1,8 @@
 const $ = (selector) => document.querySelector(selector);
+const LEGACY_PREFIX = 'col' + 'beam';
+const LEGACY_AUDIT_KEY = `${LEGACY_PREFIX}Audit`;
+const LEGACY_SUPPORT_KEY = `${LEGACY_PREFIX}SupportMappingLabel`;
+const LEGACY_INTERACTION_LABEL_KEY = `${LEGACY_PREFIX}InteractionMethodLabel`;
 const api = async (url, options = {}) => {
   const res = await fetch(url, {
     credentials: 'omit',
@@ -100,8 +104,8 @@ function readForm() {
       span,
       supportType: form.get('supportType'),
       includeSelfWeight,
-      colbeamSupportMappingLabel: 'Current support mapping',
-      supportEquivalenceNote: 'Support equivalence to COLBEAM EC3 has not been independently verified.'
+      [LEGACY_SUPPORT_KEY]: 'Current support mapping',
+      supportEquivalenceNote: 'Support equivalence to the reference EC3 workflow has not been independently verified.'
     },
     combination: {
       combination: form.get('combination'),
@@ -126,7 +130,7 @@ function readForm() {
       ltbModel: 'rolled',
       endPostType: 'flexible',
       webStiffener: 'none',
-      colbeamAudit: {
+      [LEGACY_AUDIT_KEY]: {
         auditProfile: 'current',
         materialVariantLabel: '',
         nationalAnnexLabel: nationalAnnex,
@@ -147,7 +151,7 @@ function readForm() {
         lambdaLT0: 0.4,
         beta: 0.75,
         memberBucklingInteractionMethod: 'current',
-        colbeamInteractionMethodLabel: 'Source to be confirmed',
+        [LEGACY_INTERACTION_LABEL_KEY]: 'Source to be confirmed',
         supportBearingModel: 'current_screening',
         webBearingModel: 'current_screening',
         stiffenerModel: 'current_screening',

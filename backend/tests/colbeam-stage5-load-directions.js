@@ -45,6 +45,9 @@ assert.ok(y.actions.axis.MyEd > 0, 'Y-direction UDL should produce major-axis My
 assert.strictEqual(y.actions.axis.MzEd, 0);
 assert.ok(y.actions.axis.VyEd > 0, 'Y-direction UDL should produce major-axis shear action.');
 assert.strictEqual(y.actions.axis.governingAxis, 'y');
+assert.strictEqual(y.checks.minorAxis.available, false);
+assert.ok(/No explicit Z-direction loads/.test(y.checks.minorAxis.message), 'Y-only case should record that no Z load is applied.');
+assert.ok(!(y.calculationPackage.warnings || []).some((warning) => /Minor-axis bending check not available/.test(warning)), 'Y-only case should not raise scary missing-property warnings.');
 
 const legacyInput = clone(yInput);
 delete legacyInput.loads.udls[0].direction;
@@ -59,7 +62,8 @@ assert.ok(z.actions.axis.MzEd > 0, 'Z-direction UDL should produce minor-axis Mz
 assert.ok(z.actions.axis.MzRd > 0, 'Z-direction UDL should produce MzRd when Wz exists.');
 assert.ok(z.checks.minorAxis.available, 'Minor-axis check should be available for IPE100 z-axis bending.');
 assert.strictEqual(z.actions.axis.governingAxis, 'z');
-assert.ok(z.actions.axis.warnings.some((warning) => warning.includes('Avy')), 'Missing minor-axis shear area should be warned, not inferred.');
+assert.ok(z.actions.axis.VzRd > 0, 'Completed dataset should provide minor-axis shear resistance where Avy exists.');
+assert.strictEqual(z.actions.axis.shearEta.z.shearAreaSource, 'Avy_mm2');
 
 const mixedInput = baseInput('Y');
 mixedInput.loads.udls.push({ label: 'Z UDL', direction: 'Z', x1: 0, x2: 6, G: 1, Q1: 0, Q2: 0 });
@@ -68,12 +72,14 @@ assert.ok(mixed.actions.axis.MyEd > 0, 'Mixed Y/Z loads should retain MyEd.');
 assert.ok(mixed.actions.axis.MzEd > 0, 'Mixed Y/Z loads should retain MzEd.');
 assert.notStrictEqual(mixed.actions.axis.MyIR, mixed.actions.axis.MzIR, 'Mixed-axis checks should stay separate.');
 
-const missingMinorInput = baseInput('Z');
-missingMinorInput.section = { family: 'HEA', name: 'HE 200 A' };
-const missingMinor = calculateBeam(missingMinorInput);
-assert.strictEqual(missingMinor.checks.minorAxis.available, false);
-assert.ok(missingMinor.checks.minorAxis.warnings.some((warning) => warning.includes('Wpl_z_mm3')), 'Missing z modulus should be reported.');
-assert.strictEqual(missingMinor.actions.axis.MzRd, null);
+const completeMinorInput = baseInput('Z');
+completeMinorInput.section = { family: 'HEA', name: 'HE 200 A' };
+const completeMinor = calculateBeam(completeMinorInput);
+assert.strictEqual(completeMinor.checks.minorAxis.available, true);
+assert.ok(completeMinor.actions.axis.MzRd > 0, 'Completed dataset should provide HE 200 A MzRd.');
+assert.ok(completeMinor.actions.axis.VzRd > 0, 'Completed dataset should provide HE 200 A Z-axis shear resistance from Avy.');
+assert.strictEqual(completeMinor.actions.axis.shearEta.z.shearAreaSource, 'Avy_mm2');
+assert.ok(completeMinor.sectionProperties.Avy_mm2 > 0, 'Completed dataset should expose Avy in section properties.');
 
 const customY = baseInput('Y');
 customY.combination.combination = 'custom_colbeam';
@@ -92,5 +98,6 @@ console.log('colbeam stage5 load directions ok', {
   zMzEd: z.actions.axis.MzEd,
   zMzRd: z.actions.axis.MzRd,
   mixedGoverningAxis: mixed.actions.axis.governingAxis,
-  missingMinorWarning: missingMinor.checks.minorAxis.warnings[0]
+  completeMinorMzRd: completeMinor.actions.axis.MzRd,
+  completeMinorVzRd: completeMinor.actions.axis.VzRd
 });

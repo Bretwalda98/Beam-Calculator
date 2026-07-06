@@ -1284,6 +1284,8 @@ function getFullSectionProperties(section, check) {
     Wpl_y_mm3: round(moduli.Wpl || 0, 3),
     Wpl_z_mm3: round(section.Wpl_z_mm3 || 0, 3),
     Weff_y_mm3: round(moduli.Weff || 0, 3),
+    Weff_z_mm3: round(section.Weff_z_mm3 || 0, 3),
+    Avy_mm2: round(section.Avy_mm2 || 0, 3),
     Avz_mm2: round(section.Avz_mm2 || 0, 3),
     mass_kg_m: round(section.mass_kg_m || 0, 3),
     classification: `Class ${check.cls}`,
