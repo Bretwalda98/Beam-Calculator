@@ -581,13 +581,13 @@ function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values
   card.dataset.row = String(rowIndex);
   card.dataset.case = loadCase;
   if (userAdded) card.dataset.userAdded = 'true';
-  const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Y';
+  const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Z';
   card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${rowIndex + 1}</span><span>${esc(cfg.title)}</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
     <div class="load-entry-fields">${cfg.fields.map(([field, label]) => {
       const fallback = (field === 'x2') ? L : 0;
       const value = values[field] ?? fallback;
       return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${loadCase}" value="${esc(value)}"></div>`;
-    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option></select></div></div><div class="metadata-note">Y uses the current major-axis engine. Z records/uses minor-axis actions where section data supports it.</div><div class="load-validation-note"></div>`;
+    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option></select></div></div><div class="metadata-note">Z-direction loading produces My/Vz and z-deflection. Y-direction loading produces Mz/Vy and y-deflection.</div><div class="load-validation-note"></div>`;
   card.classList.toggle('is-loadcase-hidden', loadCase !== state.activeLoadCase);
   card.querySelector('.load-remove-btn')?.addEventListener('click', () => {
     card.remove();
@@ -614,7 +614,7 @@ function loadField(card, field, fallback = 0) {
 }
 
 function loadDirection(card) {
-  const value = String(card.querySelector('[data-field="direction"]')?.value || 'Y').toUpperCase();
+  const value = String(card.querySelector('[data-field="direction"]')?.value || 'Z').toUpperCase();
   return value === 'Y' ? 'Y' : 'Z';
 }
 
@@ -1029,116 +1029,136 @@ function buildAxisOverviewModels(result = {}) {
   const forceUnit = s.forceUnit || '';
   const basis = c.sectionControlSettings?.bendingResistanceBasis || axis.bendingResistanceBasis || {};
   const majorBendIr = axis.MyIR ?? c.moment?.ir;
-  const majorShearIr = axis.VyIR ?? c.shear?.ir;
-  const zDemand = hasDemand(axis.MzEd ?? s.maxMomentZ, axis.VzEd ?? s.maxShearZ);
-  const minorAvailable = c.minorAxis?.available === true || Number.isFinite(Number(axis.MzRd)) || Number.isFinite(Number(axis.VzRd));
+  const majorShearIr = axis.VzIR ?? c.shear?.ir;
+  const zDemand = Boolean(axis.hasZDirectionLoads) || hasDemand(axis.MyEd ?? s.maxMomentY, axis.VzEd ?? s.maxShearZ);
+  const yDemand = Boolean(axis.hasYDirectionLoads) || hasDemand(axis.MzEd ?? s.maxMomentZ, axis.VyEd ?? s.maxShearY);
+  const minorAvailable = c.minorAxis?.available === true || Number.isFinite(Number(axis.MzRd)) || Number.isFinite(Number(axis.VyRd));
   const minorBendIr = axis.MzIR ?? c.minorAxis?.ir;
-  const minorShearIr = axis.VzIR ?? null;
-  const zWarnings = zDemand ? [...new Set([
+  const minorShearIr = axis.VyIR ?? null;
+  const yWarnings = yDemand ? [...new Set([
     ...(axis.warnings || []),
     ...(c.minorAxis?.warnings || []),
     ...axisWarningsFrom(result, 'z')
   ].filter(Boolean))] : [];
-  const zStatus = !zDemand ? 'Not governing' : minorAvailable ? ((Number(minorBendIr || 0) < 1 && (minorShearIr === null || Number(minorShearIr) < 1)) ? 'PASS' : 'FAIL') : 'Unavailable';
-  const yStatus = (Number(majorBendIr || 0) < 1 && Number(majorShearIr || 0) < 1) ? 'PASS' : 'FAIL';
-  const governingAxis = axis.governingAxis || (Number(minorBendIr || 0) > Number(majorBendIr || 0) ? 'z' : 'y');
+  const zStatus = !zDemand ? 'Not governing' : (Number(majorBendIr || 0) < 1 && Number(majorShearIr || 0) < 1) ? 'PASS' : 'FAIL';
+  const yStatus = !yDemand ? 'Not governing' : minorAvailable ? ((Number(minorBendIr || 0) < 1 && (minorShearIr === null || Number(minorShearIr) < 1)) ? 'PASS' : 'FAIL') : 'Unavailable';
+  const governingDirection = axis.governingDirection || (Number(minorBendIr || 0) > Number(majorBendIr || 0) ? 'Y' : 'Z');
   const governingParts = [
-    ['Y-axis bending', majorBendIr],
-    ['Y-axis shear', majorShearIr],
-    ['Z-axis bending', minorBendIr],
-    ['Z-axis shear', minorShearIr]
+    ['Z-direction bending My', zDemand ? majorBendIr : 0],
+    ['Z-direction shear Vz', zDemand ? majorShearIr : 0],
+    ['Y-direction bending Mz', yDemand ? minorBendIr : 0],
+    ['Y-direction shear Vy', yDemand ? minorShearIr : 0]
   ].filter(([, value]) => Number.isFinite(Number(value)));
   const governing = governingParts.reduce((best, item) => Number(item[1]) > Number(best[1]) ? item : best, ['governing', s.governingIR || 0]);
-  const yAxisOverview = {
-    title: 'Y-axis overview',
+  const zDirectionOverview = {
+    title: 'Z-direction loading - strong-axis bending My / shear Vz',
     demand: {
       MyEd: axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit),
-      shearDemand: axisValue(axis.VyEd ?? s.maxShearY ?? s.maxShear, forceUnit)
+      VzEd: axisValue(axis.VzEd ?? s.maxShearZ ?? s.maxShear, forceUnit),
+      zDeflection: axisValue(s.deflection, 'mm')
     },
     resistance: {
       MyRd: axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
-      shearResistance: axisValue(axis.VyRd ?? c.shear?.resistance, forceUnit)
+      VzRd: axisValue(axis.VzRd ?? c.shear?.resistance, forceUnit)
     },
     utilisation: {
-      bending: axisValue(majorBendIr, '', 3),
-      shear: axisValue(majorShearIr, '', 3)
+      bending: zDemand ? axisValue(majorBendIr, '', 3) : '0.000',
+      shear: zDemand ? axisValue(majorShearIr, '', 3) : '0.000'
     },
     basis: {
-      bending: basis.y || 'Not available',
+      bending: basis.zDirection || basis.y || 'Not available',
       momentResistance: basis.MyRdBasis || c.moment?.label || 'Not available',
-      shearResistance: axis.shearEta?.y?.shearAreaSource || 'Not available'
-    },
-    status: yStatus,
-    warnings: []
-  };
-  const zAxisOverview = {
-    title: 'Z-axis overview',
-    demand: {
-      MzEd: axisValue(axis.MzEd ?? s.maxMomentZ ?? 0, momentUnit),
-      shearDemand: axisValue(axis.VzEd ?? s.maxShearZ ?? 0, forceUnit)
-    },
-    resistance: {
-      MzRd: zDemand ? axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit) : 'Not governing',
-      shearResistance: zDemand ? axisValue(axis.VzRd ?? c.minorAxis?.shearResistance, forceUnit) : 'Not governing'
-    },
-    utilisation: {
-      bending: zDemand ? axisValue(minorBendIr, '', 3) : '0.000',
-      shear: zDemand ? axisValue(minorShearIr, '', 3) : '0.000'
-    },
-    basis: {
-      bending: zDemand ? (basis.z || 'Not available') : 'Not governing',
-      momentResistance: zDemand ? (basis.MzRdBasis || 'Not available') : 'Not governing',
-      shearResistance: zDemand ? (axis.shearEta?.z?.shearAreaSource || 'Not available') : 'Not governing'
+      shearResistance: axis.shearEta?.zDirection?.shearAreaSource || axis.shearEta?.z?.shearAreaSource || 'Not available'
     },
     status: zStatus,
-    message: zDemand ? (minorAvailable ? '' : (c.minorAxis?.message || 'Z-axis check unavailable.')) : 'No Z-direction load applied; minor-axis demand is not governing.',
-    warnings: zWarnings
+    message: zDemand ? '' : 'No Z-direction load applied; strong-axis demand is not governing.',
+    warnings: []
   };
-  const governingAxisOverview = {
-    governingAxis: String(governingAxis).toLowerCase() === 'z' ? 'z / minor axis' : 'y / major axis',
+  const yDirectionOverview = {
+    title: 'Y-direction loading - weak-axis bending Mz / shear Vy',
+    demand: {
+      MzEd: axisValue(axis.MzEd ?? s.maxMomentZ ?? 0, momentUnit),
+      VyEd: axisValue(axis.VyEd ?? s.maxShearY ?? 0, forceUnit),
+      yDeflection: yDemand ? 'Not yet calculated separately' : '0 mm'
+    },
+    resistance: {
+      MzRd: yDemand ? axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit) : 'Not governing',
+      VyRd: yDemand ? axisValue(axis.VyRd ?? c.minorAxis?.shearResistance, forceUnit) : 'Not governing'
+    },
+    utilisation: {
+      bending: yDemand ? axisValue(minorBendIr, '', 3) : '0.000',
+      shear: yDemand ? axisValue(minorShearIr, '', 3) : '0.000'
+    },
+    basis: {
+      bending: yDemand ? (basis.yDirection || basis.z || 'Not available') : 'Not governing',
+      momentResistance: yDemand ? (basis.MzRdBasis || 'Not available') : 'Not governing',
+      shearResistance: yDemand ? (axis.shearEta?.yDirection?.shearAreaSource || axis.shearEta?.y?.shearAreaSource || 'Not available') : 'Not governing'
+    },
+    status: yStatus,
+    message: yDemand ? (minorAvailable ? '' : (c.minorAxis?.message || 'Y-direction weak-axis check unavailable.')) : 'No Y-direction load applied; weak-axis demand is not governing.',
+    warnings: yWarnings
+  };
+  const combinedOverview = {
+    governingDirection: governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz' : 'Z-direction loading / strong-axis My',
     governingUtilisation: axisValue(s.governingIR ?? governing[1], '', 3),
     governingCheck: governing[0],
     overallStatus: String(result.status || 'Not available'),
+    NEd: axisValue(c.axial?.axialEd, forceUnit),
+    NRd: 'See axial resistance check',
+    MyRatio: `${zDirectionOverview.demand.MyEd} / ${zDirectionOverview.resistance.MyRd}`,
+    MzRatio: `${yDirectionOverview.demand.MzEd} / ${yDirectionOverview.resistance.MzRd}`,
     combinedInteraction: axisValue(c.combined?.ir, '', 3),
     conservativeNMyMz: c.conservativeInteraction?.enabled ? axisValue(c.conservativeInteraction?.ir, '', 3) : 'Off'
   };
-  return { yAxisOverview, zAxisOverview, governingAxisOverview };
+  return {
+    zDirectionOverview,
+    yDirectionOverview,
+    combinedOverview,
+    axisConvention: axis.axisConvention || 'X is the member longitudinal axis. Z-direction loading produces My/Vz. Y-direction loading produces Mz/Vy.'
+  };
 }
 
 function renderAxisOverview(result = {}) {
   const host = $('axisOverview');
   if (!host) return;
-  const { yAxisOverview, zAxisOverview, governingAxisOverview } = buildAxisOverviewModels(result);
+  const { zDirectionOverview, yDirectionOverview, combinedOverview, axisConvention } = buildAxisOverviewModels(result);
   host.innerHTML = [
-    `<section class="axis-overview-card" id="majorAxisOverview"><h4>Y-axis overview</h4>
-      ${axisRow('My,Ed', yAxisOverview.demand.MyEd)}
-      ${axisRow('Y-axis shear demand', yAxisOverview.demand.shearDemand)}
-      ${axisRow('My,Rd', yAxisOverview.resistance.MyRd)}
-      ${axisRow('Y-axis shear resistance', yAxisOverview.resistance.shearResistance)}
-      ${axisRow('Bending utilisation', yAxisOverview.utilisation.bending)}
-      ${axisRow('Shear utilisation', yAxisOverview.utilisation.shear)}
-      ${axisRow('Resistance basis', yAxisOverview.basis.momentResistance)}
-      ${axisRowHtml('Status', statusMarkup(yAxisOverview.status))}
+    `<div class="axis-convention-note">${esc(axisConvention)}</div>`,
+    `<section class="axis-overview-card direction-overview-card" id="zDirectionOverview"><h4>Z-direction loading - strong-axis bending My / shear Vz</h4>
+      ${axisRow('My,Ed', zDirectionOverview.demand.MyEd)}
+      ${axisRow('Vz,Ed', zDirectionOverview.demand.VzEd)}
+      ${axisRow('z-deflection', zDirectionOverview.demand.zDeflection)}
+      ${axisRow('My,Rd', zDirectionOverview.resistance.MyRd)}
+      ${axisRow('Vz,Rd', zDirectionOverview.resistance.VzRd)}
+      ${axisRow('My utilisation', zDirectionOverview.utilisation.bending)}
+      ${axisRow('Vz utilisation', zDirectionOverview.utilisation.shear)}
+      ${axisRow('Resistance basis', zDirectionOverview.basis.momentResistance)}
+      ${axisRowHtml('Status', statusMarkup(zDirectionOverview.status))}
+      ${zDirectionOverview.message ? `<div class="axis-note">${esc(zDirectionOverview.message)}</div>` : ''}
     </section>`,
-    `<section class="axis-overview-card" id="minorAxisOverview"><h4>Z-axis overview</h4>
-      ${axisRow('Mz,Ed', zAxisOverview.demand.MzEd)}
-      ${axisRow('Z-axis shear demand', zAxisOverview.demand.shearDemand)}
-      ${axisRow('Mz,Rd', zAxisOverview.resistance.MzRd)}
-      ${axisRow('Z-axis shear resistance', zAxisOverview.resistance.shearResistance)}
-      ${axisRow('Minor-axis bending utilisation', zAxisOverview.utilisation.bending)}
-      ${axisRow('Minor-axis shear utilisation', zAxisOverview.utilisation.shear)}
-      ${axisRow('Resistance basis', zAxisOverview.basis.momentResistance)}
-      ${axisRowHtml('Status', statusMarkup(zAxisOverview.status))}
-      ${zAxisOverview.message ? `<div class="axis-note">${esc(zAxisOverview.message)}</div>` : ''}
-      ${zAxisOverview.warnings.length ? `<div class="axis-warning">${esc(zAxisOverview.warnings.join(' '))}</div>` : ''}
+    `<section class="axis-overview-card direction-overview-card" id="yDirectionOverview"><h4>Y-direction loading - weak-axis bending Mz / shear Vy</h4>
+      ${axisRow('Mz,Ed', yDirectionOverview.demand.MzEd)}
+      ${axisRow('Vy,Ed', yDirectionOverview.demand.VyEd)}
+      ${axisRow('y-deflection', yDirectionOverview.demand.yDeflection)}
+      ${axisRow('Mz,Rd', yDirectionOverview.resistance.MzRd)}
+      ${axisRow('Vy,Rd', yDirectionOverview.resistance.VyRd)}
+      ${axisRow('Mz utilisation', yDirectionOverview.utilisation.bending)}
+      ${axisRow('Vy utilisation', yDirectionOverview.utilisation.shear)}
+      ${axisRow('Resistance basis', yDirectionOverview.basis.momentResistance)}
+      ${axisRowHtml('Status', statusMarkup(yDirectionOverview.status))}
+      ${yDirectionOverview.message ? `<div class="axis-note">${esc(yDirectionOverview.message)}</div>` : ''}
+      ${yDirectionOverview.warnings.length ? `<div class="axis-warning">${esc(yDirectionOverview.warnings.join(' '))}</div>` : ''}
     </section>`,
-    `<section class="axis-overview-card" id="combinedAxisOverview"><h4>Combined / governing overview</h4>
-      ${axisRow('Governing axis', governingAxisOverview.governingAxis)}
-      ${axisRow('Governing utilisation', governingAxisOverview.governingUtilisation)}
-      ${axisRow('Governing axis check', governingAxisOverview.governingCheck)}
-      ${axisRowHtml('Overall status', statusMarkup(governingAxisOverview.overallStatus))}
-      ${axisRow('Combined interaction', governingAxisOverview.combinedInteraction)}
-      ${axisRow('Conservative N+My+Mz', governingAxisOverview.conservativeNMyMz)}
+    `<section class="axis-overview-card combined-overview-card" id="combinedDirectionOverview"><h4>Combined / governing overview</h4>
+      ${axisRow('NEd', combinedOverview.NEd)}
+      ${axisRow('NRd', combinedOverview.NRd)}
+      ${axisRow('My,Ed / My,Rd', combinedOverview.MyRatio)}
+      ${axisRow('Mz,Ed / Mz,Rd', combinedOverview.MzRatio)}
+      ${axisRow('Governing direction', combinedOverview.governingDirection)}
+      ${axisRow('Governing utilisation', combinedOverview.governingUtilisation)}
+      ${axisRow('Governing check', combinedOverview.governingCheck)}
+      ${axisRowHtml('Overall status', statusMarkup(combinedOverview.overallStatus))}
+      ${axisRow('N + My + Mz interaction', combinedOverview.conservativeNMyMz)}
     </section>`
   ].join('');
 }
@@ -1221,7 +1241,7 @@ function uniqueTrapLoads(udls = []) {
     return {
       id: load.reportLabel || load.label,
       case: load.loadCase || 'Not available',
-      direction: load.direction || 'Y',
+      direction: load.direction || 'Z',
       q1: load.q1,
       q2: load.q2,
       x1: load.reportX1 ?? load.x1,
@@ -1291,7 +1311,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
     loadsActions: {
       udls: (rawLoads.udls || []).filter((load) => load.sourceType !== 'trap').map((load) => ({
         label: load.label,
-        direction: load.direction || 'Y',
+        direction: load.direction || 'Z',
         x1: load.x1,
         x2: load.x2,
         G: load.G,
@@ -1301,7 +1321,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       })),
       points: (rawLoads.points || []).filter((load) => !Number(load.M || 0)).map((load) => ({
         label: load.label,
-        direction: load.direction || 'Y',
+        direction: load.direction || 'Z',
         x: load.x,
         G: load.G,
         Q1: load.Q1,
@@ -1309,7 +1329,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       })),
       moments: (rawLoads.points || []).filter((load) => Number(load.M || 0)).map((load) => ({
         label: load.label,
-        direction: load.direction || 'Y',
+        direction: load.direction || 'Z',
         x: load.x,
         M: load.M,
         momentCase: load.momentCase
@@ -1351,17 +1371,19 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       utilisation: checks.deflection?.ir,
       pass: checks.deflection?.pass
     },
-    yAxisOverview: axisOverview.yAxisOverview,
-    zAxisOverview: axisOverview.zAxisOverview,
-    governingAxisOverview: axisOverview.governingAxisOverview,
+    axisConvention: axisOverview.axisConvention,
+    zDirectionOverview: axisOverview.zDirectionOverview,
+    yDirectionOverview: axisOverview.yDirectionOverview,
+    combinedOverview: axisOverview.combinedOverview,
     ec3Factors: {
       gammaM0: { value: settings.gammaM0, status: 'engine-wired' },
       gammaM1: { value: settings.gammaM1, status: 'engine-wired' },
       shearFactorEta: {
         value: checks.sectionControlSettings?.shearFactorEta?.configured ?? setup.shearFactorEta,
         status: checks.sectionControlSettings?.shearFactorEta ? 'engine-wired where shear area exists' : 'metadata-only',
-        usedMajorAxis: checks.sectionControlSettings?.shearFactorEta?.majorAxisUsed ?? 'Not used',
-        notUsedReason: checks.sectionControlSettings?.shearFactorEta?.majorAxisNotUsedReason || checks.sectionControlSettings?.shearFactorEta?.minorAxisNotUsedReason || ''
+        usedZDirection: checks.sectionControlSettings?.shearFactorEta?.zDirectionUsed ?? checks.sectionControlSettings?.shearFactorEta?.majorAxisUsed ?? 'Not used',
+        usedYDirection: checks.sectionControlSettings?.shearFactorEta?.yDirectionUsed ?? checks.sectionControlSettings?.shearFactorEta?.minorAxisUsed ?? 'Not used',
+        notUsedReason: checks.sectionControlSettings?.shearFactorEta?.zDirectionNotUsedReason || checks.sectionControlSettings?.shearFactorEta?.yDirectionNotUsedReason || checks.sectionControlSettings?.shearFactorEta?.majorAxisNotUsedReason || checks.sectionControlSettings?.shearFactorEta?.minorAxisNotUsedReason || ''
       }
     },
     bucklingLtb: {
@@ -1412,8 +1434,8 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       NRd: axialCalc.resistance || 'Not available',
       MyRd: checks.moment?.resistance,
       MzRd: axis.MzRd ?? checks.minorAxis?.momentResistance ?? 'Not available',
-      VyRd: axis.VyRd ?? checks.shear?.resistance,
-      VzRd: axis.VzRd ?? checks.minorAxis?.shearResistance ?? 'Not available',
+      VzRd: axis.VzRd ?? checks.shear?.resistance,
+      VyRd: axis.VyRd ?? checks.minorAxis?.shearResistance ?? 'Not available',
       bucklingResistances: memberCalc.resistance || 'Not available',
       ltbResistance: ltbCalc.resistance || 'Not available',
       conservativeInteraction: checks.conservativeInteraction || 'Not available',
@@ -1428,7 +1450,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
         conservativeInteraction: checks.conservativeInteraction?.ir,
         governing: summary.governingIR
       },
-      governingAxis: axis.governingAxis || 'y',
+      governingAxis: axis.governingAxis || 'Z direction / strong-axis My',
       unsupportedAxisWarnings: axis.warnings || checks.minorAxis?.warnings || [],
       governingCheck: result.status,
       formulas: (result.calculationPackage?.calculations || []).map((calculation) => ({
@@ -1494,29 +1516,34 @@ function renderAdvancedEc3Audit(input, result) {
       ['Governing combination/effect', payload.loadCombinations.governingCombinationEffect]
     ]),
     auditSection('6. Deflection', Object.entries(payload.deflection)),
-    auditSection('6a. Y-axis overview', [
-      ['Demand', JSON.stringify(payload.yAxisOverview.demand)],
-      ['Resistance', JSON.stringify(payload.yAxisOverview.resistance)],
-      ['Utilisation', JSON.stringify(payload.yAxisOverview.utilisation)],
-      ['Basis', JSON.stringify(payload.yAxisOverview.basis)],
-      ['Status', payload.yAxisOverview.status],
-      ['Warnings', (payload.yAxisOverview.warnings || []).join(' | ') || 'None']
+    auditSection('6a. Axis convention', [
+      ['Convention', payload.axisConvention]
     ]),
-    auditSection('6b. Z-axis overview', [
-      ['Demand', JSON.stringify(payload.zAxisOverview.demand)],
-      ['Resistance', JSON.stringify(payload.zAxisOverview.resistance)],
-      ['Utilisation', JSON.stringify(payload.zAxisOverview.utilisation)],
-      ['Basis', JSON.stringify(payload.zAxisOverview.basis)],
-      ['Status', payload.zAxisOverview.status],
-      ['Message', payload.zAxisOverview.message || 'None'],
-      ['Warnings', (payload.zAxisOverview.warnings || []).join(' | ') || 'None']
+    auditSection('6b. Z-direction loading - strong-axis bending My / shear Vz', [
+      ['Demand', JSON.stringify(payload.zDirectionOverview.demand)],
+      ['Resistance', JSON.stringify(payload.zDirectionOverview.resistance)],
+      ['Utilisation', JSON.stringify(payload.zDirectionOverview.utilisation)],
+      ['Basis', JSON.stringify(payload.zDirectionOverview.basis)],
+      ['Status', payload.zDirectionOverview.status],
+      ['Message', payload.zDirectionOverview.message || 'None'],
+      ['Warnings', (payload.zDirectionOverview.warnings || []).join(' | ') || 'None']
     ]),
-    auditSection('6c. Combined / governing overview', Object.entries(payload.governingAxisOverview)),
+    auditSection('6c. Y-direction loading - weak-axis bending Mz / shear Vy', [
+      ['Demand', JSON.stringify(payload.yDirectionOverview.demand)],
+      ['Resistance', JSON.stringify(payload.yDirectionOverview.resistance)],
+      ['Utilisation', JSON.stringify(payload.yDirectionOverview.utilisation)],
+      ['Basis', JSON.stringify(payload.yDirectionOverview.basis)],
+      ['Status', payload.yDirectionOverview.status],
+      ['Message', payload.yDirectionOverview.message || 'None'],
+      ['Warnings', (payload.yDirectionOverview.warnings || []).join(' | ') || 'None']
+    ]),
+    auditSection('6d. Combined / governing overview', Object.entries(payload.combinedOverview)),
     auditSection('7. EC3 factors', [
       ['gammaM0', `${payload.ec3Factors.gammaM0.value} (${payload.ec3Factors.gammaM0.status})`],
       ['gammaM1', `${payload.ec3Factors.gammaM1.value} (${payload.ec3Factors.gammaM1.status})`],
       ['shear factor eta configured', payload.ec3Factors.shearFactorEta.value],
-      ['shear factor eta used', payload.ec3Factors.shearFactorEta.usedMajorAxis],
+      ['shear factor eta used for Z-direction Vz', payload.ec3Factors.shearFactorEta.usedZDirection],
+      ['shear factor eta used for Y-direction Vy', payload.ec3Factors.shearFactorEta.usedYDirection],
       ['eta status', payload.ec3Factors.shearFactorEta.status],
       ['eta not used reason', payload.ec3Factors.shearFactorEta.notUsedReason || 'None']
     ]),
@@ -2313,23 +2340,23 @@ function applyLoads(loads = {}) {
     if (load.sourceType === 'trap' && load.segmentIndex && load.segmentIndex !== 1) return;
     if (load.sourceType === 'trap') {
       const lc = load.loadCase || 'G';
-      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Y' });
+      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Z' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const q = Number(load[lc] || 0);
-      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Y' });
+      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Z' });
     });
   });
   (loads.points || []).forEach((load) => {
     if (Number(load.M || 0)) {
       const lc = load.momentCase || 'G';
-      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Y' });
+      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Z' });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const P = Number(load[lc] || 0);
-      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Y' });
+      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Z' });
     });
   });
   Object.entries(rows).forEach(([type, byCase]) => {

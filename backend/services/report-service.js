@@ -422,6 +422,61 @@ function formatCheckRows(result = {}) {
   ]);
 }
 
+function axisValue(value, unit = '', dp = 3) {
+  const n = finite(value);
+  if (n === null) return 'Not available';
+  return `${round(n, dp)}${unit ? ` ${unit}` : ''}`;
+}
+
+function formatDirectionOverviewRows(result = {}) {
+  const axis = result.actions?.axis || {};
+  const checks = result.checks || {};
+  const summary = result.summary || {};
+  const force = summary.forceUnit || '';
+  const moment = summary.momentUnit || '';
+  const hasZ = axis.hasZDirectionLoads === true || Math.abs(Number(axis.MyEd || 0)) > 1e-9 || Math.abs(Number(axis.VzEd || 0)) > 1e-9;
+  const hasY = axis.hasYDirectionLoads === true || Math.abs(Number(axis.MzEd || 0)) > 1e-9 || Math.abs(Number(axis.VyEd || 0)) > 1e-9;
+  const zStatus = hasZ ? (Number(axis.MyIR || checks.moment?.ir || 0) < 1 && Number(axis.VzIR || checks.shear?.ir || 0) < 1 ? 'PASS' : 'FAIL') : 'Not governing';
+  const yStatus = hasY
+    ? checks.minorAxis?.available === true
+      ? (Number(axis.MzIR || checks.minorAxis?.ir || 0) < 1 && (axis.VyIR === null || Number(axis.VyIR || 0) < 1) ? 'PASS' : 'FAIL')
+      : 'Unavailable'
+    : 'Not governing';
+  return {
+    convention: axis.axisConvention || 'X is the member longitudinal axis. Z-direction loading produces My/Vz. Y-direction loading produces Mz/Vy.',
+    zRows: [
+      ['My,Ed', axisValue(axis.MyEd || 0, moment)],
+      ['Vz,Ed', axisValue(axis.VzEd || 0, force)],
+      ['z-deflection', axisValue(summary.deflection || 0, 'mm')],
+      ['My,Rd', axisValue(axis.MyRd ?? checks.moment?.resistance, moment)],
+      ['Vz,Rd', axisValue(axis.VzRd ?? checks.shear?.resistance, force)],
+      ['My utilisation', axisValue(hasZ ? (axis.MyIR ?? checks.moment?.ir) : 0, '', 3)],
+      ['Vz utilisation', axisValue(hasZ ? (axis.VzIR ?? checks.shear?.ir) : 0, '', 3)],
+      ['Basis', axis.bendingResistanceBasis?.MyRdBasis || checks.moment?.label || 'Not available'],
+      ['Status', zStatus],
+      ['Message', hasZ ? '-' : 'No Z-direction load applied; strong-axis demand is not governing.']
+    ],
+    yRows: [
+      ['Mz,Ed', axisValue(axis.MzEd || 0, moment)],
+      ['Vy,Ed', axisValue(axis.VyEd || 0, force)],
+      ['y-deflection', hasY ? 'Not yet calculated separately' : '0 mm'],
+      ['Mz,Rd', hasY ? axisValue(axis.MzRd ?? checks.minorAxis?.momentResistance, moment) : 'Not governing'],
+      ['Vy,Rd', hasY ? axisValue(axis.VyRd ?? checks.minorAxis?.shearResistance, force) : 'Not governing'],
+      ['Mz utilisation', axisValue(hasY ? (axis.MzIR ?? checks.minorAxis?.ir) : 0, '', 3)],
+      ['Vy utilisation', axisValue(hasY ? axis.VyIR : 0, '', 3)],
+      ['Basis', hasY ? (axis.bendingResistanceBasis?.MzRdBasis || 'Not available') : 'Not governing'],
+      ['Status', yStatus],
+      ['Message', hasY ? '-' : 'No Y-direction load applied; weak-axis demand is not governing.']
+    ],
+    combinedRows: [
+      ['Governing direction', axis.governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz' : 'Z-direction loading / strong-axis My'],
+      ['Governing utilisation', axisValue(summary.governingIR, '', 3)],
+      ['Combined N + My + Mz interaction', checks.conservativeInteraction?.enabled ? axisValue(checks.conservativeInteraction?.ir, '', 3) : 'Off'],
+      ['Overall status', result.status || '-']
+    ]
+  };
+}
+
 function formatSectionRows(props = {}) {
   const rows = [
     ['A', props.A_mm2 ?? props.area, 'mm2'],
@@ -502,7 +557,8 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
     },
     checksRows: formatCheckRows(result),
     sectionRows: formatSectionRows(result.sectionProperties || {}),
-    loadRows: formatLoadRows(result)
+    loadRows: formatLoadRows(result),
+    directionOverview: formatDirectionOverviewRows(result)
   };
 }
 
@@ -697,6 +753,20 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
           ${warningBlock}
         </div>
       </div>
+      <h2>Direction-Based Design Overview</h2>
+      <p class="muted">${escHtml(model.directionOverview.convention)}</p>
+      <div class="grid-2">
+        <div>
+          <h3>Z-direction loading - strong-axis bending My / shear Vz</h3>
+          ${definitionTableHtml(model.directionOverview.zRows, 'compact')}
+        </div>
+        <div>
+          <h3>Y-direction loading - weak-axis bending Mz / shear Vy</h3>
+          ${definitionTableHtml(model.directionOverview.yRows, 'compact')}
+        </div>
+      </div>
+      <h3>Combined / governing overview</h3>
+      ${definitionTableHtml(model.directionOverview.combinedRows, 'compact')}
     </section>
 
     <section class="page">
@@ -849,6 +919,9 @@ function buildLatexReport(input = {}, result = {}, suppliedMetadata = {}) {
     ['Maximum deflection', `${round(result.summary?.deflection, 5)} mm`]
   ];
   const tableRows = (rows) => rows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} \\\\`).join('\n');
+  const zDirectionRows = tableRows(model.directionOverview.zRows);
+  const yDirectionRows = tableRows(model.directionOverview.yRows);
+  const combinedDirectionRows = tableRows(model.directionOverview.combinedRows);
   const sectionRows = model.sectionRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} \\\\`).join('\n');
   const checkRows = model.checksRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} & ${escLatex(row[3])} \\\\`).join('\n');
   return `\\documentclass[11pt,a4paper]{article}
@@ -892,6 +965,27 @@ National Annex & ${escLatex(packageData.nationalAnnex || meta.nationalAnnex)} \\
 \\begin{longtable}{p{0.38\\linewidth}p{0.52\\linewidth}}
 \\textbf{Item} & \\textbf{Value} \\\\
 ${tableRows(execRows)}
+\\end{longtable}
+
+\\section{Axis Convention and Direction Overview}
+${escLatex(model.directionOverview.convention)}
+
+\\subsection{Z-direction loading -- strong-axis bending My / shear Vz}
+\\begin{longtable}{p{0.38\\linewidth}p{0.52\\linewidth}}
+\\textbf{Item} & \\textbf{Value} \\\\
+${zDirectionRows}
+\\end{longtable}
+
+\\subsection{Y-direction loading -- weak-axis bending Mz / shear Vy}
+\\begin{longtable}{p{0.38\\linewidth}p{0.52\\linewidth}}
+\\textbf{Item} & \\textbf{Value} \\\\
+${yDirectionRows}
+\\end{longtable}
+
+\\subsection{Combined / governing overview}
+\\begin{longtable}{p{0.38\\linewidth}p{0.52\\linewidth}}
+\\textbf{Item} & \\textbf{Value} \\\\
+${combinedDirectionRows}
 \\end{longtable}
 
 \\section{Input Data}

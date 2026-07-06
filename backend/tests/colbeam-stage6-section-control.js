@@ -57,28 +57,28 @@ function baseInput(direction = 'Y') {
   };
 }
 
-const baseline = calculateBeam(baseInput('Y'));
+const baseline = calculateBeam(baseInput('Z'));
 
-const etaInput = baseInput('Y');
+const etaInput = baseInput('Z');
 etaInput.settings.colbeamAudit.shearFactorEta = 1.5;
 const eta = calculateBeam(etaInput);
 assert.ok(eta.checks.shear.resistance > baseline.checks.shear.resistance, 'Eta should increase major-axis shear resistance where Avz exists.');
 approxEqual(eta.checks.shear.resistance, baseline.checks.shear.resistance * 1.5, 'Eta should scale major-axis shear resistance', 1e-5);
-assert.strictEqual(eta.checks.sectionControlSettings.shearFactorEta.majorAxisUsed, 1.5);
+assert.strictEqual(eta.checks.sectionControlSettings.shearFactorEta.zDirectionUsed, 1.5);
 
-const elasticInput = baseInput('Y');
+const elasticInput = baseInput('Z');
 elasticInput.settings.colbeamAudit.class12ElasticDesign = true;
 const elastic = calculateBeam(elasticInput);
 assert.ok(elastic.checks.moment.resistance < baseline.checks.moment.resistance, 'Class 1-2 elastic toggle should reduce MyRd when Wel,y < Wpl,y.');
 assert.strictEqual(elastic.checks.sectionControlSettings.bendingResistanceBasis.MyRdBasis, 'Wel,y');
 
-const zPlastic = calculateBeam(baseInput('Z'));
-const zElasticInput = baseInput('Z');
+const zPlastic = calculateBeam(baseInput('Y'));
+const zElasticInput = baseInput('Y');
 zElasticInput.settings.colbeamAudit.class12ElasticDesign = true;
 const zElastic = calculateBeam(zElasticInput);
 assert.ok(zElastic.checks.minorAxis.momentResistance < zPlastic.checks.minorAxis.momentResistance, 'Class 1-2 elastic toggle should reduce MzRd when Wel,z < Wpl,z.');
 assert.strictEqual(zElastic.checks.sectionControlSettings.bendingResistanceBasis.MzRdBasis, 'Wel,z');
-assert.ok(zElastic.actions.axis.VzRd > 0, 'Completed dataset should provide Avy-based minor-axis shear resistance.');
+assert.ok(zElastic.actions.axis.VyRd > 0, 'Completed dataset should provide Avy-based Y-direction shear resistance.');
 
 PROFILE_DB.TEST_STAGE6 = [{
   name: 'MISSING_AVZ',
@@ -105,15 +105,15 @@ PROFILE_DB.TEST_STAGE6 = [{
   Wpl_z_mm3: 8000
 }];
 
-const missingAvzInput = baseInput('Y');
+const missingAvzInput = baseInput('Z');
 missingAvzInput.section = { family: 'TEST_STAGE6', name: 'MISSING_AVZ' };
 missingAvzInput.settings.colbeamAudit.shearFactorEta = 1.5;
 const missingAvz = calculateBeam(missingAvzInput);
 assert.strictEqual(missingAvz.checks.shear.pass, false);
-assert.ok(missingAvz.checks.sectionControlSettings.shearFactorEta.majorAxisNotUsedReason.includes('Avz'), 'Missing Avz should warn and not use eta.');
+assert.ok(missingAvz.checks.sectionControlSettings.shearFactorEta.zDirectionNotUsedReason.includes('Avz'), 'Missing Avz should warn and not use eta.');
 assert.ok(missingAvz.calculationPackage.warnings.some((warning) => warning.includes('Avz')), 'Missing Avz warning should be present in calculation package.');
 
-const missingWelInput = baseInput('Y');
+const missingWelInput = baseInput('Z');
 missingWelInput.section = { family: 'TEST_STAGE6', name: 'MISSING_WEL' };
 missingWelInput.settings.colbeamAudit.class12ElasticDesign = true;
 const missingWel = calculateBeam(missingWelInput);
@@ -130,29 +130,29 @@ assert.ok(conservative.checks.conservativeInteraction.available, 'Conservative N
 assert.ok(conservative.checks.conservativeInteraction.ir > conservative.checks.moment.ir, 'Conservative interaction should exceed major-axis moment utilisation for this case.');
 approxEqual(conservative.summary.governingIR, conservative.checks.conservativeInteraction.ir, 'Conservative interaction should govern when it is the largest ratio', 1e-5);
 
-const conservativeMissingInput = baseInput('Y');
+const conservativeMissingInput = baseInput('Z');
 conservativeMissingInput.settings.colbeamAudit.conservativeNMyMz = true;
 const conservativeMissing = calculateBeam(conservativeMissingInput);
 assert.strictEqual(conservativeMissing.checks.conservativeInteraction.available, false);
 assert.ok(conservativeMissing.checks.conservativeInteraction.warnings.some((warning) => warning.includes('MzRd')), 'Conservative check should warn when MzRd is missing.');
 
-const defaultAgain = calculateBeam(baseInput('Y'));
+const defaultAgain = calculateBeam(baseInput('Z'));
 approxEqual(defaultAgain.summary.maxMoment, baseline.summary.maxMoment, 'Default Stage 6 settings should preserve Stage 5 moment.');
 approxEqual(defaultAgain.checks.moment.resistance, baseline.checks.moment.resistance, 'Default Stage 6 settings should preserve plastic MyRd.');
 
-const stage4Custom = baseInput('Y');
+const stage4Custom = baseInput('Z');
 stage4Custom.combination.customULSFactors = { G: 2, Q1: 0, Q2: 0 };
 const stage4CustomResult = calculateBeam(stage4Custom);
 assert.ok(stage4CustomResult.summary.maxMoment > baseline.summary.maxMoment, 'Stage 4 custom factors should still affect actions.');
 
 const stage5Z = calculateBeam(baseInput('Z'));
-assert.ok(stage5Z.actions.axis.MzEd > 0, 'Stage 5 Z-direction action mapping should still work.');
+assert.ok(stage5Z.actions.axis.MyEd > 0, 'Stage 5 Z-direction action mapping should still produce strong-axis MyEd.');
 
 console.log('colbeam stage6 section control ok', {
   plasticMyRd: baseline.checks.moment.resistance,
   elasticMyRd: elastic.checks.moment.resistance,
   plasticMzRd: zPlastic.checks.minorAxis.momentResistance,
   elasticMzRd: zElastic.checks.minorAxis.momentResistance,
-  etaVyRd: eta.checks.shear.resistance,
+  etaVzRd: eta.checks.shear.resistance,
   conservativeIR: conservative.checks.conservativeInteraction.ir
 });

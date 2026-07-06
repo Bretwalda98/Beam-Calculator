@@ -74,12 +74,12 @@ assert.ok(indexHtml.includes('Force elastic resistance for Class 1-2 sections'),
 assert.ok(indexHtml.includes('Class 1 has plastic hinge capacity with rotation capacity'), 'EC3 class help text should use Eurocode-consistent wording.');
 assert.ok(secureApp.includes('function buildAdvancedEc3AuditPayload'), 'secure-app.js should build audit payload.');
 assert.ok(secureApp.includes('function renderAdvancedEc3Audit'), 'secure-app.js should render audit output.');
-assert.ok(secureApp.includes('function renderAxisOverview'), 'secure-app.js should render major/minor/combined axis overview.');
-assert.ok(secureApp.includes('minorAxisOverview'), 'secure-app.js should render the minor-axis overview card.');
-assert.ok(secureApp.includes('combinedAxisOverview'), 'secure-app.js should render the combined axis overview card.');
-assert.ok(secureApp.includes('yAxisOverview'), 'Audit JSON should include yAxisOverview.');
-assert.ok(secureApp.includes('zAxisOverview'), 'Audit JSON should include zAxisOverview.');
-assert.ok(secureApp.includes('governingAxisOverview'), 'Audit JSON should include governingAxisOverview.');
+assert.ok(secureApp.includes('function renderAxisOverview'), 'secure-app.js should render direction/combined overview.');
+assert.ok(secureApp.includes('zDirectionOverview'), 'secure-app.js should render the Z-direction overview card and JSON key.');
+assert.ok(secureApp.includes('yDirectionOverview'), 'secure-app.js should render the Y-direction overview card and JSON key.');
+assert.ok(secureApp.includes('combinedDirectionOverview'), 'secure-app.js should render the combined overview card.');
+assert.ok(secureApp.includes('combinedOverview'), 'Audit JSON should include combinedOverview.');
+assert.ok(secureApp.includes('axisConvention'), 'Audit JSON should include axisConvention.');
 assert.ok(secureApp.includes('Resistance basis'), 'Audit output should show a friendly resistance basis label.');
 assert.ok(secureApp.includes('MyRd basis'), 'Audit output should show a friendly MyRd basis label.');
 assert.ok(secureApp.includes('MzRd basis'), 'Audit output should show a friendly MzRd basis label.');

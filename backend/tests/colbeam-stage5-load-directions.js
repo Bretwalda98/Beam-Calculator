@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { calculateBeam } = require('../services/calculation-service');
+const { buildReportHtml, buildLatexReport } = require('../services/report-service');
 
 function baseInput(direction = 'Y') {
   return {
@@ -41,63 +42,71 @@ function approxEqual(a, b, label) {
 
 const yInput = baseInput('Y');
 const y = calculateBeam(yInput);
-assert.ok(y.actions.axis.MyEd > 0, 'Y-direction UDL should produce major-axis MyEd.');
-assert.strictEqual(y.actions.axis.MzEd, 0);
-assert.ok(y.actions.axis.VyEd > 0, 'Y-direction UDL should produce major-axis shear action.');
-assert.strictEqual(y.actions.axis.governingAxis, 'y');
-assert.strictEqual(y.checks.minorAxis.available, false);
-assert.ok(/No explicit Z-direction loads/.test(y.checks.minorAxis.message), 'Y-only case should record that no Z load is applied.');
-assert.ok(!(y.calculationPackage.warnings || []).some((warning) => /Minor-axis bending check not available/.test(warning)), 'Y-only case should not raise scary missing-property warnings.');
+assert.strictEqual(y.actions.axis.MyEd, 0);
+assert.ok(y.actions.axis.MzEd > 0, 'Y-direction UDL should produce weak-axis MzEd when Iz exists.');
+assert.ok(y.actions.axis.VyEd > 0, 'Y-direction UDL should produce weak-axis shear VyEd.');
+assert.strictEqual(y.actions.axis.governingDirection, 'Y');
+assert.ok(y.checks.minorAxis.available, 'Y-direction load should activate the weak-axis check.');
 
 const legacyInput = clone(yInput);
 delete legacyInput.loads.udls[0].direction;
 const legacy = calculateBeam(legacyInput);
-approxEqual(legacy.actions.axis.MyEd, y.actions.axis.MyEd, 'Missing legacy direction should default to Y/major-axis action');
-approxEqual(legacy.summary.maxMoment, y.summary.maxMoment, 'Missing legacy direction should preserve old max moment');
+const defaultZ = calculateBeam(baseInput('Z'));
+approxEqual(legacy.actions.axis.MyEd, defaultZ.actions.axis.MyEd, 'Missing legacy direction should default to Z-direction strong-axis action');
+approxEqual(legacy.summary.maxMoment, defaultZ.summary.maxMoment, 'Missing legacy direction should preserve old strong-axis max moment');
 
 const zInput = baseInput('Z');
 const z = calculateBeam(zInput);
-assert.strictEqual(z.actions.axis.MyEd, 0);
-assert.ok(z.actions.axis.MzEd > 0, 'Z-direction UDL should produce minor-axis MzEd when Iz exists.');
-assert.ok(z.actions.axis.MzRd > 0, 'Z-direction UDL should produce MzRd when Wz exists.');
-assert.ok(z.checks.minorAxis.available, 'Minor-axis check should be available for IPE100 z-axis bending.');
-assert.strictEqual(z.actions.axis.governingAxis, 'z');
-assert.ok(z.actions.axis.VzRd > 0, 'Completed dataset should provide minor-axis shear resistance where Avy exists.');
-assert.strictEqual(z.actions.axis.shearEta.z.shearAreaSource, 'Avy_mm2');
+assert.ok(z.actions.axis.MyEd > 0, 'Z-direction UDL should produce strong-axis MyEd.');
+assert.strictEqual(z.actions.axis.MzEd, 0);
+assert.ok(z.actions.axis.VzEd > 0, 'Z-direction UDL should produce strong-axis shear VzEd.');
+assert.strictEqual(z.actions.axis.governingDirection, 'Z');
+assert.strictEqual(z.checks.minorAxis.available, false);
+assert.ok(/No explicit Y-direction loads/.test(z.checks.minorAxis.message), 'Z-only case should record that no Y load is applied.');
+assert.ok(!(z.calculationPackage.warnings || []).some((warning) => /Minor-axis bending check not available/.test(warning)), 'Z-only case should not raise scary missing-property warnings.');
 
 const mixedInput = baseInput('Y');
 mixedInput.loads.udls.push({ label: 'Z UDL', direction: 'Z', x1: 0, x2: 6, G: 1, Q1: 0, Q2: 0 });
 const mixed = calculateBeam(mixedInput);
-assert.ok(mixed.actions.axis.MyEd > 0, 'Mixed Y/Z loads should retain MyEd.');
-assert.ok(mixed.actions.axis.MzEd > 0, 'Mixed Y/Z loads should retain MzEd.');
+assert.ok(mixed.actions.axis.MyEd > 0, 'Mixed Y/Z loads should retain strong-axis MyEd from Z direction.');
+assert.ok(mixed.actions.axis.MzEd > 0, 'Mixed Y/Z loads should retain weak-axis MzEd from Y direction.');
 assert.notStrictEqual(mixed.actions.axis.MyIR, mixed.actions.axis.MzIR, 'Mixed-axis checks should stay separate.');
 
-const completeMinorInput = baseInput('Z');
+const completeMinorInput = baseInput('Y');
 completeMinorInput.section = { family: 'HEA', name: 'HE 200 A' };
 const completeMinor = calculateBeam(completeMinorInput);
 assert.strictEqual(completeMinor.checks.minorAxis.available, true);
 assert.ok(completeMinor.actions.axis.MzRd > 0, 'Completed dataset should provide HE 200 A MzRd.');
-assert.ok(completeMinor.actions.axis.VzRd > 0, 'Completed dataset should provide HE 200 A Z-axis shear resistance from Avy.');
-assert.strictEqual(completeMinor.actions.axis.shearEta.z.shearAreaSource, 'Avy_mm2');
+assert.ok(completeMinor.actions.axis.VyRd > 0, 'Completed dataset should provide HE 200 A Y-direction shear resistance from Avy.');
+assert.strictEqual(completeMinor.actions.axis.shearEta.y.shearAreaSource, 'Avy_mm2');
 assert.ok(completeMinor.sectionProperties.Avy_mm2 > 0, 'Completed dataset should expose Avy in section properties.');
 
 const customY = baseInput('Y');
 customY.combination.combination = 'custom_colbeam';
 customY.combination.customULSFactors = { G: 2, Q1: 2, Q2: 2 };
 const customYResult = calculateBeam(customY);
-assert.ok(customYResult.actions.axis.MyEd > y.actions.axis.MyEd, 'Stage 4 custom ULS factors should still affect Y-direction actions.');
+assert.ok(customYResult.actions.axis.MzEd > y.actions.axis.MzEd, 'Stage 4 custom ULS factors should still affect Y-direction weak-axis actions.');
 
 const customZ = baseInput('Z');
 customZ.combination.combination = 'custom_colbeam';
 customZ.combination.customULSFactors = { G: 2, Q1: 2, Q2: 2 };
 const customZResult = calculateBeam(customZ);
-assert.ok(customZResult.actions.axis.MzEd > z.actions.axis.MzEd, 'Stage 4 custom ULS factors should still affect Z-direction actions.');
+assert.ok(customZResult.actions.axis.MyEd > z.actions.axis.MyEd, 'Stage 4 custom ULS factors should still affect Z-direction strong-axis actions.');
+
+const reportHtml = buildReportHtml(mixedInput, mixed);
+const handCalc = buildLatexReport(mixedInput, mixed);
+assert.ok(reportHtml.includes('Z-direction loading - strong-axis bending My / shear Vz'), 'Report should include Z-direction strong-axis overview.');
+assert.ok(reportHtml.includes('Y-direction loading - weak-axis bending Mz / shear Vy'), 'Report should include Y-direction weak-axis overview.');
+assert.ok(handCalc.includes('Z-direction loading -- strong-axis bending My / shear Vz'), 'Hand calculation should include Z-direction strong-axis section.');
+assert.ok(handCalc.includes('Y-direction loading -- weak-axis bending Mz / shear Vy'), 'Hand calculation should include Y-direction weak-axis section.');
+assert.ok(!/colbeam/i.test(reportHtml), 'Report output must not expose forbidden reference wording.');
+assert.ok(!/colbeam/i.test(handCalc), 'Hand calculation output must not expose forbidden reference wording.');
 
 console.log('colbeam stage5 load directions ok', {
-  yMyEd: y.actions.axis.MyEd,
-  zMzEd: z.actions.axis.MzEd,
-  zMzRd: z.actions.axis.MzRd,
-  mixedGoverningAxis: mixed.actions.axis.governingAxis,
+  zMyEd: z.actions.axis.MyEd,
+  yMzEd: y.actions.axis.MzEd,
+  yMzRd: y.actions.axis.MzRd,
+  mixedGoverningDirection: mixed.actions.axis.governingDirection,
   completeMinorMzRd: completeMinor.actions.axis.MzRd,
-  completeMinorVzRd: completeMinor.actions.axis.VzRd
+  completeMinorVyRd: completeMinor.actions.axis.VyRd
 });

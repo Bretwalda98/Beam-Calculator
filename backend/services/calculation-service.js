@@ -797,16 +797,16 @@ function buildMinorAxisCheck(section, material, actions, settings) {
   const MzEd = actions.peakM.val;
   const MzRd = (Wsel.W * material.fy / gammaM0) / 1e6;
   const IR_Mz = MzRd > 0 ? MzEd / MzRd : Infinity;
-  const VzEd = actions.peakV.val;
-  let VzRd = null;
-  let IR_Vz = null;
+  const VyEd = actions.peakV.val;
+  let VyRd = null;
+  let IR_Vy = null;
   const warnings = [];
   const shear = buildShearResistance(section, material, gammaM0, auditSettings, 'y');
   if (shear.Vrd) {
-    VzRd = shear.Vrd;
-    IR_Vz = VzRd > 0 ? VzEd / VzRd : Infinity;
+    VyRd = shear.Vrd;
+    IR_Vy = VyRd > 0 ? VyEd / VyRd : Infinity;
   } else {
-    warnings.push('Minor-axis shear resistance not available - required shear area Avy is missing from the section database.');
+    warnings.push('Y-direction shear resistance Vy,Rd not available - required shear area Avy is missing from the section database.');
   }
   return {
     axis: 'z',
@@ -816,42 +816,49 @@ function buildMinorAxisCheck(section, material, actions, settings) {
     MzRd,
     IR_Mz,
     passM: IR_Mz < 1,
-    VzEd,
-    VzRd,
+    VyEd,
+    VyRd,
     shear,
-    IR_Vz,
-    passV: IR_Vz === null ? null : IR_Vz < 1,
+    IR_Vy,
+    passV: IR_Vy === null ? null : IR_Vy < 1,
     warnings,
-    pass: IR_Mz < 1 && (IR_Vz === null || IR_Vz < 1)
+    pass: IR_Mz < 1 && (IR_Vy === null || IR_Vy < 1)
   };
 }
 
-function buildAxisActionSummary(unit, majorUls, minorUls, check, minorCheck) {
-  const currentVyRd = check.VzRd;
+function buildAxisActionSummary(unit, zDirectionUls, yDirectionUls, check, minorCheck, directionFlags = {}) {
   return {
-    MyEd: round(unit.fromBaseMoment(majorUls.peakM.val), 5),
-    MzEd: round(unit.fromBaseMoment(minorUls.peakM.val), 5),
-    VyEd: round(unit.fromBaseForce(majorUls.peakV.val), 5),
-    VzEd: round(unit.fromBaseForce(minorUls.peakV.val), 5),
+    axisConvention: 'X is the member longitudinal axis. Z-direction loading produces My/Vz and z-deflection. Y-direction loading produces Mz/Vy and y-deflection.',
+    hasZDirectionLoads: Boolean(directionFlags.hasZDirectionLoads),
+    hasYDirectionLoads: Boolean(directionFlags.hasYDirectionLoads),
+    MyEd: round(unit.fromBaseMoment(zDirectionUls.peakM.val), 5),
+    MzEd: round(unit.fromBaseMoment(yDirectionUls.peakM.val), 5),
+    VzEd: round(unit.fromBaseForce(zDirectionUls.peakV.val), 5),
+    VyEd: round(unit.fromBaseForce(yDirectionUls.peakV.val), 5),
     MyRd: round(unit.fromBaseMoment(check.MyRd), 5),
     MzRd: minorCheck.available ? round(unit.fromBaseMoment(minorCheck.MzRd), 5) : null,
-    VyRd: round(unit.fromBaseForce(currentVyRd), 5),
-    VzRd: minorCheck.available && minorCheck.VzRd ? round(unit.fromBaseForce(minorCheck.VzRd), 5) : null,
+    VzRd: round(unit.fromBaseForce(check.VzRd), 5),
+    VyRd: minorCheck.available && minorCheck.VyRd ? round(unit.fromBaseForce(minorCheck.VyRd), 5) : null,
     MyIR: round(check.IR_My, 5),
     MzIR: minorCheck.available ? round(minorCheck.IR_Mz, 5) : null,
-    VyIR: round(check.IR_V, 5),
-    VzIR: minorCheck.available && minorCheck.IR_Vz !== null ? round(minorCheck.IR_Vz, 5) : null,
+    VzIR: round(check.IR_V, 5),
+    VyIR: minorCheck.available && minorCheck.IR_Vy !== null ? round(minorCheck.IR_Vy, 5) : null,
     shearEta: {
-      y: check.shear?.meta || null,
-      z: minorCheck.available ? minorCheck.shear?.meta || null : null
+      zDirection: check.shear?.meta || null,
+      yDirection: minorCheck.available ? minorCheck.shear?.meta || null : null,
+      z: check.shear?.meta || null,
+      y: minorCheck.available ? minorCheck.shear?.meta || null : null
     },
     bendingResistanceBasis: {
+      zDirection: check.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective'),
+      yDirection: minorCheck.available ? (minorCheck.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective')) : null,
       y: check.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective'),
       z: minorCheck.available ? (minorCheck.Wsel?.resistanceBasis || (check.cls <= 2 ? 'plastic' : check.cls === 3 ? 'elastic' : 'effective')) : null,
       MyRdBasis: check.Wsel?.label || null,
       MzRdBasis: minorCheck.available ? minorCheck.Wsel?.label || null : null
     },
-    governingAxis: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'z' : 'y',
+    governingAxis: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'Y direction / weak-axis Mz' : 'Z direction / strong-axis My',
+    governingDirection: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'Y' : 'Z',
     minorAxisAvailable: Boolean(minorCheck.available),
     warnings: minorCheck.warnings || []
   };
@@ -1101,7 +1108,7 @@ function normaliseLoads(input, section, L, unit) {
       label: String(load.label || `UDL ${index + 1}`).slice(0, 80),
       x1,
       x2,
-      direction: normaliseLoadDirection(load.direction, 'Y'),
+      direction: normaliseLoadDirection(load.direction, 'Z'),
       sourceType: load.sourceType || 'uniform',
       reportLabel: load.reportLabel,
       q1: finiteNumber(load.q1, 0),
@@ -1124,22 +1131,22 @@ function normaliseLoads(input, section, L, unit) {
       Q1: finiteNumber(load.Q1, 0),
       Q2: finiteNumber(load.Q2, 0),
       M,
-      direction: normaliseLoadDirection(load.direction, 'Y'),
+      direction: normaliseLoadDirection(load.direction, 'Z'),
       momentCase: ['G', 'Q1', 'Q2'].includes(load.momentCase) ? load.momentCase : 'G'
     });
   });
   if (model.includeSelfWeight !== false && section.mass_kg_m > 0) {
     const sw = unit.key === 'tonne' ? (section.mass_kg_m / 1000) : (section.mass_kg_m * g / 1000);
-    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, direction: 'Y', G: sw, Q1: 0, Q2: 0, isSelf: true });
+    raw.udls.push({ label: 'Self-weight', x1: 0, x2: L, direction: 'Z', G: sw, Q1: 0, Q2: 0, isSelf: true });
   }
   return raw;
 }
 
 function filterLoadsByDirection(raw, direction) {
-  const target = normaliseLoadDirection(direction, 'Y');
+  const target = normaliseLoadDirection(direction, 'Z');
   return {
-    points: raw.points.filter((load) => normaliseLoadDirection(load.direction, 'Y') === target),
-    udls: raw.udls.filter((load) => normaliseLoadDirection(load.direction, 'Y') === target),
+    points: raw.points.filter((load) => normaliseLoadDirection(load.direction, 'Z') === target),
+    udls: raw.udls.filter((load) => normaliseLoadDirection(load.direction, 'Z') === target),
     supportXs: raw.supportXs.slice(),
     mode: raw.mode
   };
@@ -1353,9 +1360,9 @@ function buildCalculationPackage(context) {
   const warnings = [
     ...getSectionReportGeometry(section).warnings,
     ...(audit.metadataOnlyWarnings || []),
-    ...((axisActions?.warnings || []).filter((warning) => warning && !String(warning).includes('No explicit Z-direction loads'))),
+    ...((axisActions?.warnings || []).filter((warning) => warning && !String(warning).includes('No explicit Y-direction loads'))),
     ...(check.shear?.meta?.warnings || []),
-    ...(minorCheck?.available === false && rawLoads.udls.concat(rawLoads.points).some((load) => normaliseLoadDirection(load.direction, 'Y') === 'Z') ? (minorCheck.warnings || []) : []),
+    ...(minorCheck?.available === false && rawLoads.udls.concat(rawLoads.points).some((load) => normaliseLoadDirection(load.direction, 'Z') === 'Y') ? (minorCheck.warnings || []) : []),
     ...(conservativeInteraction?.warnings || []),
     audit.settings.flangeBucklingIgnored ? 'Recorded for reference comparison; flange buckling ignored toggle is not yet used by the calculation engine.' : null,
     audit.settings.webBucklingIgnored ? 'Recorded for reference comparison; web buckling ignored toggle is not yet used by the calculation engine.' : null,
@@ -1419,10 +1426,11 @@ function buildCalculationPackage(context) {
         { symbol: 'W_y', value: valueUnit(check.Wsel.W, 'mm^3', 0) },
         { symbol: 'f_y', value: valueUnit(material.fy, 'MPa', 0) },
         { symbol: 'gamma_M0', value: round(settings.gammaM0, 3) },
-        { symbol: 'M_y,Ed', value: valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort) }
+        { symbol: 'M_y,Ed', value: valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort) },
+        { symbol: 'Axis convention', value: 'Z-direction loading produces My/Vz and z-deflection.' }
       ],
       derivations: [
-        buildDerivation('M_y,Ed', 'Design bending action used in the code-check controls.', 'M_y,Ed = max |M_y(x)| from ULS beam analysis', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakM.x, 5)} m`, valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort), 'Server beam analysis'),
+        buildDerivation('M_y,Ed', 'Strong-axis design bending action from Z-direction loading.', 'M_y,Ed = max |M_y(x)| from ULS beam analysis of Z-direction loads', `${ulsNote || lc.uls.note}; peak at x = ${round(uls.peakM.x, 5)} m`, valueUnit(unit.fromBaseMoment(check.MyEd), unit.momentShort), 'Server beam analysis'),
         buildDerivation('W_y', 'Section modulus selected from the section class and forced-elastic toggle.', 'Class 1-2: Wpl,y unless forced elastic resistance is enabled; Class 3: Wel,y; Class 4: Weff,y', `Class ${check.cls} -> ${check.Wsel.label}`, valueUnit(check.Wsel.W, 'mm^3', 0), check.Wsel.source || 'Section database'),
         buildDerivation('M_y,Rd', 'Major-axis cross-section bending resistance before high-shear reduction.', 'M_y,Rd = W_y f_y / gamma_M0', `${round(check.Wsel.W, 0)} x ${round(material.fy, 0)} / ${round(settings.gammaM0, 3)} / 10^6`, valueUnit(unit.fromBaseMoment(check.MyRd), unit.momentShort), 'EN 1993-1-1 6.2.5'),
         ...(check.mv?.trigger ? [
@@ -1883,9 +1891,10 @@ function calculateBeam(input) {
   }
   const lc = getLC(input.combination || {});
   const rawLoads = normaliseLoads(input, section, L, unit);
-  const majorRawLoads = filterLoadsByDirection(rawLoads, 'Y');
-  const minorRawLoads = filterLoadsByDirection(rawLoads, 'Z');
-  const hasMinorLoads = minorRawLoads.points.length > 0 || minorRawLoads.udls.length > 0;
+  const zDirectionRawLoads = filterLoadsByDirection(rawLoads, 'Z');
+  const yDirectionRawLoads = filterLoadsByDirection(rawLoads, 'Y');
+  const hasZDirectionLoads = zDirectionRawLoads.points.length > 0 || zDirectionRawLoads.udls.length > 0;
+  const hasYDirectionLoads = yDirectionRawLoads.points.length > 0 || yDirectionRawLoads.udls.length > 0;
   const springs = {
     left: finiteNumber(input.model?.springLeftPct, 100),
     right: finiteNumber(input.model?.springRightPct, 100)
@@ -1897,7 +1906,7 @@ function calculateBeam(input) {
       err.statusCode = 400;
       throw err;
     }
-    const axisRawLoads = axis === 'z' ? minorRawLoads : majorRawLoads;
+    const axisRawLoads = axis === 'z' ? yDirectionRawLoads : zDirectionRawLoads;
     return solveBeam({
     L,
     supportType,
@@ -1928,14 +1937,14 @@ function calculateBeam(input) {
     ulsNote = lc.uls.note;
     ulsCoeff = lc.uls;
   }
-  minorUls = hasMinorLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
+  minorUls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
   const slsCombo = buildSlsCombination(lc, audit);
   const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
   const axialRaw = input.axial || {};
   const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
-  const minorCheck = hasMinorLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Z-direction loads applied.');
-  const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck);
+  const minorCheck = hasYDirectionLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Y-direction loads applied.');
+  const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck, { hasZDirectionLoads, hasYDirectionLoads });
   const conservativeInteraction = buildConservativeInteractionCheck(check, minorCheck, audit.settings);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
   const endSupport = evaluateEndSupportCheck(check, uls, settings);
@@ -1961,7 +1970,7 @@ function calculateBeam(input) {
     Math.abs(check.axialEd) > 1e-9 ? IR_NM : 0,
     memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0,
     minorCheck.available ? minorCheck.IR_Mz : 0,
-    minorCheck.available && minorCheck.IR_Vz !== null ? minorCheck.IR_Vz : 0,
+    minorCheck.available && minorCheck.IR_Vy !== null ? minorCheck.IR_Vy : 0,
     conservativeInteraction.enabled && conservativeInteraction.available ? conservativeInteraction.ir : 0
   );
   const passMinor = !minorCheck.available || minorCheck.pass;
@@ -2045,7 +2054,7 @@ function calculateBeam(input) {
         pass: Boolean(minorCheck.pass),
         available: true,
         momentResistance: round(unit.fromBaseMoment(minorCheck.MzRd), 5),
-        shearResistance: minorCheck.VzRd ? round(unit.fromBaseForce(minorCheck.VzRd), 5) : null,
+        shearResistance: minorCheck.VyRd ? round(unit.fromBaseForce(minorCheck.VyRd), 5) : null,
         warnings: minorCheck.warnings
       } : { available: false, message: minorCheck.reason, warnings: minorCheck.warnings },
       conservativeInteraction: {
@@ -2064,6 +2073,10 @@ function calculateBeam(input) {
       sectionControlSettings: {
         shearFactorEta: {
           configured: check.shear?.meta?.etaConfigured ?? audit.settings.shearFactorEta,
+          zDirectionUsed: check.shear?.meta?.etaUsed ?? null,
+          zDirectionNotUsedReason: check.shear?.meta?.notUsedReason || null,
+          yDirectionUsed: minorCheck.available ? minorCheck.shear?.meta?.etaUsed ?? null : null,
+          yDirectionNotUsedReason: minorCheck.available ? minorCheck.shear?.meta?.notUsedReason || null : minorCheck.reason || null,
           majorAxisUsed: check.shear?.meta?.etaUsed ?? null,
           majorAxisNotUsedReason: check.shear?.meta?.notUsedReason || null,
           minorAxisUsed: minorCheck.available ? minorCheck.shear?.meta?.etaUsed ?? null : null,
