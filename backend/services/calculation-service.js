@@ -1225,6 +1225,39 @@ function sampleSeries(series, deflectionSeries = series, max = 161) {
   });
 }
 
+function sampleDirectionGraphSeries(ulsSeries, slsSeries, keys, max = 161) {
+  return sampleSeries(ulsSeries, slsSeries, max).map((row) => ({
+    x: row.x,
+    [keys.shear]: row.shear,
+    [keys.moment]: row.moment,
+    [keys.deflection]: row.deflection
+  }));
+}
+
+function legacyGraphSeriesFromDirection(directionSeries, keys) {
+  return (directionSeries || []).map((row) => ({
+    x: row.x,
+    shear: row[keys.shear],
+    moment: row[keys.moment],
+    deflection: row[keys.deflection]
+  }));
+}
+
+function directionGraphPackage({ direction, hasLoads, rawLoads, series, labels, message }) {
+  const pick = (key) => (series || []).map((row) => ({ x: row.x, value: row[key] || 0 }));
+  return {
+    direction,
+    hasLoads: Boolean(hasLoads),
+    message: hasLoads ? null : message,
+    loads: rawLoads,
+    series,
+    shear: pick(labels.shearKey),
+    moment: pick(labels.momentKey),
+    deflection: pick(labels.deflectionKey),
+    labels
+  };
+}
+
 function interpolate(xs, ys, x) {
   if (!xs.length) return 0;
   if (x <= xs[0]) return ys[0] || 0;
@@ -1987,6 +2020,40 @@ function calculateBeam(input) {
   const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor && passConservative;
   const maxReaction = Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
   const fullSectionProperties = getFullSectionProperties(section, check);
+  const zDirectionSeries = sampleDirectionGraphSeries(uls, sls, { shear: 'Vz', moment: 'My', deflection: 'z' });
+  const yDirectionSeries = sampleDirectionGraphSeries(minorUls, minorSls, { shear: 'Vy', moment: 'Mz', deflection: 'y' });
+  const zDirectionGraphPackage = directionGraphPackage({
+    direction: 'Z',
+    hasLoads: hasZDirectionLoads,
+    rawLoads: zDirectionRawLoads,
+    series: zDirectionSeries,
+    labels: {
+      title: 'Z-direction loading - strong-axis bending My / shear Vz',
+      shear: 'Vz(x)',
+      shearKey: 'Vz',
+      moment: 'My(x)',
+      momentKey: 'My',
+      deflection: 'z-deflection',
+      deflectionKey: 'z'
+    },
+    message: 'No Z-direction load applied; strong-axis demand is not governing.'
+  });
+  const yDirectionGraphPackage = directionGraphPackage({
+    direction: 'Y',
+    hasLoads: hasYDirectionLoads,
+    rawLoads: yDirectionRawLoads,
+    series: yDirectionSeries,
+    labels: {
+      title: 'Y-direction loading - weak-axis bending Mz / shear Vy',
+      shear: 'Vy(x)',
+      shearKey: 'Vy',
+      moment: 'Mz(x)',
+      momentKey: 'Mz',
+      deflection: 'y-deflection',
+      deflectionKey: 'y'
+    },
+    message: 'No Y-direction load applied; weak-axis demand is not governing.'
+  });
   const calculationPackage = buildCalculationPackage({
     input,
     section,
@@ -2163,11 +2230,14 @@ function calculateBeam(input) {
     },
     calculationPackage,
     diagrams: {
-      series: sampleSeries(uls, sls),
+      series: legacyGraphSeriesFromDirection(zDirectionSeries, { shear: 'Vz', moment: 'My', deflection: 'z' }),
+      zDirectionGraphs: zDirectionGraphPackage,
+      yDirectionGraphs: yDirectionGraphPackage,
       basis: {
         shear: 'ULS',
         moment: 'ULS',
-        deflection: 'SLS'
+        deflection: 'SLS',
+        convention: 'X is the member longitudinal axis. Z-direction loading produces My/Vz/z-deflection. Y-direction loading produces Mz/Vy/y-deflection.'
       }
     }
   };

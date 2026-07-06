@@ -1202,7 +1202,7 @@ function renderResult(input, result) {
   renderTables(result);
   renderWarnings(result);
   renderAdvancedEc3Audit(input, result);
-  setChartPayloads(result.diagrams?.series || [], s);
+  setDirectionGraphPayloads(result, s);
   queueVisualRedraw('calculation');
 }
 
@@ -1767,14 +1767,27 @@ function drawSpringSupport(ctx, x, y, left = true, color = '#334155') {
   ctx.stroke();
 }
 
-function drawBeamSketch(input, result) {
-  const canvas = $('beamSketch');
+function directionGraphKey(direction) {
+  return String(direction || '').toUpperCase() === 'Y' ? 'yDirectionGraphs' : 'zDirectionGraphs';
+}
+
+function graphLoadsForDirection(result, direction, L) {
+  const graph = result.diagrams?.[directionGraphKey(direction)] || {};
+  const fallback = result.loads?.raw || { udls: [], points: [], supportXs: [0, L] };
+  return {
+    ...(graph.loads || fallback),
+    supportXs: (graph.loads?.supportXs?.length ? graph.loads.supportXs : fallback.supportXs) || [0, L]
+  };
+}
+
+function drawBeamSketch(input, result, canvasId = 'beamSketch', direction = null) {
+  const canvas = $(canvasId);
   if (!canvas) return;
   const ctx = setupCanvas(canvas);
   const rect = canvas.getBoundingClientRect();
   const W = rect.width, H = rect.height;
   const L = Math.max(Number(input.model.span) || 1, 1e-6);
-  const rawLoads = result.loads?.raw || { udls: [], points: [], supportXs: [0, L] };
+  const rawLoads = direction ? graphLoadsForDirection(result, direction, L) : (result.loads?.raw || { udls: [], points: [], supportXs: [0, L] });
   const supportXs = rawLoads.supportXs?.length ? rawLoads.supportXs : [0, L];
   const left = 40, right = W - 30, y = H * 0.58;
   const mapX = (x) => left + (Number(x || 0) / L) * (right - left);
@@ -1792,6 +1805,15 @@ function drawBeamSketch(input, result) {
   ctx.moveTo(left, y);
   ctx.lineTo(right, y);
   ctx.stroke();
+
+  const graphMessage = direction ? result.diagrams?.[directionGraphKey(direction)]?.message : null;
+  const hasVisibleDirectionLoad = !direction || (rawLoads.udls || []).some((u) => Math.abs(Number(u.G || 0) + Number(u.Q1 || 0) + Number(u.Q2 || 0)) > 1e-12) || (rawLoads.points || []).some((p) => Math.abs(Number(p.G || 0) + Number(p.Q1 || 0) + Number(p.Q2 || 0) + Number(p.M || 0)) > 1e-12);
+  if (direction && graphMessage && !hasVisibleDirectionLoad) {
+    ctx.fillStyle = muted;
+    ctx.font = '700 11px system-ui, -apple-system, Segoe UI';
+    const wrapped = String(graphMessage).match(/.{1,46}(\s|$)/g) || [graphMessage];
+    wrapped.slice(0, 2).forEach((lineText, index) => ctx.fillText(lineText.trim(), 12, 22 + index * 14));
+  }
 
   if (input.model.supportType === 'cantilever') {
     drawFixedSupport(ctx, left, y, true, line);
@@ -1888,7 +1910,7 @@ function drawBeamSketch(input, result) {
     ctx.fillText(`${p.label || 'M'} ${fmt(p.M, 2)} ${result.summary?.momentUnit || ''}`, Math.max(4, Math.min(xx - 28, W - 116)), cy - radius - 7);
   });
 
-  const axial = Number(input.axial?.G || 0) + Number(input.axial?.Q1 || 0) + Number(input.axial?.Q2 || 0);
+  const axial = direction ? 0 : Number(input.axial?.G || 0) + Number(input.axial?.Q1 || 0) + Number(input.axial?.Q2 || 0);
   if (Math.abs(axial) > 1e-12) {
     const compression = axial > 0;
     const ay = Math.max(22, y - 91);
@@ -1938,6 +1960,78 @@ function momentFromBase(value, momentUnit) {
   return momentUnit === 't m' ? value / GRAVITY : value;
 }
 
+function displayDirectionSeries(graph, summary = {}) {
+  const labels = graph?.labels || {};
+  const shearKey = labels.shearKey || (graph?.direction === 'Y' ? 'Vy' : 'Vz');
+  const momentKey = labels.momentKey || (graph?.direction === 'Y' ? 'Mz' : 'My');
+  const deflectionKey = labels.deflectionKey || (graph?.direction === 'Y' ? 'y' : 'z');
+  return (graph?.series || []).map((point) => ({
+    x: Number(point.x) || 0,
+    [shearKey]: forceFromBase(Number(point[shearKey]) || 0, summary.forceUnit || 'kN'),
+    [momentKey]: momentFromBase(Number(point[momentKey]) || 0, summary.momentUnit || 'kNm'),
+    [deflectionKey]: Number(point[deflectionKey]) || 0
+  }));
+}
+
+function writeChartPeak(id, series, key, unit) {
+  const host = $(id);
+  if (!host) return;
+  if (!series.length) {
+    host.textContent = 'No analysis series returned.';
+    return;
+  }
+  const peak = series.reduce((best, point) => Math.abs(Number(point[key]) || 0) > Math.abs(Number(best[key]) || 0) ? point : best, series[0]);
+  host.textContent = `Peak ${fmt3(peak[key])} ${unit || ''} at x = ${fmt(peak.x, 2)} m`;
+}
+
+function setDirectionGraphMessage(id, graph) {
+  const host = $(id);
+  if (!host) return;
+  host.textContent = graph?.message || '';
+}
+
+function setDirectionGraphPayloads(result = {}, summary = {}) {
+  const diagrams = result.diagrams || {};
+  const zGraph = diagrams.zDirectionGraphs || {
+    direction: 'Z',
+    hasLoads: true,
+    series: (diagrams.series || []).map((point) => ({ x: point.x, Vz: point.shear, My: point.moment, z: point.deflection })),
+    labels: { shearKey: 'Vz', momentKey: 'My', deflectionKey: 'z' }
+  };
+  const yGraph = diagrams.yDirectionGraphs || {
+    direction: 'Y',
+    hasLoads: false,
+    message: 'No Y-direction load applied; weak-axis demand is not governing.',
+    series: [],
+    labels: { shearKey: 'Vy', momentKey: 'Mz', deflectionKey: 'y' }
+  };
+  const zSeries = displayDirectionSeries(zGraph, summary);
+  const ySeries = displayDirectionSeries(yGraph, summary);
+  state.chartPayloads.clear();
+  [
+    ['chartVz', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, null],
+    ['chartVFocus', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, null],
+    ['chartMy', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, null],
+    ['chartMFocus', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, null],
+    ['chartZDefl', zSeries, 'z', 'z-deflection - mm', '#15803d'],
+    ['chartYFocus', zSeries, 'z', 'z-deflection - mm', '#15803d'],
+    ['chartVy', ySeries, 'Vy', `Vy(x) - ${summary.forceUnit || ''}`, '#0f766e'],
+    ['chartMz', ySeries, 'Mz', `Mz(x) - ${summary.momentUnit || ''}`, '#7c3aed'],
+    ['chartYDefl', ySeries, 'y', 'y-deflection - mm', '#16a34a']
+  ].forEach(([id, series, key, title, color]) => state.chartPayloads.set(id, { series, key, title, color }));
+  setDirectionGraphMessage('zDirectionGraphMessage', zGraph);
+  setDirectionGraphMessage('yDirectionGraphMessage', yGraph);
+  writeChartPeak('peakVz', zSeries, 'Vz', summary.forceUnit || '');
+  writeChartPeak('peakVFocus', zSeries, 'Vz', summary.forceUnit || '');
+  writeChartPeak('peakMy', zSeries, 'My', summary.momentUnit || '');
+  writeChartPeak('peakMFocus', zSeries, 'My', summary.momentUnit || '');
+  writeChartPeak('peakZDefl', zSeries, 'z', 'mm');
+  writeChartPeak('peakYFocus', zSeries, 'z', 'mm');
+  writeChartPeak('peakVy', ySeries, 'Vy', summary.forceUnit || '');
+  writeChartPeak('peakMz', ySeries, 'Mz', summary.momentUnit || '');
+  writeChartPeak('peakYDefl', ySeries, 'y', 'mm');
+}
+
 function setChartPayloads(series, summary = {}) {
   const displaySeries = (series || []).map((p) => ({
     x: Number(p.x) || 0,
@@ -1947,12 +2041,12 @@ function setChartPayloads(series, summary = {}) {
   }));
   state.chartPayloads.clear();
   [
-    ['chartV', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, null],
-    ['chartVFocus', 'shear', `Shear Force V(x) - ${summary.forceUnit || ''}`, null],
-    ['chartM', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, null],
-    ['chartMFocus', 'moment', `Bending Moment M(x) - ${summary.momentUnit || ''}`, null],
-    ['chartY', 'deflection', 'Deflection y(x) - mm', '#15803d'],
-    ['chartYFocus', 'deflection', 'Deflection y(x) - mm', '#15803d']
+    ['chartV', 'shear', `Vz(x) - ${summary.forceUnit || ''}`, null],
+    ['chartVFocus', 'shear', `Vz(x) - ${summary.forceUnit || ''}`, null],
+    ['chartM', 'moment', `My(x) - ${summary.momentUnit || ''}`, null],
+    ['chartMFocus', 'moment', `My(x) - ${summary.momentUnit || ''}`, null],
+    ['chartY', 'deflection', 'z-deflection - mm', '#15803d'],
+    ['chartYFocus', 'deflection', 'z-deflection - mm', '#15803d']
   ].forEach(([id, key, title, color]) => state.chartPayloads.set(id, { series: displaySeries, key, title, color }));
   updateChartPeakReadouts(displaySeries, summary);
 }
@@ -1987,6 +2081,8 @@ function queueVisualRedraw(reason = 'redraw') {
 function redrawAllVisuals(reason = 'redraw', attempt = 0) {
   if (!state.last) return;
   drawBeamSketch(state.last.input, state.last.result);
+  drawBeamSketch(state.last.input, state.last.result, 'zLoadSketch', 'Z');
+  drawBeamSketch(state.last.input, state.last.result, 'yLoadSketch', 'Y');
   state.chartPayloads.forEach((payload, id) => drawChart(id, payload.series, payload.key, payload.title, payload.color));
   const waiting = Array.from(state.chartPayloads.keys()).some((id) => $(id)?.dataset.needsRedraw === 'true');
   if (waiting && attempt < 4) setTimeout(() => redrawAllVisuals(reason, attempt + 1), 80);
@@ -2065,7 +2161,7 @@ function drawChart(id, series, key, title, color) {
   const xs = series.map((p) => Number(p.x) || 0);
   const ys = series.map((p) => Number(p[key]) || 0);
   const unit = title.includes(' - ') ? title.split(' - ').pop().trim() : '';
-  const axisSymbol = key === 'shear' ? 'V' : key === 'moment' ? 'M' : 'y';
+  const axisSymbol = ({ shear: 'V', moment: 'M', deflection: 'y', Vz: 'Vz', Vy: 'Vy', My: 'My', Mz: 'Mz', z: 'z', y: 'y' })[key] || key;
   canvas._chartPayload = { series, key, title, color, xs, ys, unit, axisSymbol };
   installChartInteractions(canvas);
   let xmin = Math.min(...xs), xmax = Math.max(...xs);
@@ -2103,7 +2199,7 @@ function drawChart(id, series, key, title, color) {
   ctx.lineTo(X(xs[xs.length - 1]), Y(0));
   ctx.closePath();
   ctx.fillStyle = fill;
-  ctx.globalAlpha = key === 'deflection' ? 0.08 : 0.12;
+  ctx.globalAlpha = ['deflection', 'z', 'y'].includes(key) ? 0.08 : 0.12;
   ctx.fill();
   ctx.restore();
   ctx.strokeStyle = fill;
@@ -2126,7 +2222,13 @@ function drawChart(id, series, key, title, color) {
   ctx.save();
   ctx.translate(14, padT + (H - padT - padB) / 2);
   ctx.rotate(-Math.PI / 2);
-  const axisLabel = key === 'shear' ? `V [${unit || '-'}]` : key === 'moment' ? `M [${unit || '-'}]` : 'y [mm]';
+  const axisLabel = ['Vz', 'Vy', 'My', 'Mz'].includes(key)
+    ? `${key} [${unit || '-'}]`
+    : key === 'shear'
+      ? `V [${unit || '-'}]`
+      : key === 'moment'
+        ? `M [${unit || '-'}]`
+        : `${axisSymbol} [mm]`;
   ctx.fillText(axisLabel, 0, 0);
   ctx.restore();
   ctx.fillStyle = getVar('--text') || '#111827';
@@ -2500,7 +2602,7 @@ function initSplitters() {
 function initCanvasObservers() {
   if (!('ResizeObserver' in window)) return;
   const observer = new ResizeObserver(() => queueVisualRedraw('canvas-resize'));
-  ['beamSketch', 'chartV', 'chartVFocus', 'chartM', 'chartMFocus', 'chartY', 'chartYFocus', 'chartModalCanvas'].forEach((id) => {
+  ['beamSketch', 'zLoadSketch', 'yLoadSketch', 'chartVz', 'chartVy', 'chartVFocus', 'chartMy', 'chartMz', 'chartMFocus', 'chartZDefl', 'chartYDefl', 'chartYFocus', 'chartModalCanvas'].forEach((id) => {
     const el = $(id);
     if (el) observer.observe(el);
   });

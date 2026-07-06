@@ -269,9 +269,15 @@ function loadLabel(load) {
   return `${load.label || 'Load'} (${parts.join(', ') || '0'})`;
 }
 
-function buildLoadingSvg(input = {}, result = {}) {
+function buildLoadingSvg(input = {}, result = {}, direction = null) {
   const L = finite(result.inputEcho?.span) || finite(input.model?.span) || 1;
-  const raw = result.loads?.raw || input.loads || { udls: [], points: [], supportXs: [0, L] };
+  const sourceRaw = result.loads?.raw || input.loads || { udls: [], points: [], supportXs: [0, L] };
+  const wantedDirection = direction ? String(direction).toUpperCase() : null;
+  const raw = wantedDirection ? {
+    ...sourceRaw,
+    udls: (sourceRaw.udls || []).filter((load) => String(load.direction || 'Z').toUpperCase() === wantedDirection),
+    points: (sourceRaw.points || []).filter((load) => String(load.direction || 'Z').toUpperCase() === wantedDirection)
+  } : sourceRaw;
   const supportType = result.inputEcho?.supportType || input.model?.supportType || 'ss';
   const xMap = (x) => 84 + (Number(x || 0) / Math.max(L, 1e-9)) * 720;
   const yBeam = 128;
@@ -323,7 +329,11 @@ function buildLoadingSvg(input = {}, result = {}) {
     </g>`;
   }).join('');
 
-  return `<svg viewBox="0 0 900 250" role="img" aria-label="Loading diagram">
+  const emptyMessage = wantedDirection && !(raw.udls || []).length && !(raw.points || []).length
+    ? `<text x="84" y="62" class="dim-text">No ${wantedDirection}-direction load applied.</text>`
+    : '';
+
+  return `<svg viewBox="0 0 900 250" role="img" aria-label="${wantedDirection ? `${wantedDirection}-direction loading diagram` : 'Loading diagram'}">
     <defs>
       <style>
         text{font-family:Arial,sans-serif}
@@ -342,6 +352,7 @@ function buildLoadingSvg(input = {}, result = {}) {
     ${supportShapes}
     ${udls}
     ${points}
+    ${emptyMessage}
     ${reactions}
     <line x1="${xMap(0)}" y1="${yBeam + 94}" x2="${xMap(L)}" y2="${yBeam + 94}" class="dim"/>
     <text x="${xMap(L / 2) - 38}" y="${yBeam + 120}" class="dim-text">Span L = ${escHtml(round(L, 3))} m</text>
@@ -386,6 +397,19 @@ function buildGraphSvg(series = [], key, title, unit, stroke) {
     <text x="18" y="${top + 12}" class="label">${escHtml(unit)}</text>
     <text x="${Math.max(left, Math.min(right - 190, xMap(peak.x || 0)))}" y="${Math.max(top + 16, yMap(peak[key] || 0) - 10)}" class="label">Peak ${escHtml(round(peak[key], 3))} ${escHtml(unit)} at ${escHtml(round(peak.x, 3))} m</text>
   </svg>`;
+}
+
+function directionGraphSeries(result = {}, direction = 'Z') {
+  const graphKey = String(direction).toUpperCase() === 'Y' ? 'yDirectionGraphs' : 'zDirectionGraphs';
+  const graph = result.diagrams?.[graphKey] || {};
+  if (Array.isArray(graph.series)) return graph.series;
+  if (String(direction).toUpperCase() === 'Y') return [];
+  return (result.diagrams?.series || []).map((row) => ({
+    x: row.x,
+    Vz: row.shear,
+    My: row.moment,
+    z: row.deflection
+  }));
 }
 
 function buildUtilisationSvg(result = {}) {
@@ -539,7 +563,8 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
     !meta.companyLogoUrl || meta.companyLogoUrl === '-' ? 'Company logo not supplied in project metadata.' : null,
     !source.title || source.title === 'Source to be confirmed' ? 'Section data source to be confirmed.' : null
   ].filter(Boolean);
-  const series = result.diagrams?.series || [];
+  const zSeries = directionGraphSeries(result, 'Z');
+  const ySeries = directionGraphSeries(result, 'Y');
   return {
     meta,
     result,
@@ -549,10 +574,21 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
     warnings: [...new Set(warnings)],
     sectionSvg: buildSectionSvg(result.sectionProperties || {}),
     loadingSvg: buildLoadingSvg(input, result),
+    zDirectionLoadingSvg: buildLoadingSvg(input, result, 'Z'),
+    yDirectionLoadingSvg: buildLoadingSvg(input, result, 'Y'),
     graphs: {
-      shear: buildGraphSvg(series, 'shear', 'Shear Force Diagram', result.summary?.forceUnit || 'kN', '#dc2626'),
-      moment: buildGraphSvg(series, 'moment', 'Bending Moment Diagram', result.summary?.momentUnit || 'kN m', '#155eef'),
-      deflection: buildGraphSvg(series, 'deflection', 'Deflection Diagram', 'mm', '#15803d'),
+      zDirection: {
+        loading: buildLoadingSvg(input, result, 'Z'),
+        shear: buildGraphSvg(zSeries, 'Vz', 'Vz(x) - Z-direction shear', result.summary?.forceUnit || 'kN', '#1d4ed8'),
+        moment: buildGraphSvg(zSeries, 'My', 'My(x) - strong-axis bending', result.summary?.momentUnit || 'kN m', '#155eef'),
+        deflection: buildGraphSvg(zSeries, 'z', 'z-deflection', 'mm', '#15803d')
+      },
+      yDirection: {
+        loading: buildLoadingSvg(input, result, 'Y'),
+        shear: buildGraphSvg(ySeries, 'Vy', 'Vy(x) - Y-direction shear', result.summary?.forceUnit || 'kN', '#0f766e'),
+        moment: buildGraphSvg(ySeries, 'Mz', 'Mz(x) - weak-axis bending', result.summary?.momentUnit || 'kN m', '#7c3aed'),
+        deflection: buildGraphSvg(ySeries, 'y', 'y-deflection', 'mm', '#16a34a')
+      },
       utilisation: buildUtilisationSvg(result)
     },
     checksRows: formatCheckRows(result),
@@ -808,12 +844,22 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
     </section>
 
     <section class="page">
-      <h2>Structural Graphs</h2>
+      <h2>Direction Loading Graphs</h2>
+      <p class="muted">${escHtml(model.directionOverview.convention)}</p>
+      <h3>Z-direction loading - strong-axis bending My / shear Vz</h3>
       <div class="graphics-grid">
-        <div class="figure">${model.graphs.shear}<p class="caption">Figure 3. Shear force diagram.</p></div>
-        <div class="figure">${model.graphs.moment}<p class="caption">Figure 4. Bending moment diagram.</p></div>
-        <div class="figure">${model.graphs.deflection}<p class="caption">Figure 5. Deflection diagram.</p></div>
-        <div class="figure">${model.graphs.utilisation}<p class="caption">Figure 6. Utilisation diagram for active checks.</p></div>
+        <div class="figure">${model.graphs.zDirection.loading}<p class="caption">Figure 3. Z-direction load diagram.</p></div>
+        <div class="figure">${model.graphs.zDirection.shear}<p class="caption">Figure 4. Vz(x) shear diagram.</p></div>
+        <div class="figure">${model.graphs.zDirection.moment}<p class="caption">Figure 5. My(x) bending moment diagram.</p></div>
+        <div class="figure">${model.graphs.zDirection.deflection}<p class="caption">Figure 6. z-deflection diagram.</p></div>
+      </div>
+      <h3>Y-direction loading - weak-axis bending Mz / shear Vy</h3>
+      <div class="graphics-grid">
+        <div class="figure">${model.graphs.yDirection.loading}<p class="caption">Figure 7. Y-direction load diagram.</p></div>
+        <div class="figure">${model.graphs.yDirection.shear}<p class="caption">Figure 8. Vy(x) shear diagram.</p></div>
+        <div class="figure">${model.graphs.yDirection.moment}<p class="caption">Figure 9. Mz(x) bending moment diagram.</p></div>
+        <div class="figure">${model.graphs.yDirection.deflection}<p class="caption">Figure 10. y-deflection diagram.</p></div>
+        <div class="figure">${model.graphs.utilisation}<p class="caption">Figure 11. Combined / governing utilisation diagram for active checks.</p></div>
       </div>
     </section>
 
@@ -981,6 +1027,9 @@ ${zDirectionRows}
 \\textbf{Item} & \\textbf{Value} \\\\
 ${yDirectionRows}
 \\end{longtable}
+
+\\section{Direction Graph Summary}
+The report graph package is split by load direction. Z-direction loading is plotted as Vz(x), My(x), and z-deflection. Y-direction loading is plotted as Vy(x), Mz(x), and y-deflection.
 
 \\subsection{Combined / governing overview}
 \\begin{longtable}{p{0.38\\linewidth}p{0.52\\linewidth}}
@@ -1373,11 +1422,13 @@ function buildPdfCheckRows(result = {}) {
   ]);
 }
 
-function buildPdfLoadSketchItems(input = {}, result = {}) {
+function buildPdfLoadSketchItems(input = {}, result = {}, direction = null) {
   const items = { udls: [], traps: [], points: [], moments: [], axial: [] };
   const span = finite(result.inputEcho?.span) || finite(input.model?.span) || 1;
   const seenTraps = new Set();
-  (input.loads?.udls || []).forEach((load, index) => {
+  const wantedDirection = direction ? String(direction).toUpperCase() : null;
+  const directionMatches = (load) => !wantedDirection || String(load.direction || 'Z').toUpperCase() === wantedDirection;
+  (input.loads?.udls || []).filter(directionMatches).forEach((load, index) => {
     if (load.sourceType === 'trap') {
       const id = load.reportLabel || String(load.label || `T${index + 1}`).split('.')[0];
       const key = `${id}-${load.loadCase || 'G'}-${load.reportX1 ?? load.x1}-${load.reportX2 ?? load.x2}`;
@@ -1402,7 +1453,7 @@ function buildPdfLoadSketchItems(input = {}, result = {}) {
       text: `${load.label || `U${index + 1}`}: ${['G', 'Q1', 'Q2'].filter((key) => Number(load[key] || 0)).map((key) => `${key}=${round(load[key], 2)}`).join(', ') || '0'}`
     });
   });
-  (input.loads?.points || []).forEach((load, index) => {
+  (input.loads?.points || []).filter(directionMatches).forEach((load, index) => {
     if (Math.abs(Number(load.M || 0)) > 1e-12) {
       items.moments.push({ id: load.label || `M${index + 1}`, x: Number(load.x || 0), text: `${load.label || `M${index + 1}`}: ${round(load.M, 2)}` });
       return;
@@ -1413,7 +1464,7 @@ function buildPdfLoadSketchItems(input = {}, result = {}) {
   });
   const axial = input.axial || {};
   const axialTotal = Math.abs(Number(axial.G || 0)) + Math.abs(Number(axial.Q1 || 0)) + Math.abs(Number(axial.Q2 || 0));
-  if (axialTotal > 1e-12) {
+  if (!wantedDirection && axialTotal > 1e-12) {
     items.axial.push({ text: `N: ${['G', 'Q1', 'Q2'].filter((key) => Number(axial[key] || 0)).map((key) => `${key}=${round(axial[key], 2)}`).join(', ')}` });
   }
   return items;
@@ -1432,6 +1483,8 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
   const rows = buildHandCalculationRows(input, result, model);
   const forceUnit = result.summary?.forceUnit || 'kN';
   const momentUnit = result.summary?.momentUnit || 'kN m';
+  const zSeries = directionGraphSeries(result, 'Z');
+  const ySeries = directionGraphSeries(result, 'Y');
 
   const add = (op) => ops.push(op);
   const stroke = (hex) => add(`${pdfColour(hex)} RG`);
@@ -1566,7 +1619,7 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
     text(`Prepared: ${meta.engineerName || '-'}    Checked: ${meta.checkedBy || '-'}    Approved: ${meta.approvedBy || '-'}`, margin + 10, y - 62, { size: 8 });
     y -= 96;
   };
-  const drawLoadingDiagram = () => {
+  const drawLoadingDiagram = (direction = null) => {
     ensure(150);
     const top = y;
     const h = 138;
@@ -1576,13 +1629,14 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
     const span = finite(result.inputEcho?.span) || finite(input.model?.span) || 1;
     const xMap = (xValue) => left + 36 + (Number(xValue || 0) / Math.max(span, 1e-9)) * (contentWidth - 72);
     rect(left, top, contentWidth, h, { fill: '#ffffff', stroke: '#cbd5e1' });
-    text('Loading diagram', left + 8, top - 14, { size: 9, bold: true });
+    const wantedDirection = direction ? String(direction).toUpperCase() : null;
+    text(wantedDirection ? `${wantedDirection}-direction loading diagram` : 'Loading diagram', left + 8, top - 14, { size: 9, bold: true });
     line(xMap(0), beamY, xMap(span), beamY, '#0f172a', 2);
     line(xMap(0), beamY, xMap(0) - 10, beamY - 18, '#0f172a', 1);
     line(xMap(0), beamY, xMap(0) + 10, beamY - 18, '#0f172a', 1);
     line(xMap(span), beamY, xMap(span) - 10, beamY - 18, '#0f172a', 1);
     line(xMap(span), beamY, xMap(span) + 10, beamY - 18, '#0f172a', 1);
-    const sketch = buildPdfLoadSketchItems(input, result);
+    const sketch = buildPdfLoadSketchItems(input, result, wantedDirection);
     sketch.udls.forEach((load, index) => {
       const x1 = xMap(load.x1);
       const x2 = xMap(load.x2);
@@ -1624,13 +1678,16 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
       text(load.text, x + 15, beamY + 36 - index * 8, { size: 6.5, color: '#7c2d12' });
     });
     sketch.axial.forEach((load) => text(load.text, xMap(span / 2) - 38, beamY + 92, { size: 7, bold: true, color: '#1d4ed8' }));
+    if (wantedDirection && !sketch.udls.length && !sketch.traps.length && !sketch.points.length && !sketch.moments.length) {
+      text(`No ${wantedDirection}-direction load applied.`, left + 12, beamY + 58, { size: 8, color: '#64748b', bold: true });
+    }
     text('0', xMap(0) - 4, beamY - 31, { size: 7 });
     text(`${round(span, 3)} m`, xMap(span) - 16, beamY - 31, { size: 7 });
     text(`L = ${round(span, 3)} m`, xMap(span / 2) - 22, beamY - 31, { size: 7, bold: true });
     y -= h + 12;
   };
-  const drawChart = (key, title, unit, colour) => {
-    const series = result.diagrams?.series || [];
+  const drawChart = (key, title, unit, colour, seriesOverride = null) => {
+    const series = seriesOverride || result.diagrams?.series || [];
     ensure(135);
     const top = y;
     const h = 122;
@@ -1674,12 +1731,24 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
   section('Loading details');
   table(['Load ID', 'Type', 'Value', 'Start x', 'End x', 'Notes'], buildPdfLoadRows(input, result), [58, 88, 128, 62, 62, 136], { size: 7.2 });
   drawLoadingDiagram();
+  section('Axis convention and direction overview');
+  table(['Item', 'Value'], [
+    ['Convention', model.directionOverview?.convention || 'X is the member longitudinal axis. Z-direction loading produces My/Vz. Y-direction loading produces Mz/Vy.'],
+    ['Z-direction loading', 'Strong-axis bending My / shear Vz / z-deflection'],
+    ['Y-direction loading', 'Weak-axis bending Mz / shear Vy / y-deflection']
+  ], [170, 364], { size: 8 });
   section('Reactions');
   table(['Support', 'Position', 'Vertical reaction', 'Moment reaction'], rows.reactionRows.length ? rows.reactionRows : [['-', '-', '-', '-']], [110, 110, 150, 164], { size: 8 });
-  section('Shear, moment and deflection diagrams');
-  drawChart('shear', 'Design shear force diagram', forceUnit, '#1d4ed8');
-  drawChart('moment', 'Design bending moment diagram', momentUnit, '#1d4ed8');
-  drawChart('deflection', 'Deflection diagram', 'mm', '#15803d');
+  section('Z-direction loading diagrams');
+  drawLoadingDiagram('Z');
+  drawChart('Vz', 'Vz(x) - Z-direction shear', forceUnit, '#1d4ed8', zSeries);
+  drawChart('My', 'My(x) - strong-axis bending', momentUnit, '#1d4ed8', zSeries);
+  drawChart('z', 'z-deflection', 'mm', '#15803d', zSeries);
+  section('Y-direction loading diagrams');
+  drawLoadingDiagram('Y');
+  drawChart('Vy', 'Vy(x) - Y-direction shear', forceUnit, '#0f766e', ySeries);
+  drawChart('Mz', 'Mz(x) - weak-axis bending', momentUnit, '#7c3aed', ySeries);
+  drawChart('y', 'y-deflection', 'mm', '#16a34a', ySeries);
   section('Eurocode checks');
   table(['Check', 'Expression', 'Clause', 'Utilisation', 'Status'], buildPdfCheckRows(result), [96, 238, 78, 62, 60], { size: 6.9 });
   drawCalculationDerivations();
