@@ -1520,6 +1520,7 @@ body.plan-plus .ad-slot{display:none!important}
 #sponsorSlot.hide{display:none!important}
 .multi-load-card,#axialLoadCard,.axial-load-cases,.axial-load-cases label{min-width:0;max-width:100%}
 #axialLoadCard{overflow:hidden}
+#axialLoadCard{order:-1}
 #axialLoadCard input{width:100%;max-width:100%;min-width:0}
 .metadata-note{padding:8px 10px;border:1px dashed rgba(var(--accent-rgb),.36);border-radius:8px;background:rgba(var(--accent-rgb),.055);color:var(--muted);font-size:10.5px;line-height:1.45}
 .metadata-note strong{color:var(--text)}
@@ -1551,7 +1552,8 @@ body.plan-plus .ad-slot{display:none!important}
 @media(min-width:1700px){.direction-chart-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.direction-chart-grid canvas.chart{height:205px!important}}
 @media(max-width:1200px){.direction-graph-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){.direction-graph-window{padding:8px}.direction-load-sketch{height:170px}.direction-chart-grid canvas.chart{height:220px!important}}
-.load-direction-field select,.load-case-field select,.axial-kind-field select{min-height:32px!important;margin:0!important;padding:5px 7px!important}
+.load-direction-field,.load-case-field,.axial-kind-field{min-width:132px!important}
+.load-direction-field select,.load-case-field select,.axial-kind-field select{min-height:34px!important;margin:0!important;padding:5px 24px 5px 7px!important;width:100%!important}
 .audit-output-panel{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
 .audit-output-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .audit-section{margin:10px 0;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)}
@@ -1981,7 +1983,7 @@ body.layout-tablet .section-selector-layout{
   border-radius:8px!important;
   background:var(--panel)!important;
 }
-.axial-load-row .load-entry-fields{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important}
+.axial-load-row .load-entry-fields{grid-template-columns:repeat(auto-fit,minmax(132px,1fr))!important}
 @media(max-width:760px){
   .section-selector-layout{grid-template-columns:1fr!important}
   #sectionProfilePreview{height:230px!important}
@@ -3381,7 +3383,7 @@ body.layout-tablet .input-scroll-stack{
               </div>
               <button type="button" class="btn load-add-btn" data-add-load="trap">+ Add trapezoidal load</button>
             </div>
-            <div class="multi-load-card single-mode-only" id="axialLoadCard">
+            <div class="multi-load-card" id="axialLoadCard">
               <div id="axialLoadTitle" class="mini-title">Axial forces</div>
               <div id="multiAxialRows" class="axial-load-rows"></div>
               <button type="button" class="btn load-add-btn" id="addAxialLoadBtn">+ Add axial force</button>

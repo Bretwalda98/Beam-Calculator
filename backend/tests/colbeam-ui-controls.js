@@ -66,11 +66,16 @@ outputControlIds.forEach((id) => {
 
 assert.ok(secureApp.includes('data-field="direction"'), 'Load cards should render direction selectors.');
 assert.ok(secureApp.includes('data-field="loadCase"'), 'Load cards should render row-level load case selectors.');
+assert.ok(secureApp.includes('G permanent'), 'Load-card load case dropdown should visibly include G permanent.');
+assert.ok(secureApp.includes('Q1 main variable'), 'Load-card load case dropdown should visibly include Q1 main variable.');
+assert.ok(secureApp.includes('Q2 secondary variable'), 'Load-card load case dropdown should visibly include Q2 secondary variable.');
 assert.ok(secureApp.includes('function loadDirection'), 'secure-app.js should collect load direction selectors.');
 assert.ok(secureApp.includes('function loadCaseForCard'), 'secure-app.js should collect row-level load cases.');
 assert.ok(secureApp.includes('function readAxialRows'), 'secure-app.js should collect repeatable axial force rows.');
 assert.ok(indexHtml.includes('id="multiAxialRows"'), 'index.html should include the repeatable axial load row host.');
 assert.ok(indexHtml.includes('id="addAxialLoadBtn"'), 'index.html should include an add axial force button.');
+assert.ok(!indexHtml.includes('multi-load-card single-mode-only" id="axialLoadCard"'), 'Axial force input card must not be hidden by single-mode-only layout rules.');
+assert.ok(indexHtml.includes('#axialLoadCard{order:-1}'), 'Axial force input card should appear near the top of the Loads grid.');
 assert.ok(!indexHtml.includes('data-loadcase="G"'), 'Global load case tab selector should be removed.');
 assert.ok(!indexHtml.includes('Permanent loads (G)'), 'Global G load case tab should not be visible.');
 assert.ok(!indexHtml.includes('id="axialG"'), 'Fixed axial G input should be removed.');
