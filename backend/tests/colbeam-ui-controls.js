@@ -65,12 +65,27 @@ outputControlIds.forEach((id) => {
 });
 
 assert.ok(secureApp.includes('data-field="direction"'), 'Load cards should render direction selectors.');
+assert.ok(secureApp.includes('data-field="loadCase"'), 'Load cards should render row-level load case selectors.');
 assert.ok(secureApp.includes('function loadDirection'), 'secure-app.js should collect load direction selectors.');
+assert.ok(secureApp.includes('function loadCaseForCard'), 'secure-app.js should collect row-level load cases.');
+assert.ok(secureApp.includes('function readAxialRows'), 'secure-app.js should collect repeatable axial force rows.');
+assert.ok(indexHtml.includes('id="multiAxialRows"'), 'index.html should include the repeatable axial load row host.');
+assert.ok(indexHtml.includes('id="addAxialLoadBtn"'), 'index.html should include an add axial force button.');
+assert.ok(!indexHtml.includes('data-loadcase="G"'), 'Global load case tab selector should be removed.');
+assert.ok(!indexHtml.includes('Permanent loads (G)'), 'Global G load case tab should not be visible.');
+assert.ok(!indexHtml.includes('id="axialG"'), 'Fixed axial G input should be removed.');
+assert.ok(!indexHtml.includes('id="axialQ1"'), 'Fixed axial Q1 input should be removed.');
+assert.ok(!indexHtml.includes('id="axialQ2"'), 'Fixed axial Q2 input should be removed.');
 assert.ok(indexHtml.includes('Recorded for reference comparison; not yet used by calculation engine.'), 'Metadata-only warning should be visible.');
 assert.ok(indexHtml.includes('Current engine uses simplified interaction; reference Method 1/2 recorded for comparison.'), 'Simplified interaction warning should be visible.');
 assert.ok(indexHtml.includes('Advanced EC3 Audit Output'), 'Advanced EC3 audit output panel should be visible.');
 assert.ok(indexHtml.includes('id="axisOverview"'), 'index.html should include the axis overview mount point.');
 assert.ok(indexHtml.includes('id="directionGraphWindows"'), 'index.html should include the direction graph window grid.');
+assert.ok(!indexHtml.includes('<div class="stage-tabs">'), 'Overview/Shear/Moment/Deflection/Tables tab bar should be removed.');
+assert.ok(!indexHtml.includes('data-tab="stageShear"'), 'Shear tab button should be removed.');
+assert.ok(!indexHtml.includes('data-tab="stageMoment"'), 'Moment tab button should be removed.');
+assert.ok(!indexHtml.includes('data-tab="stageDeflection"'), 'Deflection tab button should be removed.');
+assert.ok(!indexHtml.includes('data-tab="stageTables"'), 'Tables tab button should be removed.');
 assert.ok(indexHtml.includes('id="zDirectionGraphWindow"'), 'index.html should include the Z-direction graph window.');
 assert.ok(indexHtml.includes('id="yDirectionGraphWindow"'), 'index.html should include the Y-direction graph window.');
 ['zLoadSketch', 'yLoadSketch', 'chartVz', 'chartMy', 'chartZDefl', 'chartVy', 'chartMz', 'chartYDefl'].forEach((id) => {

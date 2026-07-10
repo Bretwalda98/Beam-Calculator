@@ -540,7 +540,13 @@ function formatLoadRows(result = {}) {
     `${round(p.x, 3)} m`,
     `G ${round(p.G, 3)}, Q1 ${round(p.Q1, 3)}, Q2 ${round(p.Q2, 3)}${Math.abs(Number(p.M || 0)) > 1e-12 ? `, M ${round(p.M, 3)}` : ''}`
   ]);
-  return [...udls, ...points];
+  const axialRows = (result.loads?.colbeamAudit?.axialRows || []).map((row, index) => [
+    row.label || `N${index + 1}`,
+    `Axial ${row.forceType || 'compression'}`,
+    'Member X-axis',
+    `${row.loadCase || 'G'} ${round(row.value ?? Math.abs(Number(row.signedValue || 0)), 3)}`
+  ]);
+  return [...udls, ...points, ...axialRows];
 }
 
 function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
@@ -1373,6 +1379,35 @@ function buildPdfLoadRows(input = {}, result = {}) {
     ]);
   });
 
+  const axialRows = Array.isArray(input.axial?.rows) ? input.axial.rows : [];
+  if (axialRows.length) {
+    axialRows.forEach((row, index) => {
+      const value = Number(row.value ?? Math.abs(Number(row.signedValue || 0)));
+      if (!Number.isFinite(value) || Math.abs(value) <= 1e-12) return;
+      rows.push([
+        row.label || `N${index + 1}`,
+        `Axial ${row.forceType || (Number(row.signedValue || 0) < 0 ? 'tension' : 'compression')}`,
+        `${row.loadCase || 'G'}=${round(value, 3)}`,
+        'Member X-axis',
+        '-',
+        'Included in combined NEd'
+      ]);
+    });
+  } else {
+    ['G', 'Q1', 'Q2'].forEach((loadCase) => {
+      const value = Number(input.axial?.[loadCase] || 0);
+      if (Math.abs(value) <= 1e-12) return;
+      rows.push([
+        `N${rows.length + 1}`,
+        `Axial ${value < 0 ? 'tension' : 'compression'}`,
+        `${loadCase}=${round(Math.abs(value), 3)}`,
+        'Member X-axis',
+        '-',
+        'Migrated legacy axial input'
+      ]);
+    });
+  }
+
   const rawSelfWeight = (result.loads?.raw?.udls || []).find((load) => load.isSelf);
   if (rawSelfWeight && !rows.some((row) => row[1] === 'Self weight UDL')) {
     rows.push([
@@ -1463,9 +1498,17 @@ function buildPdfLoadSketchItems(input = {}, result = {}, direction = null) {
     items.points.push({ id: load.label || `P${index + 1}`, x: Number(load.x || 0), text: `${load.label || `P${index + 1}`}: ${['G', 'Q1', 'Q2'].filter((key) => Number(load[key] || 0)).map((key) => `${key}=${round(load[key], 2)}`).join(', ')}` });
   });
   const axial = input.axial || {};
-  const axialTotal = Math.abs(Number(axial.G || 0)) + Math.abs(Number(axial.Q1 || 0)) + Math.abs(Number(axial.Q2 || 0));
-  if (!wantedDirection && axialTotal > 1e-12) {
-    items.axial.push({ text: `N: ${['G', 'Q1', 'Q2'].filter((key) => Number(axial[key] || 0)).map((key) => `${key}=${round(axial[key], 2)}`).join(', ')}` });
+  const axialRows = Array.isArray(axial.rows) ? axial.rows : [];
+  if (!wantedDirection && axialRows.length) {
+    axialRows.forEach((row, index) => {
+      const value = Number(row.value ?? Math.abs(Number(row.signedValue || 0)));
+      if (Math.abs(value) > 1e-12) items.axial.push({ text: `${row.label || `N${index + 1}`}: ${row.loadCase || 'G'}=${round(value, 2)} ${row.forceType || 'compression'}` });
+    });
+  } else {
+    const axialTotal = Math.abs(Number(axial.G || 0)) + Math.abs(Number(axial.Q1 || 0)) + Math.abs(Number(axial.Q2 || 0));
+    if (!wantedDirection && axialTotal > 1e-12) {
+      items.axial.push({ text: `N: ${['G', 'Q1', 'Q2'].filter((key) => Number(axial[key] || 0)).map((key) => `${key}=${round(axial[key], 2)}`).join(', ')}` });
+    }
   }
   return items;
 }

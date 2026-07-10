@@ -89,6 +89,12 @@ function validateCalculationRequest(input = {}) {
 
   const axial = input.axial || {};
   ['G', 'Q1', 'Q2'].forEach((key) => optionalFinite(axial[key], 0, `Axial ${key}`));
+  (axial.rows || []).forEach((row, index) => {
+    const prefix = `Axial force ${index + 1}`;
+    if (row.loadCase && !['G', 'Q1', 'Q2'].includes(String(row.loadCase).toUpperCase())) fail(`${prefix} load case must be G, Q1 or Q2.`);
+    if (row.forceType && !['compression', 'tension'].includes(String(row.forceType).toLowerCase())) fail(`${prefix} type must be compression or tension.`);
+    optionalFinite(row.value ?? row.signedValue, 0, `${prefix} value`);
+  });
   return true;
 }
 

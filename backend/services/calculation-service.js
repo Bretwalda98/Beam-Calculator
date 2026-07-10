@@ -1144,6 +1144,37 @@ function normaliseLoads(input, section, L, unit) {
   return raw;
 }
 
+function normaliseAxialInput(axial = {}) {
+  const totals = {
+    G: finiteNumber(axial.G, 0),
+    Q1: finiteNumber(axial.Q1, 0),
+    Q2: finiteNumber(axial.Q2, 0),
+    signConvention: axial.signConvention || 'positive_compression',
+    rows: []
+  };
+  if (Array.isArray(axial.rows) && axial.rows.length) {
+    totals.G = 0;
+    totals.Q1 = 0;
+    totals.Q2 = 0;
+    axial.rows.slice(0, 40).forEach((row, index) => {
+      const loadCase = ['G', 'Q1', 'Q2'].includes(String(row.loadCase || '').toUpperCase()) ? String(row.loadCase).toUpperCase() : 'G';
+      const forceType = String(row.forceType || '').toLowerCase() === 'tension' ? 'tension' : 'compression';
+      const rawValue = row.value !== undefined ? finiteNumber(row.value, 0) : Math.abs(finiteNumber(row.signedValue, 0));
+      if (Math.abs(rawValue) <= 1e-12) return;
+      const signedValue = row.signedValue !== undefined ? finiteNumber(row.signedValue, 0) : (forceType === 'compression' ? Math.abs(rawValue) : -Math.abs(rawValue));
+      totals[loadCase] += signedValue;
+      totals.rows.push({
+        label: String(row.label || `N${index + 1}`).slice(0, 40),
+        loadCase,
+        forceType: signedValue < 0 ? 'tension' : 'compression',
+        value: Math.abs(rawValue),
+        signedValue
+      });
+    });
+  }
+  return totals;
+}
+
 function filterLoadsByDirection(raw, direction) {
   const target = normaliseLoadDirection(direction, 'Z');
   return {
@@ -1977,7 +2008,7 @@ function calculateBeam(input) {
   const slsCombo = buildSlsCombination(lc, audit);
   const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
   minorSls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'z') : emptyBeamResult(L);
-  const axialRaw = input.axial || {};
+  const axialRaw = normaliseAxialInput(input.axial || {});
   const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
   const minorCheck = hasYDirectionLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Y-direction loads applied.');
@@ -2054,8 +2085,9 @@ function calculateBeam(input) {
     },
     message: 'No Y-direction load applied; weak-axis demand is not governing.'
   });
+  const normalizedInput = { ...input, axial: axialRaw };
   const calculationPackage = buildCalculationPackage({
-    input,
+    input: normalizedInput,
     section,
     material,
     settings,
@@ -2208,7 +2240,8 @@ function calculateBeam(input) {
           udls: rawLoads.udls.map((load) => ({ label: load.label, direction: load.direction || 'Z' })),
           points: rawLoads.points.map((load) => ({ label: load.label, direction: load.direction || 'Z' }))
         },
-        axialSignConvention: audit.axial.signConvention
+        axialSignConvention: audit.axial.signConvention,
+        axialRows: axialRaw.rows
       }
     },
     actions: {

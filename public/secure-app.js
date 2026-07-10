@@ -535,13 +535,13 @@ function normaliseLoadType(type) {
   return type === 'trapezoidal' ? 'trap' : type;
 }
 
-function countLoadCards(type, loadCase = state.activeLoadCase) {
-  return $$(`.load-entry-card[data-load-type="${type}"][data-case="${loadCase}"]`).length;
+function countLoadCards(type) {
+  return $$(`.load-entry-card[data-load-type="${type}"]`).length;
 }
 
-function renumberLoadCards(type, loadCase = state.activeLoadCase) {
+function renumberLoadCards(type) {
   const cfg = LOAD_TYPES[type];
-  $$(`.load-entry-card[data-load-type="${type}"][data-case="${loadCase}"]`).forEach((card, index) => {
+  $$(`.load-entry-card[data-load-type="${type}"]`).forEach((card, index) => {
     card.dataset.row = String(index);
     const tag = card.querySelector('.tag');
     if (tag) tag.textContent = `${cfg.prefix}${index + 1}`;
@@ -551,17 +551,7 @@ function renumberLoadCards(type, loadCase = state.activeLoadCase) {
 }
 
 function syncLoadCaseVisibility() {
-  $$('[data-loadcase]').forEach((btn) => btn.classList.toggle('active', btn.dataset.loadcase === state.activeLoadCase));
-  $$('.load-entry-card[data-case]').forEach((card) => {
-    card.classList.toggle('is-loadcase-hidden', card.dataset.case !== state.activeLoadCase);
-  });
-  $$('[data-axial-case]').forEach((label) => {
-    label.classList.toggle('is-active', label.dataset.axialCase === state.activeLoadCase);
-  });
-  if (!$('[data-axial-case].is-active')) {
-    const fallback = $('[data-axial-case="G"]') || $('[data-axial-case]');
-    fallback?.classList.add('is-active');
-  }
+  $$('.load-entry-card[data-case]').forEach((card) => card.classList.remove('is-loadcase-hidden'));
 }
 
 function setActiveLoadCase(loadCase = 'G') {
@@ -569,12 +559,17 @@ function setActiveLoadCase(loadCase = 'G') {
   syncLoadCaseVisibility();
 }
 
-function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values = {}, userAdded = false) {
+function addLoadCard(type, index = null, loadCaseOrValues = 'G', valuesOrUserAdded = {}, userAddedArg = false) {
   const cfg = LOAD_TYPES[type];
   const host = $(cfg.host);
   if (!host) return null;
-  const rowIndex = index ?? countLoadCards(type, loadCase);
-  const L = num('span', 6);
+  const legacySignature = typeof loadCaseOrValues === 'string';
+  const values = legacySignature ? (valuesOrUserAdded || {}) : (loadCaseOrValues || {});
+  const userAdded = legacySignature ? userAddedArg : valuesOrUserAdded === true;
+  const loadCase = LOAD_CASES.includes(String(values.loadCase || (legacySignature ? loadCaseOrValues : '')).toUpperCase())
+    ? String(values.loadCase || (legacySignature ? loadCaseOrValues : '')).toUpperCase()
+    : 'G';
+  const rowIndex = index ?? countLoadCards(type);
   const card = document.createElement('div');
   card.className = 'row load-entry-card';
   card.dataset.loadType = type;
@@ -583,15 +578,13 @@ function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values
   if (userAdded) card.dataset.userAdded = 'true';
   const direction = ['Y', 'Z'].includes(String(values.direction || '').toUpperCase()) ? String(values.direction).toUpperCase() : 'Z';
   card.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">${cfg.prefix}${rowIndex + 1}</span><span>${esc(cfg.title)}</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove ${cfg.prefix}${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
-    <div class="load-entry-fields">${cfg.fields.map(([field, label]) => {
-      const fallback = (field === 'x2') ? L : 0;
-      const value = values[field] ?? fallback;
-      return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" data-case="${loadCase}" value="${esc(value)}"></div>`;
-    }).join('')}<div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction" data-case="${loadCase}"><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option></select></div></div><div class="metadata-note">Z-direction loading produces My/Vz and z-deflection. Y-direction loading produces Mz/Vy and y-deflection.</div><div class="load-validation-note"></div>`;
-  card.classList.toggle('is-loadcase-hidden', loadCase !== state.activeLoadCase);
+    <div class="load-entry-fields"><div class="load-field load-direction-field"><label>Direction<small>Y / Z</small></label><select data-load-type="${type}" data-field="direction"><option value="Z"${direction === 'Z' ? ' selected' : ''}>Z</option><option value="Y"${direction === 'Y' ? ' selected' : ''}>Y</option></select></div><div class="load-field load-case-field"><label>Load case<small>G / Q</small></label><select data-load-type="${type}" data-field="loadCase"><option value="G"${loadCase === 'G' ? ' selected' : ''}>G</option><option value="Q1"${loadCase === 'Q1' ? ' selected' : ''}>Q1</option><option value="Q2"${loadCase === 'Q2' ? ' selected' : ''}>Q2</option></select></div>${cfg.fields.map(([field, label]) => {
+      const value = values[field] ?? '';
+      return `<div class="load-field"><label>${esc(label)}<small>${field.startsWith('x') ? 'position m' : 'value'}</small></label><input class="mini" type="number" step="0.01" data-load-type="${type}" data-field="${field}" value="${esc(value)}"></div>`;
+    }).join('')}</div><div class="metadata-note">Z-direction loading produces My/Vz and z-deflection. Y-direction loading produces Mz/Vy and y-deflection.</div><div class="load-validation-note"></div>`;
   card.querySelector('.load-remove-btn')?.addEventListener('click', () => {
     card.remove();
-    renumberLoadCards(type, loadCase);
+    renumberLoadCards(type);
     recalculateDebounced();
   });
   host.appendChild(card);
@@ -599,7 +592,8 @@ function addLoadCard(type, index = null, loadCase = state.activeLoadCase, values
 }
 
 function initLoads() {
-  LOAD_CASES.forEach((loadCase) => Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, loadCase)));
+  Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, { loadCase: 'G' }));
+  initAxialRows();
   syncLoadCaseVisibility();
 }
 
@@ -607,8 +601,13 @@ function loadCaseValue(loadCase, type, field) {
   return Number($$(`[data-load-type="${type}"][data-field="${field}"][data-case="${loadCase}"]`).at(0)?.value || 0);
 }
 
+function loadRaw(card, field) {
+  return card.querySelector(`[data-field="${field}"]`)?.value ?? '';
+}
+
 function loadField(card, field, fallback = 0) {
   const raw = card.querySelector(`[data-field="${field}"]`)?.value;
+  if (raw === '') return fallback;
   const value = Number(raw);
   return Number.isFinite(value) ? value : fallback;
 }
@@ -616,6 +615,33 @@ function loadField(card, field, fallback = 0) {
 function loadDirection(card) {
   const value = String(card.querySelector('[data-field="direction"]')?.value || 'Z').toUpperCase();
   return value === 'Y' ? 'Y' : 'Z';
+}
+
+function loadCaseForCard(card) {
+  const value = String(card.querySelector('[data-field="loadCase"]')?.value || card.dataset.case || 'G').toUpperCase();
+  return LOAD_CASES.includes(value) ? value : 'G';
+}
+
+function isLoadCardBlank(card) {
+  const cfg = LOAD_TYPES[card.dataset.loadType];
+  return cfg.fields.every(([field]) => String(loadRaw(card, field)).trim() === '');
+}
+
+function hasLoadMagnitude(card) {
+  const type = card.dataset.loadType;
+  const fields = type === 'uniform' ? ['q']
+    : type === 'point' ? ['P']
+      : type === 'moment' ? ['M']
+        : ['q1', 'q2'];
+  return fields.some((field) => String(loadRaw(card, field)).trim() !== '');
+}
+
+function applyLoadValue(loadCase, value) {
+  return {
+    G: loadCase === 'G' ? value : 0,
+    Q1: loadCase === 'Q1' ? value : 0,
+    Q2: loadCase === 'Q2' ? value : 0
+  };
 }
 
 function setLoadError(card, errors) {
@@ -628,8 +654,18 @@ function setLoadError(card, errors) {
 function validateLoadCard(card, span) {
   const errors = [];
   const type = card.dataset.loadType;
+  if (isLoadCardBlank(card)) {
+    setLoadError(card, []);
+    return errors;
+  }
+  if (!hasLoadMagnitude(card)) {
+    errors.push('Enter a load value or leave the row blank.');
+    setLoadError(card, errors);
+    return errors;
+  }
   const checkPos = (field) => {
-    const value = loadField(card, field, NaN);
+    const raw = String(loadRaw(card, field)).trim();
+    const value = raw === '' ? NaN : loadField(card, field, NaN);
     if (!Number.isFinite(value)) errors.push(`${field} must be a number.`);
     else if (value < 0 || value > span) errors.push(`${field} must be within 0 to ${fmt(span, 2)} m.`);
     return value;
@@ -656,27 +692,30 @@ function readLoads() {
   const trapSegments = 12;
   const span = num('span', 6);
   validateAllLoads(span);
-  LOAD_CASES.forEach((lc) => {
-    $$(`.load-entry-card[data-load-type="uniform"][data-case="${lc}"]`).forEach((card) => {
+  ['uniform', 'point', 'moment', 'trap'].forEach((type) => {
+    $$(`.load-entry-card[data-load-type="${type}"]`).forEach((card) => {
+      if (isLoadCardBlank(card)) return;
+      const lc = loadCaseForCard(card);
+      if (type === 'uniform') {
       const q = loadField(card, 'q', 0);
-      if (!q && !card?.dataset.userAdded) return;
-      udls.push({ label: `U${udls.length + 1}`, direction: loadDirection(card), x1: loadField(card, 'x1', 0), x2: loadField(card, 'x2', span), G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
-    });
-    $$(`.load-entry-card[data-load-type="point"][data-case="${lc}"]`).forEach((card) => {
+        if (!q) return;
+        udls.push({ label: `U${udls.length + 1}`, direction: loadDirection(card), x1: loadField(card, 'x1', 0), x2: loadField(card, 'x2', span), loadCase: lc, ...applyLoadValue(lc, q) });
+      }
+      if (type === 'point') {
       const p = loadField(card, 'P', 0);
-      if (!p && !card?.dataset.userAdded) return;
-      points.push({ label: `P${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), G: lc === 'G' ? p : 0, Q1: lc === 'Q1' ? p : 0, Q2: lc === 'Q2' ? p : 0 });
-    });
-    $$(`.load-entry-card[data-load-type="moment"][data-case="${lc}"]`).forEach((card) => {
+        if (!p) return;
+        points.push({ label: `P${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), loadCase: lc, ...applyLoadValue(lc, p) });
+      }
+      if (type === 'moment') {
       const m = loadField(card, 'M', 0);
-      if (!m && !card?.dataset.userAdded) return;
-      points.push({ label: `M${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), M: m, momentCase: lc, G: 0, Q1: 0, Q2: 0 });
-    });
-    $$(`.load-entry-card[data-load-type="trap"][data-case="${lc}"]`).forEach((card) => {
+        if (!m) return;
+        points.push({ label: `M${points.length + 1}`, direction: loadDirection(card), x: loadField(card, 'x', 0), M: m, momentCase: lc, loadCase: lc, G: 0, Q1: 0, Q2: 0 });
+      }
+      if (type === 'trap') {
       const q1 = loadField(card, 'q1', 0);
       const q2 = loadField(card, 'q2', 0);
-      if (!q1 && !q2 && !card?.dataset.userAdded) return;
-      const sourceLabel = `T${countLoadCards('trap', lc) ? Number(card.dataset.row || 0) + 1 : udls.length + 1}`;
+        if (!q1 && !q2) return;
+        const sourceLabel = `T${Number(card.dataset.row || 0) + 1}`;
       const x1 = loadField(card, 'x1', 0);
       const x2 = loadField(card, 'x2', span);
       const direction = loadDirection(card);
@@ -685,11 +724,80 @@ function readLoads() {
         const xa = x1 + i * dx;
         const xb = xa + dx;
         const q = q1 + (q2 - q1) * ((i + 0.5) / trapSegments);
-        udls.push({ label: `${sourceLabel}.${i + 1}`, sourceType: 'trap', reportLabel: sourceLabel, direction, q1, q2, loadCase: lc, reportX1: x1, reportX2: x2, x1: xa, x2: xb, G: lc === 'G' ? q : 0, Q1: lc === 'Q1' ? q : 0, Q2: lc === 'Q2' ? q : 0 });
+          udls.push({ label: `${sourceLabel}.${i + 1}`, sourceType: 'trap', reportLabel: sourceLabel, direction, q1, q2, loadCase: lc, reportX1: x1, reportX2: x2, x1: xa, x2: xb, ...applyLoadValue(lc, q) });
+        }
       }
     });
   });
   return { udls, points };
+}
+
+function addAxialLoadRow(index = null, values = {}, userAdded = false) {
+  const host = $('multiAxialRows');
+  if (!host) return null;
+  const rowIndex = index ?? $$('.axial-load-row').length;
+  const loadCase = LOAD_CASES.includes(String(values.loadCase || '').toUpperCase()) ? String(values.loadCase).toUpperCase() : 'G';
+  const forceType = String(values.forceType || values.type || 'compression').toLowerCase() === 'tension' ? 'tension' : 'compression';
+  const row = document.createElement('div');
+  row.className = 'axial-load-row';
+  row.dataset.row = String(rowIndex);
+  if (userAdded) row.dataset.userAdded = 'true';
+  row.innerHTML = `<div class="load-entry-head"><div class="load-entry-title"><span class="tag">N${rowIndex + 1}</span><span>Axial force</span></div>${rowIndex || userAdded ? `<button type="button" class="btn load-remove-btn" aria-label="Remove N${rowIndex + 1}"><i class="bi bi-trash"></i></button>` : ''}</div>
+    <div class="load-entry-fields">
+      <div class="load-field load-case-field"><label>Load case<small>G / Q</small></label><select data-axial-field="loadCase"><option value="G"${loadCase === 'G' ? ' selected' : ''}>G</option><option value="Q1"${loadCase === 'Q1' ? ' selected' : ''}>Q1</option><option value="Q2"${loadCase === 'Q2' ? ' selected' : ''}>Q2</option></select></div>
+      <div class="load-field axial-kind-field"><label>Type<small>X-axis</small></label><select data-axial-field="forceType"><option value="compression"${forceType === 'compression' ? ' selected' : ''}>Compression</option><option value="tension"${forceType === 'tension' ? ' selected' : ''}>Tension</option></select></div>
+      <div class="load-field"><label>N<small>value</small></label><input class="mini" type="number" step="0.01" data-axial-field="value" value="${esc(values.value ?? '')}"></div>
+    </div>
+    <div class="load-validation-note"></div>`;
+  row.querySelector('.load-remove-btn')?.addEventListener('click', () => {
+    row.remove();
+    renumberAxialRows();
+    recalculateDebounced();
+  });
+  host.appendChild(row);
+  return row;
+}
+
+function renumberAxialRows() {
+  $$('.axial-load-row').forEach((row, index) => {
+    row.dataset.row = String(index);
+    const tag = row.querySelector('.tag');
+    if (tag) tag.textContent = `N${index + 1}`;
+    row.querySelector('.load-remove-btn')?.setAttribute('aria-label', `Remove N${index + 1}`);
+  });
+}
+
+function initAxialRows() {
+  const host = $('multiAxialRows');
+  if (!host) return;
+  host.innerHTML = '';
+  addAxialLoadRow(0, { loadCase: 'G' });
+}
+
+function readAxialRows() {
+  const axial = { G: 0, Q1: 0, Q2: 0, rows: [], signConvention: $('axialSignConvention')?.value || 'positive_compression' };
+  $$('.axial-load-row').forEach((row, index) => {
+    const raw = row.querySelector('[data-axial-field="value"]')?.value ?? '';
+    const note = row.querySelector('.load-validation-note');
+    row.classList.remove('has-error');
+    if (note) note.textContent = '';
+    if (String(raw).trim() === '') return;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) {
+      row.classList.add('has-error');
+      if (note) note.textContent = 'N must be a number.';
+      throw new Error('Axial force must be a number.');
+    }
+    if (Math.abs(value) <= 1e-12) return;
+    const loadCase = LOAD_CASES.includes(String(row.querySelector('[data-axial-field="loadCase"]')?.value || '').toUpperCase())
+      ? String(row.querySelector('[data-axial-field="loadCase"]')?.value).toUpperCase()
+      : 'G';
+    const forceType = String(row.querySelector('[data-axial-field="forceType"]')?.value || 'compression') === 'tension' ? 'tension' : 'compression';
+    const signed = forceType === 'compression' ? Math.abs(value) : -Math.abs(value);
+    axial[loadCase] += signed;
+    axial.rows.push({ label: `N${index + 1}`, loadCase, forceType, value: Math.abs(value), signedValue: signed });
+  });
+  return axial;
 }
 
 function advancedEc3AuditInputDefaults() {
@@ -949,7 +1057,7 @@ function buildRequest() {
       stiffenerA: num('stiffenerA', 5000),
       [LEGACY_AUDIT_KEY]: advancedEc3AuditSetupDefaults()
     },
-    axial: { G: num('axialG', 0), Q1: num('axialQ1', 0), Q2: num('axialQ2', 0), signConvention: $('axialSignConvention')?.value || 'positive_compression' },
+    axial: readAxialRows(),
     loads: readLoads()
   };
 }
@@ -2010,23 +2118,17 @@ function setDirectionGraphPayloads(result = {}, summary = {}) {
   state.chartPayloads.clear();
   [
     ['chartVz', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, null],
-    ['chartVFocus', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, null],
     ['chartMy', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, null],
-    ['chartMFocus', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, null],
-    ['chartZDefl', zSeries, 'z', 'z-deflection - mm', '#15803d'],
-    ['chartYFocus', zSeries, 'z', 'z-deflection - mm', '#15803d'],
-    ['chartVy', ySeries, 'Vy', `Vy(x) - ${summary.forceUnit || ''}`, '#0f766e'],
-    ['chartMz', ySeries, 'Mz', `Mz(x) - ${summary.momentUnit || ''}`, '#7c3aed'],
-    ['chartYDefl', ySeries, 'y', 'y-deflection - mm', '#16a34a']
+    ['chartZDefl', zSeries, 'z', 'z-deflection - mm', null],
+    ['chartVy', ySeries, 'Vy', `Vy(x) - ${summary.forceUnit || ''}`, null],
+    ['chartMz', ySeries, 'Mz', `Mz(x) - ${summary.momentUnit || ''}`, null],
+    ['chartYDefl', ySeries, 'y', 'y-deflection - mm', null]
   ].forEach(([id, series, key, title, color]) => state.chartPayloads.set(id, { series, key, title, color }));
   setDirectionGraphMessage('zDirectionGraphMessage', zGraph);
   setDirectionGraphMessage('yDirectionGraphMessage', yGraph);
   writeChartPeak('peakVz', zSeries, 'Vz', summary.forceUnit || '');
-  writeChartPeak('peakVFocus', zSeries, 'Vz', summary.forceUnit || '');
   writeChartPeak('peakMy', zSeries, 'My', summary.momentUnit || '');
-  writeChartPeak('peakMFocus', zSeries, 'My', summary.momentUnit || '');
   writeChartPeak('peakZDefl', zSeries, 'z', 'mm');
-  writeChartPeak('peakYFocus', zSeries, 'z', 'mm');
   writeChartPeak('peakVy', ySeries, 'Vy', summary.forceUnit || '');
   writeChartPeak('peakMz', ySeries, 'Mz', summary.momentUnit || '');
   writeChartPeak('peakYDefl', ySeries, 'y', 'mm');
@@ -2045,8 +2147,7 @@ function setChartPayloads(series, summary = {}) {
     ['chartVFocus', 'shear', `Vz(x) - ${summary.forceUnit || ''}`, null],
     ['chartM', 'moment', `My(x) - ${summary.momentUnit || ''}`, null],
     ['chartMFocus', 'moment', `My(x) - ${summary.momentUnit || ''}`, null],
-    ['chartY', 'deflection', 'z-deflection - mm', '#15803d'],
-    ['chartYFocus', 'deflection', 'z-deflection - mm', '#15803d']
+    ['chartY', 'deflection', 'z-deflection - mm', null]
   ].forEach(([id, key, title, color]) => state.chartPayloads.set(id, { series: displaySeries, key, title, color }));
   updateChartPeakReadouts(displaySeries, summary);
 }
@@ -2388,13 +2489,11 @@ function applyInput(input = {}) {
   setValue('stiffenerModel', audit.stiffenerModel || 'current_screening');
   setValue('modalAnalysisStatus', audit.modalAnalysisStatus || 'not implemented');
   updateLCPreview();
-  if (input.axial) {
-    setValue('axialG', input.axial.G || 0);
-    setValue('axialQ1', input.axial.Q1 || 0);
-    setValue('axialQ2', input.axial.Q2 || 0);
-    setValue('axialSignConvention', input.axial.signConvention || 'positive_compression');
-  }
   applyLoads(input.loads || {});
+  if (input.axial) {
+    setValue('axialSignConvention', input.axial.signConvention || 'positive_compression');
+    applyAxialRows(input.axial);
+  }
 }
 
 function applyMetadata(metadata = {}) {
@@ -2426,50 +2525,73 @@ function clearLoadCards() {
     const host = $(cfg.host);
     if (host) host.innerHTML = '';
   });
+  if ($('multiAxialRows')) $('multiAxialRows').innerHTML = '';
 }
 
 function applyLoads(loads = {}) {
   clearLoadCards();
-  LOAD_CASES.forEach((loadCase) => Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, loadCase)));
+  Object.keys(LOAD_TYPES).forEach((type) => addLoadCard(type, 0, { loadCase: 'G' }));
   const span = num('span', 6);
-  const rows = {
-    uniform: { G: [], Q1: [], Q2: [] },
-    point: { G: [], Q1: [], Q2: [] },
-    moment: { G: [], Q1: [], Q2: [] },
-    trap: { G: [], Q1: [], Q2: [] }
+  const rows = { uniform: [], point: [], moment: [], trap: [] };
+  const addByCase = (target, source, valueKey, value) => {
+    const loadCase = String(source.loadCase || valueKey || 'G').toUpperCase();
+    if (LOAD_CASES.includes(loadCase)) target.push({ ...source, loadCase, [valueKey]: value });
   };
   (loads.udls || []).forEach((load) => {
     if (load.sourceType === 'trap' && load.segmentIndex && load.segmentIndex !== 1) return;
     if (load.sourceType === 'trap') {
       const lc = load.loadCase || 'G';
-      if (rows.trap[lc]) rows.trap[lc].push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Z' });
+      rows.trap.push({ q1: load.q1 || 0, q2: load.q2 || 0, x1: load.reportX1 ?? load.x1 ?? 0, x2: load.reportX2 ?? load.x2 ?? span, direction: load.direction || 'Z', loadCase: lc });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const q = Number(load[lc] || 0);
-      if (q && rows.uniform[lc]) rows.uniform[lc].push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Z' });
+      if (q) rows.uniform.push({ q, x1: load.x1 ?? 0, x2: load.x2 ?? span, direction: load.direction || 'Z', loadCase: lc });
     });
   });
   (loads.points || []).forEach((load) => {
     if (Number(load.M || 0)) {
       const lc = load.momentCase || 'G';
-      if (rows.moment[lc]) rows.moment[lc].push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Z' });
+      rows.moment.push({ M: load.M, x: load.x ?? 0, direction: load.direction || 'Z', loadCase: lc });
       return;
     }
     LOAD_CASES.forEach((lc) => {
       const P = Number(load[lc] || 0);
-      if (P && rows.point[lc]) rows.point[lc].push({ P, x: load.x ?? 0, direction: load.direction || 'Z' });
+      if (P) rows.point.push({ P, x: load.x ?? 0, direction: load.direction || 'Z', loadCase: lc });
     });
   });
-  Object.entries(rows).forEach(([type, byCase]) => {
-    Object.entries(byCase).forEach(([loadCase, values]) => {
-      const host = $(LOAD_TYPES[type].host);
-      host?.querySelectorAll(`.load-entry-card[data-case="${loadCase}"]`).forEach((card) => card.remove());
-      if (!values.length) addLoadCard(type, 0, loadCase);
-      values.forEach((value, index) => addLoadCard(type, index, loadCase, value, index > 0));
-    });
+  Object.entries(rows).forEach(([type, values]) => {
+    const host = $(LOAD_TYPES[type].host);
+    if (!host) return;
+    host.innerHTML = '';
+    if (!values.length) addLoadCard(type, 0, { loadCase: 'G' });
+    values.forEach((value, index) => addLoadCard(type, index, value, index > 0));
   });
+  initAxialRows();
   syncLoadCaseVisibility();
+}
+
+function applyAxialRows(axial = {}) {
+  const host = $('multiAxialRows');
+  if (!host) return;
+  host.innerHTML = '';
+  const rows = Array.isArray(axial.rows) ? axial.rows : [];
+  const migrated = [];
+  if (rows.length) {
+    rows.forEach((row) => {
+      const signed = Number(row.signedValue ?? row.value ?? 0);
+      const forceType = row.forceType || (signed < 0 ? 'tension' : 'compression');
+      const value = row.value ?? Math.abs(signed);
+      if (Number(value)) migrated.push({ loadCase: row.loadCase || 'G', forceType, value });
+    });
+  } else {
+    LOAD_CASES.forEach((loadCase) => {
+      const value = Number(axial[loadCase] || 0);
+      if (Math.abs(value) > 1e-12) migrated.push({ loadCase, forceType: value < 0 ? 'tension' : 'compression', value: Math.abs(value) });
+    });
+  }
+  if (!migrated.length) addAxialLoadRow(0, { loadCase: 'G' });
+  migrated.forEach((row, index) => addAxialLoadRow(index, row, index > 0));
 }
 
 function initTabs() {
@@ -2602,7 +2724,7 @@ function initSplitters() {
 function initCanvasObservers() {
   if (!('ResizeObserver' in window)) return;
   const observer = new ResizeObserver(() => queueVisualRedraw('canvas-resize'));
-  ['beamSketch', 'zLoadSketch', 'yLoadSketch', 'chartVz', 'chartVy', 'chartVFocus', 'chartMy', 'chartMz', 'chartMFocus', 'chartZDefl', 'chartYDefl', 'chartYFocus', 'chartModalCanvas'].forEach((id) => {
+  ['beamSketch', 'zLoadSketch', 'yLoadSketch', 'chartVz', 'chartVy', 'chartMy', 'chartMz', 'chartZDefl', 'chartYDefl', 'chartModalCanvas'].forEach((id) => {
     const el = $(id);
     if (el) observer.observe(el);
   });
@@ -2640,9 +2762,13 @@ function bindEvents() {
   });
   $$('[data-add-load]').forEach((btn) => btn.addEventListener('click', () => {
     const type = normaliseLoadType(btn.dataset.addLoad);
-    addLoadCard(type, null, state.activeLoadCase, {}, true);
-    syncLoadCaseVisibility();
+    addLoadCard(type, null, { loadCase: 'G' }, true);
+    recalculateDebounced();
   }));
+  $('addAxialLoadBtn')?.addEventListener('click', () => {
+    addAxialLoadRow(null, { loadCase: 'G' }, true);
+    recalculateDebounced();
+  });
   $$('[data-loadcase]').forEach((btn) => {
     btn.onclick = () => setActiveLoadCase(btn.dataset.loadcase);
   });

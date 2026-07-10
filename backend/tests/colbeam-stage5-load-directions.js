@@ -107,6 +107,31 @@ customZ.combination.customULSFactors = { G: 2, Q1: 2, Q2: 2 };
 const customZResult = calculateBeam(customZ);
 assert.ok(customZResult.actions.axis.MyEd > z.actions.axis.MyEd, 'Stage 4 custom ULS factors should still affect Z-direction strong-axis actions.');
 
+const q1RowInput = baseInput('Z');
+q1RowInput.loads.udls = [{ label: 'Q1 UDL', direction: 'Z', x1: 0, x2: 6, loadCase: 'Q1', G: 0, Q1: 1, Q2: 0 }];
+const q1Row = calculateBeam(q1RowInput);
+assert.ok(q1Row.actions.axis.MyEd > z.actions.axis.MyEd, 'Per-load Q1 UDL should use Q1 load factor rather than global G.');
+
+const multiAxialInput = baseInput('Z');
+multiAxialInput.loads.udls = [];
+multiAxialInput.axial = {
+  rows: [
+    { label: 'N1', loadCase: 'G', forceType: 'compression', value: 10 },
+    { label: 'N2', loadCase: 'Q1', forceType: 'compression', value: 20 },
+    { label: 'N3', loadCase: 'Q2', forceType: 'tension', value: 5 }
+  ],
+  signConvention: 'positive_compression'
+};
+const multiAxial = calculateBeam(multiAxialInput);
+assert.ok(Math.abs(multiAxial.checks.axial.axialEd - 38.25) < 1e-8, 'Multiple axial rows should combine through G/Q factors into NEd.');
+assert.strictEqual(multiAxial.loads.colbeamAudit.axialRows.length, 3, 'Axial rows should be preserved in the backend result package.');
+
+const blankLoadsInput = baseInput('Z');
+blankLoadsInput.loads = { udls: [], points: [] };
+blankLoadsInput.axial = { rows: [{ loadCase: 'G', forceType: 'compression', value: '' }] };
+const blankLoads = calculateBeam(blankLoadsInput);
+assert.ok(Number.isFinite(blankLoads.summary.governingIR), 'Blank load/axial rows should not produce NaN results.');
+
 const reportHtml = buildReportHtml(mixedInput, mixed);
 const handCalc = buildLatexReport(mixedInput, mixed);
 assert.ok(reportHtml.includes('Z-direction loading - strong-axis bending My / shear Vz'), 'Report should include Z-direction strong-axis overview.');

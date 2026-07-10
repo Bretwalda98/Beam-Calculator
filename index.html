@@ -1542,8 +1542,8 @@ body.plan-plus .ad-slot{display:none!important}
 .direction-graph-window{min-width:0;border:1px solid var(--border);border-radius:9px;background:var(--panel-2);padding:10px}
 .direction-graph-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
 .direction-graph-head h4{margin:0;font-size:11px;line-height:1.25;text-transform:uppercase;letter-spacing:.04em;color:var(--text)}
-.direction-graph-message{margin:0 0 8px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:11px;font-weight:750;background:var(--panel)}
-.direction-graph-message:empty{display:none}
+.direction-graph-message{min-height:34px;margin:0 0 8px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:11px;font-weight:750;background:var(--panel)}
+.direction-graph-message:empty{display:block;visibility:hidden}
 .direction-load-sketch{width:100%;height:155px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .direction-chart-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:8px}
 .direction-chart-grid .chart-wrap{padding:8px}
@@ -1551,7 +1551,7 @@ body.plan-plus .ad-slot{display:none!important}
 @media(min-width:1700px){.direction-chart-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.direction-chart-grid canvas.chart{height:205px!important}}
 @media(max-width:1200px){.direction-graph-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){.direction-graph-window{padding:8px}.direction-load-sketch{height:170px}.direction-chart-grid canvas.chart{height:220px!important}}
-.load-direction-field select{min-height:32px!important;margin:0!important;padding:5px 7px!important}
+.load-direction-field select,.load-case-field select,.axial-kind-field select{min-height:32px!important;margin:0!important;padding:5px 7px!important}
 .audit-output-panel{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
 .audit-output-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .audit-section{margin:10px 0;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)}
@@ -1970,11 +1970,18 @@ body.layout-tablet .section-selector-layout{
   font-size:11px!important;
   font-weight:700!important;
 }
-.axial-load-cases{
+.axial-load-rows{display:grid!important;gap:8px!important}
+.axial-load-row{
   display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(110px,1fr))!important;
+  grid-template-columns:minmax(0,1fr)!important;
   gap:8px!important;
+  min-width:0!important;
+  padding:9px!important;
+  border:1px solid var(--border)!important;
+  border-radius:8px!important;
+  background:var(--panel)!important;
 }
+.axial-load-row .load-entry-fields{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important}
 @media(max-width:760px){
   .section-selector-layout{grid-template-columns:1fr!important}
   #sectionProfilePreview{height:230px!important}
@@ -3343,12 +3350,7 @@ body.layout-tablet .input-scroll-stack{
     <div class="accordion-body">
       <div id="beamLoadsPanel">
         <div id="beamLoadsTitle" class="section-title">Beam load input</div>
-        <div class="loadcase-tabs">
-          <button type="button" class="loadcase-tab active" data-loadcase="G">Permanent loads (G)</button>
-          <button type="button" class="loadcase-tab" data-loadcase="Q1">Variable loads (Q1)</button>
-          <button type="button" class="loadcase-tab" data-loadcase="Q2">Variable loads (Q2)</button>
-        </div>
-        <div id="loadModeHint" class="span-mode-hint">Loads are entered by load case using x positions measured from the left end of the beam.</div>
+        <div id="loadModeHint" class="span-mode-hint">Each load row has its own direction and G/Q load case. x positions are measured from the left end of the beam.</div>
         <div class="multi-loads-scroll">
           <div class="multi-load-grid">
             <div class="multi-load-card">
@@ -3380,19 +3382,10 @@ body.layout-tablet .input-scroll-stack{
               <button type="button" class="btn load-add-btn" data-add-load="trap">+ Add trapezoidal load</button>
             </div>
             <div class="multi-load-card single-mode-only" id="axialLoadCard">
-              <div id="axialLoadTitle" class="mini-title">Axial force</div>
-              <div class="axial-load-cases">
-                <label data-axial-case="G">Axial G
-                  <input id="axialG" data-kind="axial" data-case="G" type="number" step="0.01" value="0">
-                </label>
-                <label data-axial-case="Q1">Axial Q1
-                  <input id="axialQ1" data-kind="axial" data-case="Q1" type="number" step="0.01" value="0">
-                </label>
-                <label data-axial-case="Q2">Axial Q2
-                  <input id="axialQ2" data-kind="axial" data-case="Q2" type="number" step="0.01" value="0">
-                </label>
-              </div>
-              <div class="micro-note" id="axialNote">Positive = compression. Axial actions use the same G/Q load cases and input units as the other loads.</div>
+              <div id="axialLoadTitle" class="mini-title">Axial forces</div>
+              <div id="multiAxialRows" class="axial-load-rows"></div>
+              <button type="button" class="btn load-add-btn" id="addAxialLoadBtn">+ Add axial force</button>
+              <div class="micro-note" id="axialNote">Axial force acts along the member X-axis. Each row uses its own G/Q load case.</div>
               <label>Axial sign convention
                 <select id="axialSignConvention">
                   <option value="positive_compression" selected>Positive = compression</option>
@@ -3603,16 +3596,6 @@ body.layout-tablet .input-scroll-stack{
 
   <div class="workspace" style="margin-top:14px">
     <div class="main-stage">
-      <div class="stage-block">
-        <div class="stage-tabs">
-          <button type="button" class="tab-btn active" data-tab-group="stageTabs" data-tab="stageOverview">Overview</button>
-          <button type="button" class="tab-btn" data-tab-group="stageTabs" data-tab="stageShear">Shear</button>
-          <button type="button" class="tab-btn" data-tab-group="stageTabs" data-tab="stageMoment">Moment</button>
-          <button type="button" class="tab-btn" data-tab-group="stageTabs" data-tab="stageDeflection">Deflection</button>
-          <button type="button" class="tab-btn" data-tab-group="stageTabs" data-tab="stageTables">Tables</button>
-        </div>
-      </div>
-
       <div id="stageOverview" class="stage-panel active" data-tab-group="stageTabs">
         <div class="stage-block">
           <div class="stage-subhead"><div class="section-title">Overview</div><div class="pill">Sketch + quick charts</div></div>
@@ -3702,7 +3685,7 @@ body.layout-tablet .input-scroll-stack{
         </div>
       </div>
 
-      <div id="stageTables" class="stage-panel" data-tab-group="stageTabs">
+      <div id="stageTables" class="stage-panel active" data-tab-group="stageTabs">
         <div class="stage-block">
           <div class="stage-subhead"><div class="section-title">Tables</div><div class="pill">Reactions + governing values</div></div>
           <div id="centreTables"></div>
