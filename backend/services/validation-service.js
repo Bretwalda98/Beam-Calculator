@@ -2,6 +2,7 @@ const SUPPORTED_SUPPORTS = new Set(['ss', 'cantilever', 'fixed_fixed', 'fixed_ro
 const SUPPORTED_UNITS = new Set(['tonne', 'kn']);
 const SUPPORTED_MATERIALS = new Set(['S235', 'S275', 'S355']);
 const { LOAD_DIRECTIONS, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
+const { END_FORCE_KEYS, normaliseAnalysisInputMode } = require('./direct-action-service');
 
 function fail(message, code = 'validation_error') {
   const err = new Error(message);
@@ -42,6 +43,13 @@ function validateCalculationRequest(input = {}) {
   if (!SUPPORTED_UNITS.has(units)) fail('Unsupported load unit system.');
   const grade = input.material?.grade || 'S355';
   if (!SUPPORTED_MATERIALS.has(grade)) fail('Unsupported steel grade.');
+  const analysisInputMode = normaliseAnalysisInputMode(input.analysisInputMode);
+  if (analysisInputMode === 'endForces') {
+    if (input.model?.analysisMode === 'multi' || support === 'multi_continuous') {
+      fail('Member end forces are available for single-member, single-span analysis only.');
+    }
+    END_FORCE_KEYS.forEach((key) => optionalFinite(input.endForces?.[key], 0, `End force ${key}`));
+  }
 
   const settings = input.settings || {};
   assertRange(settings.gammaM0 ?? 1, 0.5, 2, 'gammaM0');

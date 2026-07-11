@@ -82,7 +82,8 @@ const state = {
   activeLoadCase: 'G',
   chartPayloads: new Map(),
   redrawHandle: 0,
-  backendOk: false
+  backendOk: false,
+  endForceBase: null
 };
 
 function apiUrl(path) {
@@ -196,6 +197,9 @@ function startNewProject() {
   applyMetadata({ projectName: 'Untitled beam project', calculationTitle: 'Beam section check', date: new Date().toISOString().slice(0, 10) });
   clearLoadCards();
   initLoads();
+  if ($('analysisInputMode')) $('analysisInputMode').value = 'appliedLoads';
+  applyEndForcesToFields({}, true);
+  syncAnalysisInputModeUi();
   applyDefaultMetadata(true);
   recalculateDebounced();
   setSaveStatus('New project ready.', 'ok');
@@ -215,6 +219,60 @@ function syncBeamModeUi() {
   const mode = getBeamMode();
   document.body.classList.toggle('mode-multi', mode === 'multi');
   document.body.classList.toggle('mode-single', mode !== 'multi');
+  const endOption = $('analysisInputMode')?.querySelector('option[value="endForces"]');
+  if (endOption) endOption.disabled = mode === 'multi';
+  if (mode === 'multi' && $('analysisInputMode')?.value === 'endForces') $('analysisInputMode').value = 'appliedLoads';
+  $('endForceModeAvailability')?.classList.toggle('hide', mode !== 'multi');
+  syncAnalysisInputModeUi();
+}
+
+const END_FORCE_KEYS = ['N_kN', 'My1_kNm', 'My2_kNm', 'Mz1_kNm', 'Mz2_kNm', 'Vz1_kN', 'Vz2_kN', 'Vy1_kN', 'Vy2_kN'];
+
+function getAnalysisInputMode() {
+  return $('analysisInputMode')?.value === 'endForces' ? 'endForces' : 'appliedLoads';
+}
+
+function endForceUnitFactor(kind, unit = $('loadUnit')?.value || 'tonne') {
+  return unit === 'tonne' && (kind === 'force' || kind === 'moment') ? 9.81 : 1;
+}
+
+function readEndForcesFromFields() {
+  const values = { schemaVersion: 1 };
+  $$('[data-end-force]').forEach((input) => {
+    const raw = String(input.value ?? '').trim();
+    const number = raw === '' ? 0 : Number(raw);
+    values[input.dataset.endForce] = Number.isFinite(number) ? number * endForceUnitFactor(input.dataset.endKind) : 0;
+  });
+  END_FORCE_KEYS.forEach((key) => { if (!Number.isFinite(values[key])) values[key] = 0; });
+  state.endForceBase = values;
+  return values;
+}
+
+function applyEndForcesToFields(endForces = {}, preserveBlank = false) {
+  const base = { schemaVersion: 1 };
+  END_FORCE_KEYS.forEach((key) => { base[key] = Number.isFinite(Number(endForces[key])) ? Number(endForces[key]) : 0; });
+  state.endForceBase = base;
+  $$('[data-end-force]').forEach((input) => {
+    const baseValue = base[input.dataset.endForce] || 0;
+    input.value = preserveBlank && Math.abs(baseValue) <= 1e-12 ? '' : String(Number((baseValue / endForceUnitFactor(input.dataset.endKind)).toFixed(8)));
+  });
+  syncEndForceUnitLabels();
+}
+
+function syncEndForceUnitLabels() {
+  const tonne = ($('loadUnit')?.value || 'tonne') === 'tonne';
+  $$('[data-end-unit="force"]').forEach((node) => { node.textContent = tonne ? 't' : 'kN'; });
+  $$('[data-end-unit="moment"]').forEach((node) => { node.textContent = tonne ? 't m' : 'kN m'; });
+}
+
+function syncAnalysisInputModeUi() {
+  const direct = getAnalysisInputMode() === 'endForces';
+  document.body.classList.toggle('end-force-mode', direct);
+  $('beamLoadsPanel')?.setAttribute('aria-label', direct ? 'Member end forces' : 'Applied loads');
+  if ($('load_combo')) $('load_combo').disabled = direct;
+  ['psi_q1', 'psi_q2', 'customUlsG', 'customUlsQ1', 'customUlsQ2', 'customSlsG', 'customSlsQ1', 'customSlsQ2', 'perCheckEnvelope'].forEach((id) => {
+    if ($(id)) $(id).disabled = direct;
+  });
 }
 
 function applySettings() {
@@ -1021,12 +1079,15 @@ function buildRequest() {
     throw new Error('Custom section calculations require backend custom-section support. Select a library section for this secure build.');
   }
   return {
-    version: 1,
+    version: 2,
+    analysisInputMode: getAnalysisInputMode(),
+    endForces: readEndForcesFromFields(),
     metadata: readMetadata(),
     section: { family: $('sec_series')?.value, name: $('sec_size')?.value },
     material: { grade: $('material')?.value || 'S355' },
     units: $('loadUnit')?.value || 'tonne',
     model: {
+      analysisMode: getBeamMode(),
       span: num('span', 6),
       supportType: $('supportType')?.value || 'ss',
       includeSelfWeight: $('includeSW')?.checked !== false,
@@ -1135,6 +1196,7 @@ function buildAxisOverviewModels(result = {}) {
   const axis = result.actions?.axis || {};
   const momentUnit = s.momentUnit || '';
   const forceUnit = s.forceUnit || '';
+  const directMode = result.analysisInputMode === 'endForces';
   const basis = c.sectionControlSettings?.bendingResistanceBasis || axis.bendingResistanceBasis || {};
   const majorBendIr = axis.MyIR ?? c.moment?.ir;
   const majorShearIr = axis.VzIR ?? c.shear?.ir;
@@ -1163,7 +1225,7 @@ function buildAxisOverviewModels(result = {}) {
     demand: {
       MyEd: axisValue(axis.MyEd ?? s.maxMomentY ?? s.maxMoment, momentUnit),
       VzEd: axisValue(axis.VzEd ?? s.maxShearZ ?? s.maxShear, forceUnit),
-      zDeflection: axisValue(axis.zDeflection ?? s.deflection, 'mm')
+      zDeflection: directMode ? 'Not calculated for direct end-force mode' : axisValue(axis.zDeflection ?? s.deflection, 'mm')
     },
     resistance: {
       MyRd: axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
@@ -1179,7 +1241,7 @@ function buildAxisOverviewModels(result = {}) {
       shearResistance: axis.shearEta?.zDirection?.shearAreaSource || axis.shearEta?.z?.shearAreaSource || 'Not available'
     },
     status: zStatus,
-    message: zDemand ? '' : 'No Z-direction load applied; strong-axis demand is not governing.',
+    message: zDemand ? '' : directMode ? 'No Z-direction end action entered; strong-axis demand is not governing.' : 'No Z-direction load applied; strong-axis demand is not governing.',
     warnings: []
   };
   const yDirectionOverview = {
@@ -1187,7 +1249,7 @@ function buildAxisOverviewModels(result = {}) {
     demand: {
       MzEd: axisValue(axis.MzEd ?? s.maxMomentZ ?? 0, momentUnit),
       VyEd: axisValue(axis.VyEd ?? s.maxShearY ?? 0, forceUnit),
-      yDeflection: yDemand ? axisValue(axis.yDeflection, 'mm') : '0 mm'
+      yDeflection: directMode ? 'Not calculated for direct end-force mode' : (yDemand ? axisValue(axis.yDeflection, 'mm') : '0 mm')
     },
     resistance: {
       MzRd: yDemand ? axisValue(axis.MzRd ?? c.minorAxis?.momentResistance, momentUnit) : 'Not governing',
@@ -1200,14 +1262,14 @@ function buildAxisOverviewModels(result = {}) {
     basis: {
       bending: yDemand ? (basis.yDirection || basis.z || 'Not available') : 'Not governing',
       momentResistance: yDemand ? (basis.MzRdBasis || 'Not available') : 'Not governing',
-      shearResistance: yDemand ? (axis.shearEta?.yDirection?.shearAreaSource || axis.shearEta?.y?.shearAreaSource || 'Not available') : 'Not governing'
+      shearResistance: yDemand ? (result.sectionProperties?.biaxialProvenance?.Avy_mm2?.isDerived ? 'Avy derived from verified source geometry' : (axis.shearEta?.yDirection?.shearAreaSource || axis.shearEta?.y?.shearAreaSource || 'Not available')) : 'Not governing'
     },
     status: yStatus,
-    message: yDemand ? (minorAvailable ? '' : (c.minorAxis?.message || 'Y-direction weak-axis check unavailable.')) : 'No Y-direction load applied; weak-axis demand is not governing.',
+    message: yDemand ? (minorAvailable ? '' : (c.minorAxis?.message || 'Y-direction weak-axis check unavailable.')) : directMode ? 'No Y-direction end action entered; weak-axis demand is not governing.' : 'No Y-direction load applied; weak-axis demand is not governing.',
     warnings: yWarnings
   };
   const combinedOverview = {
-    governingDirection: governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz' : 'Z-direction loading / strong-axis My',
+    governingDirection: axis.governingAxis || (governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz and shear Vy' : 'Z-direction loading / strong-axis My and shear Vz'),
     governingUtilisation: axisValue(s.governingIR ?? governing[1], '', 3),
     governingCheck: governing[0],
     overallStatus: String(result.status || 'Not available'),
@@ -1275,9 +1337,11 @@ function renderResult(input, result) {
   const s = result.summary || {};
   const support = result.inputEcho?.supportLabel || input.model.supportType;
   const section = `${input.section.family} ${input.section.name}`;
+  const directMode = result.analysisInputMode === 'endForces';
   if ($('workspaceSummary')) {
     $('workspaceSummary').innerHTML = [
       section,
+      result.inputEcho?.analysisInputModeLabel,
       result.source?.title,
       input.material.grade,
       `L = ${fmt(input.model.span, 2)} m`,
@@ -1289,19 +1353,19 @@ function renderResult(input, result) {
   }
   if ($('summaryResults')) {
     $('summaryResults').innerHTML = [
-      card('Status', result.status, result.status === 'PASS' ? 'good' : 'bad'),
+      card('Status', result.status, result.status === 'PASS' ? 'good' : result.status === 'FAIL' ? 'bad' : ''),
       card('Governing IR', fmt(s.governingIR, 3)),
       card(`Max moment [${s.momentUnit || ''}]`, fmt(s.maxMoment, 2)),
       card(`Max shear [${s.forceUnit || ''}]`, fmt(s.maxShear, 2)),
       card(`Axial force [${s.forceUnit || ''}]`, fmt(result.checks?.axial?.axialEd || 0, 2)),
-      card('Deflection [mm]', fmt(s.deflection, 2)),
-      card('Max reaction', `${fmt(s.maxReaction, 2)} ${s.forceUnit || ''}`),
+      card('Deflection', directMode ? (s.deflectionMessage || 'Not calculated') : `${fmt(s.deflection, 2)} mm`),
+      card(directMode ? 'Max end shear' : 'Max reaction', `${fmt(directMode ? s.maxEndShear : s.maxReaction, 2)} ${s.forceUnit || ''}`),
       card('Support condition', support),
       card('Section', section)
     ].join('');
   }
   if ($('verdict')) {
-    $('verdict').innerHTML = statusMarkup(result.status === 'PASS' ? 'PASS' : 'FAIL');
+    $('verdict').innerHTML = statusMarkup(result.status || 'INCOMPLETE');
     $('verdict').className = statusClass(result.status);
   }
   renderAxisOverview(result);
@@ -1388,6 +1452,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
   return {
     generatedAt: result.generatedAt || new Date().toISOString(),
     general: {
+      analysisInputMode: result.inputEcho?.analysisInputModeLabel || (input.analysisInputMode === 'endForces' ? 'Member end forces' : 'Applied loads'),
       engineProfile: setup.auditProfile || 'current',
       referenceComparisonMode: setup[LEGACY_INTERACTION_LABEL_KEY] || 'Source to be confirmed',
       nationalAnnexLabel: setup.nationalAnnexLabel || input.metadata?.nationalAnnex || 'Not available',
@@ -1402,7 +1467,8 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       materialVariant: setup.materialVariantLabel || 'Other / unknown',
       sectionClass: settings.sectionClass,
       autoClassificationStatus: setup.autoSectionClassificationStatus,
-      class4EffectivePropertiesMode: setup.class4EffectivePropertiesMode
+      class4EffectivePropertiesMode: setup.class4EffectivePropertiesMode,
+      biaxialPropertyProvenance: result.sectionProperties?.biaxialProvenance || 'Not available'
     },
     geometrySupport: {
       span: input.model?.span || result.inputEcho?.span,
@@ -1417,6 +1483,7 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       stiffenerModel: setup.stiffenerModel
     },
     loadsActions: {
+      endForces: result.actions?.endForces || input.endForces || null,
       udls: (rawLoads.udls || []).filter((load) => load.sourceType !== 'trap').map((load) => ({
         label: load.label,
         direction: load.direction || 'Z',
@@ -1470,14 +1537,15 @@ function buildAdvancedEc3AuditPayload(input = {}, result = {}) {
       governingCombinationEffect: result.actions?.ulsNote || result.loads?.combinations?.uls || 'Not available'
     },
     deflection: {
-      enabled: true,
+      enabled: result.analysisInputMode !== 'endForces',
       limit: settings.deflectionLimit,
       slsDeflectionBasis: result.loads?.combinations?.slsDeflectionBasis || comboAudit.slsDeflectionBasis,
       slsSelfWeightIncluded: result.loads?.combinations?.slsIncludeSelfWeight ?? comboAudit.slsIncludeSelfWeight,
       calculatedDeflection: summary.deflection,
       deflectionLimit: summary.deflectionLimit,
       utilisation: checks.deflection?.ir,
-      pass: checks.deflection?.pass
+      pass: checks.deflection?.pass,
+      message: checks.deflection?.message || summary.deflectionMessage || ''
     },
     axisConvention: axisOverview.axisConvention,
     zDirectionOverview: axisOverview.zDirectionOverview,
@@ -1585,6 +1653,7 @@ function renderAdvancedEc3Audit(input, result) {
   const warnings = payload.general.metadataOnlyWarnings || [];
   host.innerHTML = [
     auditSection('1. General audit info', [
+      ['Analysis input mode', payload.general.analysisInputMode],
       ['Engine/profile', payload.general.engineProfile],
       ['Advanced EC3 comparison/reference', payload.general.referenceComparisonMode],
       ['National Annex label', payload.general.nationalAnnexLabel],
@@ -1598,7 +1667,8 @@ function renderAdvancedEc3Audit(input, result) {
     auditListSection('4b. Point loads', payload.loadsActions.points, ['label', 'direction', 'x', 'G', 'Q1', 'Q2']),
     auditListSection('4c. Moment loads', payload.loadsActions.moments, ['label', 'direction', 'x', 'M', 'momentCase']),
     auditListSection('4d. Trapezoidal loads', payload.loadsActions.trapezoidal, ['id', 'case', 'direction', 'q1', 'q2', 'x1', 'x2']),
-    auditSection('4e. Actions', [
+    payload.loadsActions.endForces ? auditSection('4e. Member end forces (design actions)', Object.entries(payload.loadsActions.endForces)) : '',
+    auditSection('4f. Actions', [
       ['Axial sign convention', payload.loadsActions.axial.signConvention],
       ['Selfweight on/off', payload.loadsActions.selfWeight ? 'On' : 'Off'],
       ['NEd', payload.loadsActions.designActions.NEd],
@@ -1945,6 +2015,26 @@ function drawBeamSketch(input, result, canvasId = 'beamSketch', direction = null
     });
   }
 
+  const directEndForces = direction ? result.diagrams?.[directionGraphKey(direction)]?.endForces : null;
+  if (directEndForces) {
+    const momentKeys = direction === 'Y' ? ['Mz1_kNm', 'Mz2_kNm'] : ['My1_kNm', 'My2_kNm'];
+    const shearKeys = direction === 'Y' ? ['Vy1_kN', 'Vy2_kN'] : ['Vz1_kN', 'Vz2_kN'];
+    const mSymbol = direction === 'Y' ? 'Mz' : 'My';
+    const vSymbol = direction === 'Y' ? 'Vy' : 'Vz';
+    const mf = (value) => momentFromBase(Number(value) || 0, result.summary?.momentUnit || 'kN m');
+    const ff = (value) => forceFromBase(Number(value) || 0, result.summary?.forceUnit || 'kN');
+    ctx.fillStyle = accent;
+    ctx.font = '700 10px system-ui, -apple-system, Segoe UI';
+    const leftText = `${mSymbol}1=${fmt(mf(directEndForces[momentKeys[0]]), 2)}, ${vSymbol}1=${fmt(ff(directEndForces[shearKeys[0]]), 2)}`;
+    const rightText = `${mSymbol}2=${fmt(mf(directEndForces[momentKeys[1]]), 2)}, ${vSymbol}2=${fmt(ff(directEndForces[shearKeys[1]]), 2)}`;
+    ctx.fillText(leftText, Math.max(4, left - 8), y - 48);
+    ctx.fillText(rightText, Math.max(4, right - ctx.measureText(rightText).width), y - 48);
+    if (Math.abs(Number(directEndForces.N_kN) || 0) > 1e-12) {
+      const nText = `N=${fmt(ff(directEndForces.N_kN), 2)} ${result.summary?.forceUnit || ''} (+ compression)`;
+      ctx.fillText(nText, Math.max(4, (W - ctx.measureText(nText).width) / 2), y - 72);
+    }
+  }
+
   ctx.strokeStyle = primary;
   ctx.fillStyle = primary;
   ctx.lineWidth = 1.5;
@@ -2117,13 +2207,13 @@ function setDirectionGraphPayloads(result = {}, summary = {}) {
   const ySeries = displayDirectionSeries(yGraph, summary);
   state.chartPayloads.clear();
   [
-    ['chartVz', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, null],
-    ['chartMy', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, null],
-    ['chartZDefl', zSeries, 'z', 'z-deflection - mm', null],
-    ['chartVy', ySeries, 'Vy', `Vy(x) - ${summary.forceUnit || ''}`, null],
-    ['chartMz', ySeries, 'Mz', `Mz(x) - ${summary.momentUnit || ''}`, null],
-    ['chartYDefl', ySeries, 'y', 'y-deflection - mm', null]
-  ].forEach(([id, series, key, title, color]) => state.chartPayloads.set(id, { series, key, title, color }));
+    ['chartVz', zSeries, 'Vz', `Vz(x) - ${summary.forceUnit || ''}`, zGraph],
+    ['chartMy', zSeries, 'My', `My(x) - ${summary.momentUnit || ''}`, zGraph],
+    ['chartZDefl', zSeries, 'z', zGraph.deflectionUnavailable ? 'z-deflection - not calculated' : 'z-deflection - mm', zGraph],
+    ['chartVy', ySeries, 'Vy', `Vy(x) - ${summary.forceUnit || ''}`, yGraph],
+    ['chartMz', ySeries, 'Mz', `Mz(x) - ${summary.momentUnit || ''}`, yGraph],
+    ['chartYDefl', ySeries, 'y', yGraph.deflectionUnavailable ? 'y-deflection - not calculated' : 'y-deflection - mm', yGraph]
+  ].forEach(([id, series, key, title, graph]) => state.chartPayloads.set(id, { series, key, title, color: null, endpointLabels: Boolean(graph.endForces), deflectionUnavailable: Boolean(graph.deflectionUnavailable) }));
   setDirectionGraphMessage('zDirectionGraphMessage', zGraph);
   setDirectionGraphMessage('yDirectionGraphMessage', yGraph);
   writeChartPeak('peakVz', zSeries, 'Vz', summary.forceUnit || '');
@@ -2132,6 +2222,8 @@ function setDirectionGraphPayloads(result = {}, summary = {}) {
   writeChartPeak('peakVy', ySeries, 'Vy', summary.forceUnit || '');
   writeChartPeak('peakMz', ySeries, 'Mz', summary.momentUnit || '');
   writeChartPeak('peakYDefl', ySeries, 'y', 'mm');
+  if (zGraph.deflectionUnavailable && $('peakZDefl')) $('peakZDefl').textContent = 'Deflection not calculated for direct end-force mode.';
+  if (yGraph.deflectionUnavailable && $('peakYDefl')) $('peakYDefl').textContent = 'Deflection not calculated for direct end-force mode.';
 }
 
 function setChartPayloads(series, summary = {}) {
@@ -2184,7 +2276,7 @@ function redrawAllVisuals(reason = 'redraw', attempt = 0) {
   drawBeamSketch(state.last.input, state.last.result);
   drawBeamSketch(state.last.input, state.last.result, 'zLoadSketch', 'Z');
   drawBeamSketch(state.last.input, state.last.result, 'yLoadSketch', 'Y');
-  state.chartPayloads.forEach((payload, id) => drawChart(id, payload.series, payload.key, payload.title, payload.color));
+  state.chartPayloads.forEach((payload, id) => drawChart(id, payload.series, payload.key, payload.title, payload.color, payload));
   const waiting = Array.from(state.chartPayloads.keys()).some((id) => $(id)?.dataset.needsRedraw === 'true');
   if (waiting && attempt < 4) setTimeout(() => redrawAllVisuals(reason, attempt + 1), 80);
 }
@@ -2227,21 +2319,21 @@ function installChartInteractions(canvas) {
     const y = chartInterpY(payload.xs, payload.ys, x);
     canvas._hoverPoint = { x, y };
     setChartReadout(canvas, `x = ${fmt(x, 2)} m, ${payload.axisSymbol} = ${fmt3(y)} ${payload.unit || ''}`);
-    drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color);
+    drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color, payload);
   });
   canvas.addEventListener('pointerleave', () => {
     canvas._hoverPoint = null;
     setChartReadout(canvas, '');
     const payload = canvas._chartPayload;
-    if (payload) drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color);
+    if (payload) drawChart(canvas.id, payload.series, payload.key, payload.title, payload.color, payload);
   });
   canvas.addEventListener('click', () => openChartModal(canvas.id));
 }
 
-function drawChart(id, series, key, title, color) {
+function drawChart(id, series, key, title, color, options = {}) {
   const canvas = $(id);
   if (!canvas) return;
-  if (id !== 'chartModalCanvas') state.chartPayloads.set(id, { series, key, title, color });
+  if (id !== 'chartModalCanvas') state.chartPayloads.set(id, { ...options, series, key, title, color });
   canvas.dataset.chartKey = id;
   const rect = canvas.getBoundingClientRect();
   const W = rect.width, H = rect.height;
@@ -2263,7 +2355,7 @@ function drawChart(id, series, key, title, color) {
   const ys = series.map((p) => Number(p[key]) || 0);
   const unit = title.includes(' - ') ? title.split(' - ').pop().trim() : '';
   const axisSymbol = ({ shear: 'V', moment: 'M', deflection: 'y', Vz: 'Vz', Vy: 'Vy', My: 'My', Mz: 'Mz', z: 'z', y: 'y' })[key] || key;
-  canvas._chartPayload = { series, key, title, color, xs, ys, unit, axisSymbol };
+  canvas._chartPayload = { ...options, series, key, title, color, xs, ys, unit, axisSymbol };
   installChartInteractions(canvas);
   let xmin = Math.min(...xs), xmax = Math.max(...xs);
   let ymin = Math.min(...ys), ymax = Math.max(...ys);
@@ -2335,6 +2427,13 @@ function drawChart(id, series, key, title, color) {
   ctx.fillStyle = getVar('--text') || '#111827';
   ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
   ctx.fillText(`peak ${fmt3(peak.y)} at x=${fmt(peak.x, 2)} m`, padL, H - 10);
+  if (options.endpointLabels && ys.length > 1) {
+    ctx.font = '700 10px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+    const labelY = (value) => Math.max(padT + 11, Math.min(H - padB - 5, Y(value) - 6));
+    ctx.fillText(`End 1: ${fmt3(ys[0])}`, padL + 4, labelY(ys[0]));
+    const endText = `End 2: ${fmt3(ys[ys.length - 1])}`;
+    ctx.fillText(endText, Math.max(padL, W - padR - ctx.measureText(endText).width - 4), labelY(ys[ys.length - 1]));
+  }
   if (canvas._hoverPoint) {
     const hp = canvas._hoverPoint;
     const hx = X(hp.x), hy = Y(hp.y);
@@ -2360,8 +2459,8 @@ function openChartModal(chartId) {
   $('chartModalTitle') && ($('chartModalTitle').textContent = payload.title);
   showModal('chartModal');
   requestAnimationFrame(() => {
-    drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color);
-    setTimeout(() => drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color), 80);
+    drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color, payload);
+    setTimeout(() => drawChart('chartModalCanvas', payload.series, payload.key, payload.title, payload.color, payload), 80);
   });
 }
 
@@ -2416,7 +2515,7 @@ function advancedEc3AuditJsonBlob() {
 }
 
 function saveLocalProject() {
-  const payload = { schemaVersion: 3, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
+  const payload = { schemaVersion: 4, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
   localStorage.setItem('beam_project_secure_draft_v1', JSON.stringify(payload));
   if ($('projectStatus')) $('projectStatus').textContent = `Saved locally ${new Date().toLocaleTimeString()}`;
   setSaveStatus('Project saved locally. Cloud save requires sign-in/backend storage.', 'ok');
@@ -2438,6 +2537,8 @@ function applyInput(input = {}) {
   }
   if (input.material?.grade) $('material').value = input.material.grade;
   if (input.units) $('loadUnit').value = input.units;
+  if ($('analysisInputMode')) $('analysisInputMode').value = input.analysisInputMode === 'endForces' ? 'endForces' : 'appliedLoads';
+  applyEndForcesToFields(input.endForces || {}, !input.endForces);
   if (input.model?.span) $('span').value = input.model.span;
   if (input.model?.supportType) $('supportType').value = input.model.supportType;
   $('includeSW').checked = input.model?.includeSelfWeight !== false;
@@ -2494,6 +2595,8 @@ function applyInput(input = {}) {
     setValue('axialSignConvention', input.axial.signConvention || 'positive_compression');
     applyAxialRows(input.axial);
   }
+  syncBeamModeUi();
+  syncAnalysisInputModeUi();
 }
 
 function applyMetadata(metadata = {}) {
@@ -2769,6 +2872,20 @@ function bindEvents() {
     addAxialLoadRow(null, { loadCase: 'G' }, true);
     recalculateDebounced();
   });
+  $('analysisInputMode')?.addEventListener('change', () => {
+    if (getBeamMode() === 'multi' && getAnalysisInputMode() === 'endForces') {
+      $('analysisInputMode').value = 'appliedLoads';
+      setSaveStatus('Member end forces are available for single-member, single-span analysis only.', 'error');
+    }
+    syncAnalysisInputModeUi();
+    recalculateDebounced();
+  });
+  $$('[data-end-force]').forEach((input) => input.addEventListener('input', () => readEndForcesFromFields()));
+  $('loadUnit')?.addEventListener('change', () => {
+    const base = state.endForceBase || readEndForcesFromFields();
+    applyEndForcesToFields(base, false);
+    recalculateDebounced();
+  });
   $$('[data-loadcase]').forEach((btn) => {
     btn.onclick = () => setActiveLoadCase(btn.dataset.loadcase);
   });
@@ -2918,6 +3035,8 @@ async function init() {
   bindEvents();
   updateLCPreview();
   applyDefaultMetadata();
+  applyEndForcesToFields({}, true);
+  syncAnalysisInputModeUi();
   if (state.settings.openProject !== false && $('projectAccordion')) $('projectAccordion').open = true;
   $('projectDate') && ($('projectDate').value = new Date().toISOString().slice(0, 10));
   if (shouldShowStartScreen()) showStartScreen();

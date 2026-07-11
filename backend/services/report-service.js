@@ -279,6 +279,7 @@ function buildLoadingSvg(input = {}, result = {}, direction = null) {
     points: (sourceRaw.points || []).filter((load) => String(load.direction || 'Z').toUpperCase() === wantedDirection)
   } : sourceRaw;
   const supportType = result.inputEcho?.supportType || input.model?.supportType || 'ss';
+  const directEndForces = result.analysisInputMode === 'endForces' ? (result.actions?.endForces || input.endForces || {}) : null;
   const xMap = (x) => 84 + (Number(x || 0) / Math.max(L, 1e-9)) * 720;
   const yBeam = 128;
   const supports = raw.supportXs || [0, L];
@@ -329,7 +330,23 @@ function buildLoadingSvg(input = {}, result = {}, direction = null) {
     </g>`;
   }).join('');
 
-  const emptyMessage = wantedDirection && !(raw.udls || []).length && !(raw.points || []).length
+  const directLabels = directEndForces ? (() => {
+    const isY = wantedDirection === 'Y';
+    const momentSymbol = isY ? 'Mz' : 'My';
+    const shearSymbol = isY ? 'Vy' : 'Vz';
+    const m1 = directEndForces[isY ? 'Mz1_kNm' : 'My1_kNm'] || 0;
+    const m2 = directEndForces[isY ? 'Mz2_kNm' : 'My2_kNm'] || 0;
+    const v1 = directEndForces[isY ? 'Vy1_kN' : 'Vz1_kN'] || 0;
+    const v2 = directEndForces[isY ? 'Vy2_kN' : 'Vz2_kN'] || 0;
+    const unitFactor = result.inputEcho?.units === 'tonne' ? 9.81 : 1;
+    return `<g>
+      <text x="84" y="42" class="load-label">End 1: ${momentSymbol}1=${escHtml(round(m1 / unitFactor, 4))} ${escHtml(result.summary?.momentUnit || 'kN m')}; ${shearSymbol}1=${escHtml(round(v1 / unitFactor, 4))} ${escHtml(result.summary?.forceUnit || 'kN')}</text>
+      <text x="500" y="42" class="load-label">End 2: ${momentSymbol}2=${escHtml(round(m2 / unitFactor, 4))}; ${shearSymbol}2=${escHtml(round(v2 / unitFactor, 4))}</text>
+      <text x="310" y="78" class="dim-text">N=${escHtml(round((directEndForces.N_kN || 0) / unitFactor, 4))} ${escHtml(result.summary?.forceUnit || 'kN')} (+ compression)</text>
+    </g>`;
+  })() : '';
+
+  const emptyMessage = !directEndForces && wantedDirection && !(raw.udls || []).length && !(raw.points || []).length
     ? `<text x="84" y="62" class="dim-text">No ${wantedDirection}-direction load applied.</text>`
     : '';
 
@@ -352,6 +369,7 @@ function buildLoadingSvg(input = {}, result = {}, direction = null) {
     ${supportShapes}
     ${udls}
     ${points}
+    ${directLabels}
     ${emptyMessage}
     ${reactions}
     <line x1="${xMap(0)}" y1="${yBeam + 94}" x2="${xMap(L)}" y2="${yBeam + 94}" class="dim"/>
@@ -393,16 +411,35 @@ function buildGraphSvg(series = [], key, title, unit, stroke) {
     <line x1="${left}" y1="${top}" x2="${left}" y2="${bottom}" class="axis"/>
     <line x1="${left}" y1="${y0}" x2="${right}" y2="${y0}" class="axis"/>
     <path d="${path}" class="plot"/>
+    ${rows.length ? `<text x="${left + 4}" y="${Math.max(top + 14, yMap(values[0]) - 8)}" class="label">End 1: ${escHtml(round(values[0], 3))} ${escHtml(unit)}</text>
+    <text x="${right - 180}" y="${Math.max(top + 14, yMap(values[values.length - 1]) - 8)}" class="label">End 2: ${escHtml(round(values[values.length - 1], 3))} ${escHtml(unit)}</text>` : ''}
     <text x="${left}" y="${height - 20}" class="label">x (m)</text>
     <text x="18" y="${top + 12}" class="label">${escHtml(unit)}</text>
     <text x="${Math.max(left, Math.min(right - 190, xMap(peak.x || 0)))}" y="${Math.max(top + 16, yMap(peak[key] || 0) - 10)}" class="label">Peak ${escHtml(round(peak[key], 3))} ${escHtml(unit)} at ${escHtml(round(peak.x, 3))} m</text>
   </svg>`;
 }
 
+function buildUnavailableGraphSvg(title, message) {
+  return `<svg viewBox="0 0 900 260" role="img" aria-label="${escAttr(title)}">
+    <rect x="1" y="1" width="898" height="258" fill="#fff" stroke="#cbd5e1"/>
+    <text x="28" y="34" style="font:700 16px Arial;fill:#0f172a">${escHtml(title)}</text>
+    <text x="28" y="88" style="font:14px Arial;fill:#475569">${escHtml(message)}</text>
+  </svg>`;
+}
+
 function directionGraphSeries(result = {}, direction = 'Z') {
   const graphKey = String(direction).toUpperCase() === 'Y' ? 'yDirectionGraphs' : 'zDirectionGraphs';
   const graph = result.diagrams?.[graphKey] || {};
-  if (Array.isArray(graph.series)) return graph.series;
+  if (Array.isArray(graph.series)) {
+    const factor = result.inputEcho?.units === 'tonne' ? 9.81 : 1;
+    return graph.series.map((row) => ({
+      ...row,
+      Vz: row.Vz === undefined ? row.Vz : Number(row.Vz) / factor,
+      Vy: row.Vy === undefined ? row.Vy : Number(row.Vy) / factor,
+      My: row.My === undefined ? row.My : Number(row.My) / factor,
+      Mz: row.Mz === undefined ? row.Mz : Number(row.Mz) / factor
+    }));
+  }
   if (String(direction).toUpperCase() === 'Y') return [];
   return (result.diagrams?.series || []).map((row) => ({
     x: row.x,
@@ -458,6 +495,7 @@ function formatDirectionOverviewRows(result = {}) {
   const summary = result.summary || {};
   const force = summary.forceUnit || '';
   const moment = summary.momentUnit || '';
+  const directMode = result.analysisInputMode === 'endForces';
   const hasZ = axis.hasZDirectionLoads === true || Math.abs(Number(axis.MyEd || 0)) > 1e-9 || Math.abs(Number(axis.VzEd || 0)) > 1e-9;
   const hasY = axis.hasYDirectionLoads === true || Math.abs(Number(axis.MzEd || 0)) > 1e-9 || Math.abs(Number(axis.VyEd || 0)) > 1e-9;
   const zStatus = hasZ ? (Number(axis.MyIR || checks.moment?.ir || 0) < 1 && Number(axis.VzIR || checks.shear?.ir || 0) < 1 ? 'PASS' : 'FAIL') : 'Not governing';
@@ -471,29 +509,29 @@ function formatDirectionOverviewRows(result = {}) {
     zRows: [
       ['My,Ed', axisValue(axis.MyEd || 0, moment)],
       ['Vz,Ed', axisValue(axis.VzEd || 0, force)],
-      ['z-deflection', axisValue(axis.zDeflection ?? summary.deflection ?? 0, 'mm')],
+      ['z-deflection', directMode ? 'Not calculated for direct end-force mode' : axisValue(axis.zDeflection ?? summary.deflection ?? 0, 'mm')],
       ['My,Rd', axisValue(axis.MyRd ?? checks.moment?.resistance, moment)],
       ['Vz,Rd', axisValue(axis.VzRd ?? checks.shear?.resistance, force)],
       ['My utilisation', axisValue(hasZ ? (axis.MyIR ?? checks.moment?.ir) : 0, '', 3)],
       ['Vz utilisation', axisValue(hasZ ? (axis.VzIR ?? checks.shear?.ir) : 0, '', 3)],
       ['Basis', axis.bendingResistanceBasis?.MyRdBasis || checks.moment?.label || 'Not available'],
       ['Status', zStatus],
-      ['Message', hasZ ? '-' : 'No Z-direction load applied; strong-axis demand is not governing.']
+      ['Message', hasZ ? '-' : directMode ? 'No Z-direction end action entered; strong-axis demand is not governing.' : 'No Z-direction load applied; strong-axis demand is not governing.']
     ],
     yRows: [
       ['Mz,Ed', axisValue(axis.MzEd || 0, moment)],
       ['Vy,Ed', axisValue(axis.VyEd || 0, force)],
-      ['y-deflection', hasY ? axisValue(axis.yDeflection, 'mm') : '0 mm'],
+      ['y-deflection', directMode ? 'Not calculated for direct end-force mode' : (hasY ? axisValue(axis.yDeflection, 'mm') : '0 mm')],
       ['Mz,Rd', hasY ? axisValue(axis.MzRd ?? checks.minorAxis?.momentResistance, moment) : 'Not governing'],
       ['Vy,Rd', hasY ? axisValue(axis.VyRd ?? checks.minorAxis?.shearResistance, force) : 'Not governing'],
       ['Mz utilisation', axisValue(hasY ? (axis.MzIR ?? checks.minorAxis?.ir) : 0, '', 3)],
       ['Vy utilisation', axisValue(hasY ? axis.VyIR : 0, '', 3)],
       ['Basis', hasY ? (axis.bendingResistanceBasis?.MzRdBasis || 'Not available') : 'Not governing'],
       ['Status', yStatus],
-      ['Message', hasY ? '-' : 'No Y-direction load applied; weak-axis demand is not governing.']
+      ['Message', hasY ? '-' : directMode ? 'No Y-direction end action entered; weak-axis demand is not governing.' : 'No Y-direction load applied; weak-axis demand is not governing.']
     ],
     combinedRows: [
-      ['Governing direction', axis.governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz' : 'Z-direction loading / strong-axis My'],
+      ['Governing direction', axis.governingAxis || (axis.governingDirection === 'Y' ? 'Y-direction loading / weak-axis Mz and shear Vy' : 'Z-direction loading / strong-axis My and shear Vz')],
       ['Governing utilisation', axisValue(summary.governingIR, '', 3)],
       ['Combined N + My + Mz interaction', checks.conservativeInteraction?.enabled ? axisValue(checks.conservativeInteraction?.ir, '', 3) : 'Off'],
       ['Overall status', result.status || '-']
@@ -527,6 +565,24 @@ function formatSectionRows(props = {}) {
 }
 
 function formatLoadRows(result = {}) {
+  if (result.analysisInputMode === 'endForces') {
+    const endForces = result.actions?.endForces || result.inputEcho?.endForces || {};
+    const forceUnit = result.summary?.forceUnit || 'kN';
+    const momentUnit = result.summary?.momentUnit || 'kN m';
+    const force = (value) => round(result.inputEcho?.units === 'tonne' ? Number(value || 0) / 9.81 : Number(value || 0), 5);
+    const moment = (value) => round(result.inputEcho?.units === 'tonne' ? Number(value || 0) / 9.81 : Number(value || 0), 5);
+    return [
+      ['N', 'Constant axial design action', 'Entire member', `${force(endForces.N_kN)} ${forceUnit} (+ compression)`],
+      ['My1', 'Signed major-axis end moment', 'End 1', `${moment(endForces.My1_kNm)} ${momentUnit}`],
+      ['My2', 'Signed major-axis end moment', 'End 2', `${moment(endForces.My2_kNm)} ${momentUnit}`],
+      ['Mz1', 'Signed minor-axis end moment', 'End 1', `${moment(endForces.Mz1_kNm)} ${momentUnit}`],
+      ['Mz2', 'Signed minor-axis end moment', 'End 2', `${moment(endForces.Mz2_kNm)} ${momentUnit}`],
+      ['Vz1', 'Signed local-z end shear', 'End 1', `${force(endForces.Vz1_kN)} ${forceUnit}`],
+      ['Vz2', 'Signed local-z end shear', 'End 2', `${force(endForces.Vz2_kN)} ${forceUnit}`],
+      ['Vy1', 'Signed local-y end shear', 'End 1', `${force(endForces.Vy1_kN)} ${forceUnit}`],
+      ['Vy2', 'Signed local-y end shear', 'End 2', `${force(endForces.Vy2_kN)} ${forceUnit}`]
+    ];
+  }
   const raw = result.loads?.raw || { udls: [], points: [] };
   const udls = (raw.udls || []).map((u) => [
     u.label || 'UDL',
@@ -571,6 +627,8 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
   ].filter(Boolean);
   const zSeries = directionGraphSeries(result, 'Z');
   const ySeries = directionGraphSeries(result, 'Y');
+  const directMode = result.analysisInputMode === 'endForces';
+  const deflectionUnavailable = 'Deflection not calculated for direct end-force mode.';
   return {
     meta,
     result,
@@ -587,13 +645,13 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
         loading: buildLoadingSvg(input, result, 'Z'),
         shear: buildGraphSvg(zSeries, 'Vz', 'Vz(x) - Z-direction shear', result.summary?.forceUnit || 'kN', '#1d4ed8'),
         moment: buildGraphSvg(zSeries, 'My', 'My(x) - strong-axis bending', result.summary?.momentUnit || 'kN m', '#155eef'),
-        deflection: buildGraphSvg(zSeries, 'z', 'z-deflection', 'mm', '#15803d')
+        deflection: directMode ? buildUnavailableGraphSvg('z-deflection', deflectionUnavailable) : buildGraphSvg(zSeries, 'z', 'z-deflection', 'mm', '#15803d')
       },
       yDirection: {
         loading: buildLoadingSvg(input, result, 'Y'),
         shear: buildGraphSvg(ySeries, 'Vy', 'Vy(x) - Y-direction shear', result.summary?.forceUnit || 'kN', '#0f766e'),
         moment: buildGraphSvg(ySeries, 'Mz', 'Mz(x) - weak-axis bending', result.summary?.momentUnit || 'kN m', '#7c3aed'),
-        deflection: buildGraphSvg(ySeries, 'y', 'y-deflection', 'mm', '#16a34a')
+        deflection: directMode ? buildUnavailableGraphSvg('y-deflection', deflectionUnavailable) : buildGraphSvg(ySeries, 'y', 'y-deflection', 'mm', '#16a34a')
       },
       utilisation: buildUtilisationSvg(result)
     },
@@ -647,7 +705,9 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
   const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
   const material = result.inputEcho?.material || input.material?.grade || '-';
   const paper = meta.paperSize === 'Letter' ? 'Letter' : meta.paperSize;
+  const directMode = result.analysisInputMode === 'endForces';
   const execRows = [
+    ['Analysis input mode', directMode ? 'Member end forces' : 'Applied loads'],
     ['Overall status', result.status || '-'],
     ['Governing utilisation ratio', round(result.summary?.governingIR, 5)],
     ['Governing design check', `${governing.title} (${round(governing.ir, 5)})`],
@@ -658,7 +718,8 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
     ['Maximum moment', `${round(result.summary?.maxMoment, 5)} ${result.summary?.momentUnit || ''}`],
     ['Maximum shear', `${round(result.summary?.maxShear, 5)} ${result.summary?.forceUnit || ''}`],
     ['Maximum axial load', `${round(result.checks?.axial?.axialEd, 5)} ${result.summary?.forceUnit || ''}`],
-    ['Maximum deflection', `${round(result.summary?.deflection, 5)} mm`]
+    ['Maximum deflection', directMode ? 'Not calculated for direct end-force mode' : `${round(result.summary?.deflection, 5)} mm`],
+    [directMode ? 'Maximum end shear' : 'Maximum reaction', `${round(directMode ? result.summary?.maxEndShear : result.summary?.maxReaction, 5)} ${result.summary?.forceUnit || ''}`]
   ];
   const projectRows = [
     ['Company', meta.companyName],
@@ -727,6 +788,7 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
     .graphics-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5mm; }
     .status-banner { padding: 5mm; border: 2px solid #15803d; background: #f0fdf4; font-size: 16pt; font-weight: 700; text-align: center; }
     .status-banner.fail { border-color: #dc2626; background: #fef2f2; }
+    .status-banner.incomplete { border-color: #b45309; background: #fffbeb; }
     table { width: 100%; border-collapse: collapse; margin: 0 0 5mm; table-layout: fixed; }
     th, td { border: 1px solid #cbd5e1; padding: 2.4mm 2.6mm; vertical-align: top; word-wrap: break-word; }
     th { background: #e2e8f0; color: #0f172a; font-weight: 700; }
@@ -784,7 +846,7 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
           ${definitionTableHtml(projectRows)}
         </div>
       </div>
-      <div class="status-banner ${String(result.status).toLowerCase() === 'fail' ? 'fail' : ''}">Overall ${escHtml(result.status || '-')} - Governing IR ${escHtml(round(result.summary?.governingIR, 5))}</div>
+      <div class="status-banner ${String(result.status || '').toLowerCase()}">Overall ${escHtml(result.status || '-')} - Governing IR ${escHtml(round(result.summary?.governingIR, 5))}</div>
       <div class="grid-2">
         <div>
           <h2>Executive Summary</h2>
@@ -819,7 +881,8 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
         ['Support condition', support],
         ['Span', `${round(result.inputEcho?.span || input.model?.span, 3)} m`],
         ['Effective lengths', `LTB/restraint assumptions recorded in calculation checks; member span ${round(result.inputEcho?.span || input.model?.span, 3)} m.`],
-        ['Load combination', result.inputEcho?.combination || '-'],
+        ['Analysis input mode', directMode ? 'Member end forces' : 'Applied loads'],
+        ['Load combination', directMode ? 'No load-combination factors applied; entered values are design actions.' : (result.inputEcho?.combination || '-')],
         ['Self weight', (result.loads?.raw?.udls || []).some((u) => u.isSelf) ? 'Included' : 'Not included'],
         ['LTB assumptions', packageData.assumptions?.find((item) => item.includes('LTB')) || '-'],
         ['Design assumptions', packageData.assumptions?.join(' ') || '-'],
@@ -827,7 +890,7 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
       ])}
       <h2>Load Data</h2>
       ${rowsToHtml(['Load', 'Type', 'Position', 'Magnitude'], model.loadRows.length ? model.loadRows : [['-', '-', '-', '-']])}
-      <div class="figure">${model.loadingSvg}<p class="caption">Figure 1. Loading diagram with supports, dimensions, input load components and ULS reactions.</p></div>
+      <div class="figure">${model.loadingSvg}<p class="caption">Figure 1. ${directMode ? 'Member end-action diagram. End shears are entered design actions and are not support reactions.' : 'Loading diagram with supports, dimensions, input load components and ULS reactions.'}</p></div>
     </section>
 
     <section class="page">
@@ -958,8 +1021,10 @@ function buildLatexReport(input = {}, result = {}, suppliedMetadata = {}) {
   result = result || {};
   const model = buildReportModel(input, result, suppliedMetadata);
   const { meta, packageData, source, governing } = model;
+  const directMode = result.analysisInputMode === 'endForces';
   const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
   const execRows = [
+    ['Analysis input mode', directMode ? 'Member end forces' : 'Applied loads'],
     ['Overall status', result.status || '-'],
     ['Governing utilisation ratio', round(result.summary?.governingIR, 5)],
     ['Governing design check', governing.title],
@@ -968,7 +1033,7 @@ function buildLatexReport(input = {}, result = {}, suppliedMetadata = {}) {
     ['Span', `${round(result.inputEcho?.span || input.model?.span, 3)} m`],
     ['Maximum moment', `${round(result.summary?.maxMoment, 5)} ${result.summary?.momentUnit || ''}`],
     ['Maximum shear', `${round(result.summary?.maxShear, 5)} ${result.summary?.forceUnit || ''}`],
-    ['Maximum deflection', `${round(result.summary?.deflection, 5)} mm`]
+    ['Maximum deflection', directMode ? 'Not calculated for direct end-force mode' : `${round(result.summary?.deflection, 5)} mm`]
   ];
   const tableRows = (rows) => rows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} \\\\`).join('\n');
   const zDirectionRows = tableRows(model.directionOverview.zRows);
@@ -976,6 +1041,7 @@ function buildLatexReport(input = {}, result = {}, suppliedMetadata = {}) {
   const combinedDirectionRows = tableRows(model.directionOverview.combinedRows);
   const sectionRows = model.sectionRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} \\\\`).join('\n');
   const checkRows = model.checksRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} & ${escLatex(row[3])} \\\\`).join('\n');
+  const loadRows = model.loadRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} & ${escLatex(row[3])} \\\\`).join('\n');
   return `\\documentclass[11pt,a4paper]{article}
 \\usepackage[margin=18mm]{geometry}
 \\usepackage{longtable}
@@ -1050,6 +1116,13 @@ Material & ${escLatex(result.inputEcho?.material || '-')} \\\\
 Support condition & ${escLatex(result.inputEcho?.supportLabel || '-')} \\\\
 Load combination & ${escLatex(result.inputEcho?.combination || '-')} \\\\
 Notes/comments & ${escLatex(meta.notes)} \\\\
+\\end{longtable}
+
+\\subsection{${directMode ? 'Member end forces' : 'Applied loads'}}
+${directMode ? 'No load-combination factors applied; entered values are design actions.\\\\\n' : ''}
+\\begin{longtable}{p{0.18\\linewidth}p{0.25\\linewidth}p{0.22\\linewidth}p{0.25\\linewidth}}
+\\textbf{Action} & \\textbf{Type} & \\textbf{Position} & \\textbf{Signed value} \\\\
+${loadRows}
 \\end{longtable}
 
 \\section{Section Properties}
@@ -1284,10 +1357,13 @@ function buildHandCalculationRows(input = {}, result = {}, model = {}) {
   const sectionName = [result.inputEcho?.section?.family, result.inputEcho?.section?.name].filter(Boolean).join(' ') || '-';
   const support = result.inputEcho?.supportLabel || input.model?.supportType || '-';
   const status = (check) => checkStatusFromRow(check);
+  const directMode = result.analysisInputMode === 'endForces';
   const summaryRows = [
     ['Shear', `${round(checks.shear?.resistance, 2)} ${forceUnit}`, `${round(summary.maxShear, 2)} ${forceUnit}`, formatPercent(checks.shear?.ir), status(checks.shear)],
     ['Bending moment', `${round(checks.moment?.resistance, 2)} ${momentUnit}`, `${round(summary.maxMoment, 2)} ${momentUnit}`, formatPercent(checks.moment?.ir), status(checks.moment)],
-    ['Total deflection', `${round(summary.deflectionLimit, 2)} mm`, `${round(summary.deflection, 2)} mm`, formatPercent(checks.deflection?.ir), status(checks.deflection)]
+    directMode
+      ? ['Deflection', 'Excluded', 'Not calculated for direct end-force mode', '-', 'INFO']
+      : ['Total deflection', `${round(summary.deflectionLimit, 2)} mm`, `${round(summary.deflection, 2)} mm`, formatPercent(checks.deflection?.ir), status(checks.deflection)]
   ];
   if (Math.abs(Number(checks.axial?.axialEd || 0)) > 1e-9) {
     summaryRows.splice(2, 0, ['Axial force', '-', `${round(checks.axial?.axialEd, 2)} ${forceUnit}`, formatPercent(checks.axial?.ir), status(checks.axial)]);
@@ -1311,6 +1387,7 @@ function buildHandCalculationRows(input = {}, result = {}, model = {}) {
     sectionName,
     support,
     spanRows: [
+      ['Analysis input mode', directMode ? 'Member end forces' : 'Applied loads'],
       ['Effective span L', `${round(result.inputEcho?.span || input.model?.span, 3)} m`],
       ['Support condition', support],
       ['Deflection limit', `L/${round(input.settings?.deflectionLimit || (summary.deflectionLimit ? (Number(result.inputEcho?.span || input.model?.span || 0) * 1000 / Number(summary.deflectionLimit)) : 0), 0)}`],
@@ -1319,7 +1396,8 @@ function buildHandCalculationRows(input = {}, result = {}, model = {}) {
       ['National Annex', model.packageData?.nationalAnnex || model.meta?.nationalAnnex || '-'],
       ['gammaM0', round(input.settings?.gammaM0, 2)],
       ['gammaM1', round(input.settings?.gammaM1, 2)],
-      ['Self weight', input.model?.includeSelfWeight === false ? 'Excluded' : 'Included as full-span permanent UDL']
+      ['Self weight', directMode ? 'Not applied to direct member actions' : input.model?.includeSelfWeight === false ? 'Excluded' : 'Included as full-span permanent UDL'],
+      ['Combination factors', directMode ? 'Not applied; entered values are design actions' : (result.actions?.ulsNote || '-')]
     ],
     reactionRows: (result.actions?.reactions || []).map((r) => [
       `Support ${r.support}`,
@@ -1331,6 +1409,20 @@ function buildHandCalculationRows(input = {}, result = {}, model = {}) {
 }
 
 function buildPdfLoadRows(input = {}, result = {}) {
+  if (result.analysisInputMode === 'endForces') {
+    const values = result.actions?.endForces || input.endForces || {};
+    return [
+      ['N', 'Direct axial action', `${round(values.N_kN, 4)} kN`, 'Entire member', '-', 'Positive = compression'],
+      ['My1', 'Direct end moment', `${round(values.My1_kNm, 4)} kN m`, 'End 1', '-', 'Signed design action'],
+      ['My2', 'Direct end moment', `${round(values.My2_kNm, 4)} kN m`, 'End 2', '-', 'Signed design action'],
+      ['Mz1', 'Direct end moment', `${round(values.Mz1_kNm, 4)} kN m`, 'End 1', '-', 'Signed design action'],
+      ['Mz2', 'Direct end moment', `${round(values.Mz2_kNm, 4)} kN m`, 'End 2', '-', 'Signed design action'],
+      ['Vz1', 'Direct end shear', `${round(values.Vz1_kN, 4)} kN`, 'End 1', '-', 'Signed design action'],
+      ['Vz2', 'Direct end shear', `${round(values.Vz2_kN, 4)} kN`, 'End 2', '-', 'Signed design action'],
+      ['Vy1', 'Direct end shear', `${round(values.Vy1_kN, 4)} kN`, 'End 1', '-', 'Signed design action'],
+      ['Vy2', 'Direct end shear', `${round(values.Vy2_kN, 4)} kN`, 'End 2', '-', 'Signed design action']
+    ];
+  }
   const loads = input.loads || {};
   const rows = [];
   const seenTraps = new Set();
@@ -1526,6 +1618,7 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
   const rows = buildHandCalculationRows(input, result, model);
   const forceUnit = result.summary?.forceUnit || 'kN';
   const momentUnit = result.summary?.momentUnit || 'kN m';
+  const directMode = result.analysisInputMode === 'endForces';
   const zSeries = directionGraphSeries(result, 'Z');
   const ySeries = directionGraphSeries(result, 'Y');
 
@@ -1780,18 +1873,28 @@ function buildStructuredHandPdf(input = {}, result = {}, model = {}) {
     ['Z-direction loading', 'Strong-axis bending My / shear Vz / z-deflection'],
     ['Y-direction loading', 'Weak-axis bending Mz / shear Vy / y-deflection']
   ], [170, 364], { size: 8 });
-  section('Reactions');
-  table(['Support', 'Position', 'Vertical reaction', 'Moment reaction'], rows.reactionRows.length ? rows.reactionRows : [['-', '-', '-', '-']], [110, 110, 150, 164], { size: 8 });
+  section(directMode ? 'End shears' : 'Reactions');
+  table(
+    directMode ? ['Action', 'End 1', 'End 2', 'Note'] : ['Support', 'Position', 'Vertical reaction', 'Moment reaction'],
+    directMode ? [
+      ['Vz', `${round(result.actions?.endForces?.Vz1_kN, 3)} kN`, `${round(result.actions?.endForces?.Vz2_kN, 3)} kN`, 'Entered signed design actions; not reactions'],
+      ['Vy', `${round(result.actions?.endForces?.Vy1_kN, 3)} kN`, `${round(result.actions?.endForces?.Vy2_kN, 3)} kN`, 'Entered signed design actions; not reactions']
+    ] : (rows.reactionRows.length ? rows.reactionRows : [['-', '-', '-', '-']]),
+    [110, 110, 150, 164],
+    { size: 8 }
+  );
   section('Z-direction loading diagrams');
   drawLoadingDiagram('Z');
   drawChart('Vz', 'Vz(x) - Z-direction shear', forceUnit, '#1d4ed8', zSeries);
   drawChart('My', 'My(x) - strong-axis bending', momentUnit, '#1d4ed8', zSeries);
-  drawChart('z', 'z-deflection', 'mm', '#15803d', zSeries);
+  if (directMode) { text('Deflection not calculated for direct end-force mode.', margin, y - 12, { size: 8, bold: true }); y -= 28; }
+  else drawChart('z', 'z-deflection', 'mm', '#15803d', zSeries);
   section('Y-direction loading diagrams');
   drawLoadingDiagram('Y');
   drawChart('Vy', 'Vy(x) - Y-direction shear', forceUnit, '#0f766e', ySeries);
   drawChart('Mz', 'Mz(x) - weak-axis bending', momentUnit, '#7c3aed', ySeries);
-  drawChart('y', 'y-deflection', 'mm', '#16a34a', ySeries);
+  if (directMode) { text('Deflection not calculated for direct end-force mode.', margin, y - 12, { size: 8, bold: true }); y -= 28; }
+  else drawChart('y', 'y-deflection', 'mm', '#16a34a', ySeries);
   section('Eurocode checks');
   table(['Check', 'Expression', 'Clause', 'Utilisation', 'Status'], buildPdfCheckRows(result), [96, 238, 78, 62, 60], { size: 6.9 });
   drawCalculationDerivations();

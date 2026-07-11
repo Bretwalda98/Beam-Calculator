@@ -1552,6 +1552,20 @@ body.plan-plus .ad-slot{display:none!important}
 @media(min-width:1700px){.direction-chart-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.direction-chart-grid canvas.chart{height:205px!important}}
 @media(max-width:1200px){.direction-graph-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){.direction-graph-window{padding:8px}.direction-load-sketch{height:170px}.direction-chart-grid canvas.chart{height:220px!important}}
+.end-forces-panel{border:1px solid var(--border);border-radius:8px;background:var(--panel-2);padding:10px;margin-top:8px;min-width:0}
+.end-force-help{margin:4px 0 10px;color:var(--muted);font-size:12px;line-height:1.4}
+.end-force-table-wrap{max-width:100%;overflow-x:auto}
+.end-force-table{width:100%;min-width:430px;border-collapse:collapse;table-layout:fixed}
+.end-force-table th,.end-force-table td{padding:5px 6px;border:1px solid var(--border);vertical-align:middle;text-align:left}
+.end-force-table thead th{background:var(--panel);font-size:11px;color:var(--muted)}
+.end-force-table tbody th{width:58px;font-weight:900;color:var(--text)}
+.end-force-table th:last-child,.end-force-table td:last-child{width:70px;white-space:nowrap}
+.end-force-table input{width:100%;min-width:0;min-height:34px}
+body.end-force-mode #beamLoadsPanel>.section-title,body.end-force-mode #loadModeHint,body.end-force-mode #beamLoadsPanel>.multi-loads-scroll{display:none!important}
+body.end-force-mode #endForcesPanel{display:block!important}
+@media(max-width:520px){.end-force-table{min-width:0;font-size:11px}.end-force-table th,.end-force-table td{padding:4px}.end-force-table th:last-child,.end-force-table td:last-child{width:54px}.end-force-table input{font-size:13px!important;padding:4px 5px!important}}
+body.layout-mobile .direction-graph-grid{grid-template-columns:minmax(0,1fr)!important}
+body.layout-mobile .end-force-table{min-width:0;font-size:11px}
 .load-direction-field,.load-case-field,.axial-kind-field{min-width:132px!important}
 .load-direction-field select,.load-case-field select,.axial-kind-field select{min-height:34px!important;margin:0!important;padding:5px 24px 5px 7px!important;width:100%!important}
 .audit-output-panel{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
@@ -3058,6 +3072,13 @@ body.layout-tablet .input-scroll-stack{
             <option value="multi">Continuous beam</option>
           </select>
         </label>
+        <label>Analysis input
+          <select id="analysisInputMode">
+            <option value="appliedLoads" selected>Applied loads</option>
+            <option value="endForces">Member end forces</option>
+          </select>
+        </label>
+        <div id="endForceModeAvailability" class="metadata-note full hide">Member end forces are available for single-member, single-span analysis only.</div>
         <label class="single-mode-only">Support condition
           <select id="supportType">
             <option value="ss" selected>Simply supported (pinned/roller)</option>
@@ -3397,6 +3418,23 @@ body.layout-tablet .input-scroll-stack{
               <div class="metadata-note">Recorded for reference comparison; not yet used by calculation engine.</div>
             </div>
           </div>
+        </div>
+        <div id="endForcesPanel" class="end-forces-panel hide">
+          <div class="section-title">End forces</div>
+          <p class="end-force-help">For members with joint/end actions only. Positive N = compression. Values are entered as design actions and are not load-factored.</p>
+          <div class="end-force-table-wrap">
+            <table class="end-force-table">
+              <thead><tr><th>Action</th><th>End 1 (left)</th><th>End 2 (right)</th><th>Unit</th></tr></thead>
+              <tbody>
+                <tr><th>N</th><td colspan="2"><input id="endForceN" data-end-force="N_kN" data-end-kind="force" type="number" step="0.01" inputmode="decimal" aria-label="Constant axial force N"></td><td data-end-unit="force">kN</td></tr>
+                <tr><th>My</th><td><input id="endForceMy1" data-end-force="My1_kNm" data-end-kind="moment" type="number" step="0.01" inputmode="decimal" aria-label="My1 at End 1"></td><td><input id="endForceMy2" data-end-force="My2_kNm" data-end-kind="moment" type="number" step="0.01" inputmode="decimal" aria-label="My2 at End 2"></td><td data-end-unit="moment">kN m</td></tr>
+                <tr><th>Mz</th><td><input id="endForceMz1" data-end-force="Mz1_kNm" data-end-kind="moment" type="number" step="0.01" inputmode="decimal" aria-label="Mz1 at End 1"></td><td><input id="endForceMz2" data-end-force="Mz2_kNm" data-end-kind="moment" type="number" step="0.01" inputmode="decimal" aria-label="Mz2 at End 2"></td><td data-end-unit="moment">kN m</td></tr>
+                <tr><th>Vz</th><td><input id="endForceVz1" data-end-force="Vz1_kN" data-end-kind="force" type="number" step="0.01" inputmode="decimal" aria-label="Vz1 at End 1"></td><td><input id="endForceVz2" data-end-force="Vz2_kN" data-end-kind="force" type="number" step="0.01" inputmode="decimal" aria-label="Vz2 at End 2"></td><td data-end-unit="force">kN</td></tr>
+                <tr><th>Vy</th><td><input id="endForceVy1" data-end-force="Vy1_kN" data-end-kind="force" type="number" step="0.01" inputmode="decimal" aria-label="Vy1 at End 1"></td><td><input id="endForceVy2" data-end-force="Vy2_kN" data-end-kind="force" type="number" step="0.01" inputmode="decimal" aria-label="Vy2 at End 2"></td><td data-end-unit="force">kN</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="metadata-note">End 1 is x=0 and End 2 is x=L. Signed End 2 values are used exactly as entered. No G/Q load-combination factors are applied.</div>
         </div>
         <div class="panel single-mode-only" id="axialBucklingPanel">
           <div style="font-weight:900;margin-bottom:8px">Column / buckling interaction (compression only)</div>

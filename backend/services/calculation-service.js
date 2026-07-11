@@ -1,6 +1,8 @@
 const { getMaterialForSection } = require('../data/materials');
 const { getSection, getSectionSourceInfo } = require('./sections-service');
 const { normaliseLoadDirection, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
+const { normaliseAnalysisInputMode, normaliseEndForces, buildDirectActionProfiles } = require('./direct-action-service');
+const { getSectionPropertyProvenance, getSectionBiaxialProvenance } = require('./section-property-provenance');
 const { randomUUID } = require('crypto');
 
 const g = 9.81;
@@ -684,6 +686,7 @@ function getShearReducedMoment(section, material, gammaM0, VzEd, VzRd, Wsel, sec
   out.webWpl = webWpl;
   if (!(webWpl > 0) || !(Wsel.W > webWpl)) {
     out.available = true;
+    out.unverifiedFallback = true;
     out.MvRd = baseMyRd;
     out.label = 'Mv,y,Rd';
     out.note = 'High-shear trigger active; detailed web dimensions are incomplete, so Mv,y,Rd is retained equal to My,Rd to match legacy behavior.';
@@ -716,7 +719,8 @@ function buildShearResistance(section, material, gammaM0, auditSettings, axis = 
     shearArea: shearArea?.value ?? null,
     shearAreaSource: shearArea?.key || null,
     notUsedReason: null,
-    warnings: []
+    warnings: [],
+    provenance: getSectionPropertyProvenance(section, String(axis).toLowerCase() === 'y' ? 'Avy_mm2' : 'Avz_mm2')
   };
   if (!shearArea?.value) {
     meta.notUsedReason = `Required shear area Av${axis} is missing from the section database.`;
@@ -826,7 +830,26 @@ function buildMinorAxisCheck(section, material, actions, settings) {
   };
 }
 
+function directBeamResult(profile, shearKey, momentKey, L) {
+  const xs = profile.series.map((point) => point.x);
+  const V = profile.series.map((point) => point[shearKey]);
+  const M = profile.series.map((point) => point[momentKey]);
+  return {
+    xs,
+    V,
+    M,
+    peakV: profile.peaks[shearKey],
+    peakM: profile.peaks[momentKey],
+    defl: { xs, Y: xs.map(() => 0), peakY: { val: 0, signed: 0, x: 0, xL: 0 } },
+    reactions: { supportActions: [], leftVertical: 0, rightVertical: 0 },
+    directActions: true,
+    span: L
+  };
+}
+
 function buildAxisActionSummary(unit, zDirectionUls, yDirectionUls, check, minorCheck, directionFlags = {}) {
+  const zGoverningIr = Math.max(Number(check.IR_My || 0), Number(check.IR_V || 0));
+  const yGoverningIr = minorCheck.available ? Math.max(Number(minorCheck.IR_Mz || 0), Number(minorCheck.IR_Vy || 0)) : 0;
   return {
     axisConvention: 'X is the member longitudinal axis. Z-direction loading produces My/Vz and z-deflection. Y-direction loading produces Mz/Vy and y-deflection.',
     hasZDirectionLoads: Boolean(directionFlags.hasZDirectionLoads),
@@ -859,8 +882,8 @@ function buildAxisActionSummary(unit, zDirectionUls, yDirectionUls, check, minor
       MyRdBasis: check.Wsel?.label || null,
       MzRdBasis: minorCheck.available ? minorCheck.Wsel?.label || null : null
     },
-    governingAxis: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'Y direction / weak-axis Mz' : 'Z direction / strong-axis My',
-    governingDirection: minorCheck.available && minorCheck.IR_Mz > check.IR_My ? 'Y' : 'Z',
+    governingAxis: yGoverningIr > zGoverningIr ? 'Y direction / weak-axis Mz and shear Vy' : 'Z direction / strong-axis My and shear Vz',
+    governingDirection: yGoverningIr > zGoverningIr ? 'Y' : 'Z',
     minorAxisAvailable: Boolean(minorCheck.available),
     warnings: minorCheck.warnings || []
   };
@@ -1362,7 +1385,8 @@ function getFullSectionProperties(section, check) {
     Avz_mm2: round(section.Avz_mm2 || 0, 3),
     mass_kg_m: round(section.mass_kg_m || 0, 3),
     classification: `Class ${check.cls}`,
-    databaseStatus: section.ltb_data_status || section.section_data_status || 'server_section_row'
+    databaseStatus: section.ltb_data_status || section.section_data_status || 'server_section_row',
+    biaxialProvenance: getSectionBiaxialProvenance(section)
   };
 }
 
@@ -1386,6 +1410,163 @@ function buildCalculationObject({ id, title, codeReference, equation, variables,
 
 function buildDerivation(symbol, description, formula, substitution, result, source = '') {
   return { symbol, description, formula, substitution, result, source };
+}
+
+function buildDirectCalculationPackage(context) {
+  const {
+    input, section, material, settings, unit, L, supportType, check, minorCheck,
+    axisActions, ltb, memberBuckling, conservativeInteraction, governingIR,
+    resultStatus, endForces, directProfile, directIncompleteReasons
+  } = context;
+  const source = getSectionSourceInfo(section);
+  const force = (value) => valueUnit(unit.fromBaseForce(value), unit.forceShort);
+  const moment = (value) => valueUnit(unit.fromBaseMoment(value), unit.momentShort);
+  const endInputVariables = [
+    ['N', force(endForces.N_kN)],
+    ['My1', moment(endForces.My1_kNm)], ['My2', moment(endForces.My2_kNm)],
+    ['Mz1', moment(endForces.Mz1_kNm)], ['Mz2', moment(endForces.Mz2_kNm)],
+    ['Vz1', force(endForces.Vz1_kN)], ['Vz2', force(endForces.Vz2_kN)],
+    ['Vy1', force(endForces.Vy1_kN)], ['Vy2', force(endForces.Vy2_kN)]
+  ].map(([symbol, value]) => ({ symbol, value }));
+  const calculations = [
+    buildCalculationObject({
+      id: 'direct-design-basis',
+      title: 'Member end-force design basis',
+      codeReference: 'Entered member design actions (Ed); EN 1993-1-1 resistance checks',
+      equation: 'N(x)=N; A(x)=A1+(A2-A1)x/L for A in {My, Mz, Vz, Vy}',
+      variables: endInputVariables,
+      derivations: [
+        buildDerivation('t', 'Normalised position along the member.', 't = x/L', `0 <= x <= ${round(L, 5)} m`, '0 <= t <= 1', 'Direct action profile'),
+        buildDerivation('My(x)', 'Signed major-axis moment profile.', 'My(x) = My1 + (My2-My1)t', `${endForces.My1_kNm} + (${endForces.My2_kNm}-${endForces.My1_kNm})t`, `Peak |My| = ${moment(directProfile.peaks.My.val)} at ${directProfile.peaks.My.end}`, 'Entered end actions'),
+        buildDerivation('Mz(x)', 'Signed minor-axis moment profile.', 'Mz(x) = Mz1 + (Mz2-Mz1)t', `${endForces.Mz1_kNm} + (${endForces.Mz2_kNm}-${endForces.Mz1_kNm})t`, `Peak |Mz| = ${moment(directProfile.peaks.Mz.val)} at ${directProfile.peaks.Mz.end}`, 'Entered end actions'),
+        buildDerivation('Vz(x)', 'Signed local-z shear profile.', 'Vz(x) = Vz1 + (Vz2-Vz1)t', `${endForces.Vz1_kN} + (${endForces.Vz2_kN}-${endForces.Vz1_kN})t`, `Peak |Vz| = ${force(directProfile.peaks.Vz.val)} at ${directProfile.peaks.Vz.end}`, 'Entered end actions'),
+        buildDerivation('Vy(x)', 'Signed local-y shear profile.', 'Vy(x) = Vy1 + (Vy2-Vy1)t', `${endForces.Vy1_kN} + (${endForces.Vy2_kN}-${endForces.Vy1_kN})t`, `Peak |Vy| = ${force(directProfile.peaks.Vy.val)} at ${directProfile.peaks.Vy.end}`, 'Entered end actions')
+      ],
+      substitution: 'End 1 is x=0; End 2 is x=L. End 2 signs are not reversed.',
+      unitConversion: 'Stored and checked in kN, kN m and m; converted only for display.',
+      result: 'No load-combination factors applied; entered values are design actions.',
+      resistance: 'See the axis-specific resistance checks.',
+      utilisation: 'Not applicable',
+      status: 'INFO',
+      warnings: []
+    }),
+    buildCalculationObject({
+      id: 'direct-major-axis',
+      title: 'Z-direction actions: My / Vz',
+      codeReference: 'EN 1993-1-1 Clauses 6.2.5, 6.2.6 and 6.2.8 where high shear applies',
+      equation: `My,Rd = Wy fy / gammaM0; Vz,Rd = eta Av,z fy / (sqrt(3) gammaM0)`,
+      variables: [
+        { symbol: 'My,Ed', value: `${moment(check.MyEd)} signed ${moment(directProfile.peaks.My.signed)} at ${directProfile.peaks.My.end}` },
+        { symbol: 'Vz,Ed', value: `${force(check.VzEd)} signed ${force(directProfile.peaks.Vz.signed)} at ${directProfile.peaks.Vz.end}` },
+        { symbol: check.Wsel.label, value: valueUnit(check.Wsel.W, 'mm^3', 0) },
+        { symbol: 'My,Rd used', value: moment(check.momentRdForCheck) },
+        { symbol: 'Vz,Rd', value: check.shear?.Vrd ? force(check.VzRd) : 'NOT AVAILABLE' }
+      ],
+      substitution: `${round(check.Wsel.W, 0)} x ${material.fy} / ${round(settings.gammaM0, 3)}; Av,z=${round(check.shear?.meta?.shearArea || 0, 0)} mm^2`,
+      unitConversion: 'N mm / 10^6 = kN m; N / 10^3 = kN.',
+      result: `My IR=${round(check.IR_M, 5)}; Vz IR=${Number.isFinite(check.IR_V) ? round(check.IR_V, 5) : 'NOT AVAILABLE'}`,
+      resistance: `${check.momentLabelForCheck}=${moment(check.momentRdForCheck)}; Vz,Rd=${check.shear?.Vrd ? force(check.VzRd) : 'NOT AVAILABLE'}`,
+      utilisation: `max(${round(check.IR_M, 5)}, ${Number.isFinite(check.IR_V) ? round(check.IR_V, 5) : 'NOT AVAILABLE'})`,
+      status: !check.momentAvailable || check.mv?.unverifiedFallback || !check.shear?.Vrd ? 'NOT AVAILABLE' : passFail(check.passM && check.passV),
+      warnings: [...(check.shear?.meta?.warnings || []), check.Wsel.unavailable ? `Required ${check.Wsel.missing} is unavailable.` : null, check.mv?.unverifiedFallback ? 'High-shear reduced bending resistance requires verified web geometry and is NOT AVAILABLE.' : null].filter(Boolean)
+    }),
+    buildCalculationObject({
+      id: 'direct-minor-axis',
+      title: 'Y-direction actions: Mz / Vy',
+      codeReference: 'EN 1993-1-1 Clauses 6.2.5 and 6.2.6',
+      equation: 'Mz,Rd = Wz fy / gammaM0; Vy,Rd = eta Av,y fy / (sqrt(3) gammaM0)',
+      variables: [
+        { symbol: 'Mz,Ed', value: `${moment(directProfile.peaks.Mz.val)} signed ${moment(directProfile.peaks.Mz.signed)} at ${directProfile.peaks.Mz.end}` },
+        { symbol: 'Vy,Ed', value: `${force(directProfile.peaks.Vy.val)} signed ${force(directProfile.peaks.Vy.signed)} at ${directProfile.peaks.Vy.end}` },
+        { symbol: 'Mz,Rd', value: minorCheck.available ? moment(minorCheck.MzRd) : 'NOT AVAILABLE' },
+        { symbol: 'Vy,Rd', value: minorCheck.available && minorCheck.VyRd ? force(minorCheck.VyRd) : 'NOT AVAILABLE' }
+      ],
+      substitution: minorCheck.available ? `${minorCheck.Wsel.label}=${round(minorCheck.Wsel.W, 0)} mm^3; Av,y=${round(minorCheck.shear?.meta?.shearArea || 0, 0)} mm^2` : (minorCheck.reason || 'Required section data unavailable.'),
+      unitConversion: 'N mm / 10^6 = kN m; N / 10^3 = kN.',
+      result: minorCheck.available ? `Mz IR=${round(minorCheck.IR_Mz, 5)}; Vy IR=${minorCheck.IR_Vy === null ? 'NOT AVAILABLE' : round(minorCheck.IR_Vy, 5)}` : 'NOT AVAILABLE',
+      resistance: minorCheck.available ? `Mz,Rd=${moment(minorCheck.MzRd)}; Vy,Rd=${minorCheck.VyRd ? force(minorCheck.VyRd) : 'NOT AVAILABLE'}` : 'NOT AVAILABLE',
+      utilisation: minorCheck.available ? `max(${round(minorCheck.IR_Mz, 5)}, ${minorCheck.IR_Vy === null ? 'NOT AVAILABLE' : round(minorCheck.IR_Vy, 5)})` : 'NOT AVAILABLE',
+      status: !minorCheck.available || minorCheck.IR_Vy === null ? 'NOT AVAILABLE' : passFail(minorCheck.pass),
+      warnings: minorCheck.warnings || []
+    }),
+    buildCalculationObject({
+      id: 'direct-axial-interaction',
+      title: 'Axial and biaxial cross-section interaction',
+      codeReference: 'Implemented conservative cross-section interaction; EN 1993-1-1 Clause 6.2.9 design context',
+      equation: 'IR = |NEd|/NRd + |My,Ed|/My,Rd + |Mz,Ed|/Mz,Rd',
+      variables: [
+        { symbol: 'N,Ed', value: force(check.axialEd) },
+        { symbol: 'N,Rd', value: force(check.axialEd >= 0 ? check.NcRd : check.NtRd) },
+        { symbol: 'My,Ed / My,Rd', value: conservativeInteraction.available ? round(conservativeInteraction.components.irMy, 5) : 'NOT AVAILABLE' },
+        { symbol: 'Mz,Ed / Mz,Rd', value: conservativeInteraction.available ? round(conservativeInteraction.components.irMz, 5) : 'NOT AVAILABLE' }
+      ],
+      substitution: conservativeInteraction.available ? `${round(conservativeInteraction.components.irN, 5)} + ${round(conservativeInteraction.components.irMy, 5)} + ${round(conservativeInteraction.components.irMz, 5)}` : 'Required resistance unavailable.',
+      unitConversion: 'Dimensionless utilisation ratio.',
+      result: conservativeInteraction.available ? `IR = ${round(conservativeInteraction.ir, 5)}` : 'NOT AVAILABLE',
+      resistance: 'Interaction limit = 1.0',
+      utilisation: conservativeInteraction.available ? round(conservativeInteraction.ir, 5) : 'NOT AVAILABLE',
+      status: conservativeInteraction.available ? passFail(conservativeInteraction.pass) : 'NOT AVAILABLE',
+      warnings: conservativeInteraction.warnings || []
+    }),
+    buildCalculationObject({
+      id: 'direct-deflection',
+      title: 'Deflection',
+      codeReference: 'Not evaluated in direct end-force mode',
+      equation: 'Not calculated',
+      variables: [],
+      substitution: 'Entered end actions do not define a verified load-derived deflection solution for the selected support condition.',
+      unitConversion: 'Not applicable',
+      result: 'Deflection not calculated for direct end-force mode.',
+      resistance: 'Not applicable',
+      utilisation: 'Excluded from PASS/FAIL',
+      status: 'INFO',
+      warnings: ['Deflection is excluded from the overall status in member end-force mode.']
+    }),
+    buildCalculationObject({
+      id: 'direct-governing-summary',
+      title: 'Governing verification summary',
+      codeReference: 'Active verified checks only',
+      equation: 'Governing IR = max(active verified utilisation ratios)',
+      variables: [
+        { symbol: 'Status', value: resultStatus },
+        { symbol: 'Governing IR', value: round(governingIR, 5) },
+        { symbol: 'LTB', value: ltb.enabled ? (ltb.available ? `IR ${round(ltb.IR_LT, 5)}` : (ltb.notRequired ? 'Not required' : 'NOT AVAILABLE')) : 'Disabled' },
+        { symbol: 'Member buckling', value: memberBuckling.active ? (memberBuckling.available ? `IR ${round(memberBuckling.governing, 5)}` : 'NOT AVAILABLE') : 'Not active' }
+      ],
+      substitution: 'Verified resistance checks are compared; unavailable active checks are excluded and force INCOMPLETE status.',
+      unitConversion: 'Dimensionless utilisation ratio.',
+      result: `${resultStatus}; governing IR ${round(governingIR, 5)}`,
+      resistance: 'Limit = 1.0',
+      utilisation: round(governingIR, 5),
+      status: resultStatus,
+      warnings: directIncompleteReasons || []
+    })
+  ];
+  return {
+    schemaVersion: 2,
+    generatedAt: new Date().toISOString(),
+    analysisInputMode: 'endForces',
+    designCode: input.metadata?.designCode || 'EN 1993-1-1',
+    nationalAnnex: input.metadata?.nationalAnnex || 'UK National Annex / project default',
+    assumptions: [
+      `Member end forces for a single member of length ${L} m.`,
+      'End 1 is the left end (x=0); End 2 is the right end (x=L). Entered signs are preserved and End 2 signs are not reversed.',
+      'No load-combination factors applied; entered values are design actions.',
+      'Deflection and calculated support reactions are not available in direct end-force mode.',
+      `Support condition recorded as ${SUPPORT_LABELS[supportType] || supportType} for member stability assumptions only.`,
+      `Section data source: ${source.title || 'Source to be confirmed'}.`
+    ],
+    revisionHistory: [{
+      revision: input.metadata?.revision || '-',
+      date: input.metadata?.date || new Date().toISOString().slice(0, 10),
+      description: input.metadata?.revisionDescription || 'Current calculation issue',
+      preparedBy: input.metadata?.engineerName || '-',
+      checkedBy: input.metadata?.checkedBy || '-',
+      approvedBy: input.metadata?.approvedBy || '-'
+    }],
+    warnings: directIncompleteReasons || [],
+    calculations
+  };
 }
 
 function buildCalculationPackage(context) {
@@ -1419,8 +1600,10 @@ function buildCalculationPackage(context) {
     passNM,
     passAll,
     governingIR,
-    maxReaction
+    maxReaction,
+    analysisInputMode
   } = context;
+  if (analysisInputMode === 'endForces') return buildDirectCalculationPackage(context);
   const audit = settings.audit || normaliseColbeamAuditInput(input);
   const source = getSectionSourceInfo(section);
   const warnings = [
@@ -1781,7 +1964,11 @@ function buildCodeCheckControls({
   passDefl,
   conservativeInteraction,
   IR_NM,
-  passNM
+  passNM,
+  directMode = false,
+  minorCheck = null,
+  directProfile = null,
+  directIncompleteReasons = []
 }) {
   const force = (value) => fmtControl(unit.fromBaseForce(value), 1);
   const moment = (value) => fmtControl(unit.fromBaseMoment(value), 1);
@@ -1793,6 +1980,64 @@ function buildCodeCheckControls({
     suffix
   });
   const infoLine = (text) => ({ kind: 'info', text });
+
+  if (directMode) {
+    const directLines = [];
+    directLines.push(ratioLine(
+      `IR = My,Ed/${check.momentLabelForCheck} = ${moment(check.MyEd)}/${moment(check.momentRdForCheck)} = `,
+      check.IR_M,
+      check.passM,
+      ` ${comparisonText(check.IR_M)} (${directProfile?.peaks?.My?.end || '-'}; Ch 6.2.5/6.2.8)`
+    ));
+    if (check.shear?.Vrd) {
+      directLines.push(ratioLine(
+        `IR = Vz,Ed/Vz,Rd = ${force(check.VzEd)}/${force(check.VzRd)} = `,
+        check.IR_V,
+        check.passV,
+        ` ${comparisonText(check.IR_V)} (${directProfile?.peaks?.Vz?.end || '-'}; Ch 6.2.6)`
+      ));
+    } else directLines.push(infoLine('Vz,Rd NOT AVAILABLE - required verified Av,z is unavailable.'));
+    if (minorCheck?.available) {
+      directLines.push(ratioLine(
+        `IR = Mz,Ed/Mz,Rd = ${moment(minorCheck.MzEd)}/${moment(minorCheck.MzRd)} = `,
+        minorCheck.IR_Mz,
+        minorCheck.passM,
+        ` ${comparisonText(minorCheck.IR_Mz)} (${directProfile?.peaks?.Mz?.end || '-'}; Ch 6.2.5)`
+      ));
+      if (minorCheck.IR_Vy !== null) {
+        directLines.push(ratioLine(
+          `IR = Vy,Ed/Vy,Rd = ${force(minorCheck.VyEd)}/${force(minorCheck.VyRd)} = `,
+          minorCheck.IR_Vy,
+          minorCheck.passV,
+          ` ${comparisonText(minorCheck.IR_Vy)} (${directProfile?.peaks?.Vy?.end || '-'}; Ch 6.2.6)`
+        ));
+      } else directLines.push(infoLine('Vy,Rd NOT AVAILABLE - required verified Av,y is unavailable.'));
+    } else if (directProfile && (directProfile.peaks.Mz.val > 0 || directProfile.peaks.Vy.val > 0)) {
+      directLines.push(infoLine(`Minor-axis checks NOT AVAILABLE - ${minorCheck?.reason || 'required section properties are unavailable.'}`));
+    }
+    if (conservativeInteraction?.available) {
+      directLines.push(ratioLine(
+        `IR = |NEd|/NRd+|My,Ed|/My,Rd+|Mz,Ed|/Mz,Rd = `,
+        conservativeInteraction.ir,
+        conservativeInteraction.pass,
+        ` ${comparisonText(conservativeInteraction.ir)} (implemented conservative cross-section interaction)`
+      ));
+    } else directLines.push(infoLine(conservativeInteraction?.warnings?.[0] || 'Biaxial cross-section interaction NOT AVAILABLE.'));
+    directIncompleteReasons.forEach((reason) => directLines.push(infoLine(`INCOMPLETE: ${reason}`)));
+    return {
+      title: 'Results',
+      sections: [
+        { heading: 'MEMBER END-FORCE CONTROL:', lines: directLines },
+        { heading: 'STABILITY CONTROL:', lines: [
+          memberBuckling.active && directProfile?.peaks?.Mz?.val > 0
+            ? infoLine('Biaxial member buckling interaction with Mz is NOT AVAILABLE from a verified method.')
+            : infoLine(memberBuckling.active ? (memberBuckling.message || 'Member buckling evaluated by the existing verified major-axis method.') : 'No compression member buckling check is active.'),
+          infoLine(ltb.enabled ? (ltb.available ? `LTB IR = ${fmtControlRatio(ltb.IR_LT)} ${comparisonText(ltb.IR_LT)} (Ch 6.3.2)` : (ltb.message || 'LTB NOT AVAILABLE.')) : 'Lateral torsional buckling check disabled.')
+        ] },
+        { heading: 'DEFLECTION CONTROL:', lines: [infoLine('Deflection not calculated for direct end-force mode; excluded from PASS/FAIL.')] }
+      ]
+    };
+  }
 
   const sectionLines = [
     ratioLine(
@@ -1956,11 +2201,21 @@ function calculateBeam(input) {
     throw err;
   }
   const lc = getLC(input.combination || {});
-  const rawLoads = normaliseLoads(input, section, L, unit);
+  const analysisInputMode = normaliseAnalysisInputMode(input.analysisInputMode);
+  const directMode = analysisInputMode === 'endForces';
+  const endForces = normaliseEndForces(input.endForces || {});
+  const directProfile = directMode ? buildDirectActionProfiles(endForces, L) : null;
+  const rawLoads = directMode
+    ? { udls: [], points: [], supportXs: [0, L], selfWeight: 0 }
+    : normaliseLoads(input, section, L, unit);
   const zDirectionRawLoads = filterLoadsByDirection(rawLoads, 'Z');
   const yDirectionRawLoads = filterLoadsByDirection(rawLoads, 'Y');
-  const hasZDirectionLoads = zDirectionRawLoads.points.length > 0 || zDirectionRawLoads.udls.length > 0;
-  const hasYDirectionLoads = yDirectionRawLoads.points.length > 0 || yDirectionRawLoads.udls.length > 0;
+  const hasZDirectionLoads = directMode
+    ? ['My1_kNm', 'My2_kNm', 'Vz1_kN', 'Vz2_kN'].some((key) => Math.abs(endForces[key]) > 1e-12)
+    : zDirectionRawLoads.points.length > 0 || zDirectionRawLoads.udls.length > 0;
+  const hasYDirectionLoads = directMode
+    ? ['Mz1_kNm', 'Mz2_kNm', 'Vy1_kN', 'Vy2_kN'].some((key) => Math.abs(endForces[key]) > 1e-12)
+    : yDirectionRawLoads.points.length > 0 || yDirectionRawLoads.udls.length > 0;
   const springs = {
     left: finiteNumber(input.model?.springLeftPct, 100),
     right: finiteNumber(input.model?.springRightPct, 100)
@@ -1987,7 +2242,13 @@ function calculateBeam(input) {
   let minorSls;
   let ulsNote;
   let ulsCoeff;
-  if (lc.key === 'en1990_610ab') {
+  if (directMode) {
+    uls = directBeamResult(directProfile, 'Vz', 'My', L);
+    minorUls = directBeamResult(directProfile, 'Vy', 'Mz', L);
+    minorSls = emptyBeamResult(L);
+    ulsNote = 'Member end forces: entered values are final design actions; no load-combination factors applied.';
+    ulsCoeff = { cG: 1, cQ1: 0, cQ2: 0, note: ulsNote };
+  } else if (lc.key === 'en1990_610ab') {
     const a = evalCombo(lc.uls, {}, 'y');
     const b = evalCombo(lc.uls.alt, {}, 'y');
     if ((b.peakM?.val || 0) > (a.peakM?.val || 0)) {
@@ -2004,12 +2265,16 @@ function calculateBeam(input) {
     ulsNote = lc.uls.note;
     ulsCoeff = lc.uls;
   }
-  minorUls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
-  const slsCombo = buildSlsCombination(lc, audit);
-  const sls = evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
-  minorSls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'z') : emptyBeamResult(L);
-  const axialRaw = normaliseAxialInput(input.axial || {});
-  const axialEd = unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
+  if (!directMode) minorUls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(ulsCoeff, {}, 'z') : emptyBeamResult(L);
+  const slsCombo = directMode
+    ? { coeff: { cG: 0, cQ1: 0, cQ2: 0 }, excludeSelfWeight: true, includeSelfWeight: false, basis: 'not-calculated', note: 'Deflection not calculated for direct end-force mode.' }
+    : buildSlsCombination(lc, audit);
+  const sls = directMode ? emptyBeamResult(L) : evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'y');
+  if (!directMode) minorSls = hasYDirectionLoads && calcI_mm4(section, 'z') > 0 ? evalCombo(slsCombo.coeff, { excludeSelfWeight: slsCombo.excludeSelfWeight }, 'z') : emptyBeamResult(L);
+  const axialRaw = directMode ? { G: 0, Q1: 0, Q2: 0, rows: [], signConvention: 'positive_compression' } : normaliseAxialInput(input.axial || {});
+  const axialEd = directMode
+    ? endForces.N_kN
+    : unit.toBaseForce(ulsCoeff.cG * finiteNumber(axialRaw.G, 0) + ulsCoeff.cQ1 * finiteNumber(axialRaw.Q1, 0) + ulsCoeff.cQ2 * finiteNumber(axialRaw.Q2, 0));
   const check = buildSectionCheck(section, material, { peakM: uls.peakM, peakV: uls.peakV }, axialEd, settings);
   const minorCheck = hasYDirectionLoads ? buildMinorAxisCheck(section, material, { peakM: minorUls.peakM, peakV: minorUls.peakV }, settings) : axisUnavailable('z', 'No explicit Y-direction loads applied.');
   const axisActions = buildAxisActionSummary(unit, uls, minorUls, check, minorCheck, {
@@ -2018,27 +2283,27 @@ function calculateBeam(input) {
     zDeflection: sls.defl.peakY.val,
     yDeflection: minorSls.defl.peakY.val
   });
-  const conservativeInteraction = buildConservativeInteractionCheck(check, minorCheck, audit.settings);
+  const conservativeInteraction = buildConservativeInteractionCheck(check, minorCheck, directMode ? { ...audit.settings, conservativeNMyMz: true } : audit.settings);
   const ltb = evaluateLTB(section, material, L, uls.peakM.val, check.Wsel, settings);
-  const endSupport = evaluateEndSupportCheck(check, uls, settings);
+  const endSupport = directMode ? { pass: true, notApplicable: true, Ved: 0, VbRd: 0, message: 'Support reactions are not calculated from direct member end forces.' } : evaluateEndSupportCheck(check, uls, settings);
   const memberBuckling = evaluateMemberBuckling(section, material, check, L, ltb, settings);
   const deflAllow_mm = (L * 1000) / settings.deflectionLimit;
   const deflPeak = sls.defl.peakY.val;
-  const passDefl = deflPeak <= deflAllow_mm;
+  const passDefl = directMode ? true : deflPeak <= deflAllow_mm;
   const passLTB = !ltb.enabled || ltb.notRequired || (ltb.available && ltb.pass);
-  const passSupport = endSupport.pass;
+  const passSupport = directMode ? true : endSupport.pass;
   const baseMyRd = ltb.enabled && ltb.available ? Math.min(check.momentRdForCheck, ltb.MbRd) : check.momentRdForCheck;
   const IR_NM = check.IR_N + (check.MyEd / baseMyRd);
   const passNM = IR_NM < 1;
   const passMemberBuckling = !memberBuckling.active || (memberBuckling.available && memberBuckling.pass);
-  const supportIR = endSupport.VbRd > 0 ? endSupport.Ved / endSupport.VbRd : 0;
-  const deflIR = deflAllow_mm > 0 ? deflPeak / deflAllow_mm : 0;
+  const supportIR = directMode ? 0 : (endSupport.VbRd > 0 ? endSupport.Ved / endSupport.VbRd : 0);
+  const deflIR = directMode ? 0 : (deflAllow_mm > 0 ? deflPeak / deflAllow_mm : 0);
   const governingIR = Math.max(
     check.IR_M,
     check.IR_V,
     Math.abs(check.IR_N || 0),
-    deflIR,
-    supportIR,
+    directMode ? 0 : deflIR,
+    directMode ? 0 : supportIR,
     ltb.enabled && ltb.available ? ltb.IR_LT : 0,
     Math.abs(check.axialEd) > 1e-9 ? IR_NM : 0,
     memberBuckling.active && memberBuckling.available ? memberBuckling.governing : 0,
@@ -2046,10 +2311,24 @@ function calculateBeam(input) {
     minorCheck.available && minorCheck.IR_Vy !== null ? minorCheck.IR_Vy : 0,
     conservativeInteraction.enabled && conservativeInteraction.available ? conservativeInteraction.ir : 0
   );
-  const passMinor = !minorCheck.available || minorCheck.pass;
+  const passMinor = !hasYDirectionLoads || (minorCheck.available && minorCheck.pass);
   const passConservative = !conservativeInteraction.enabled || (conservativeInteraction.available && conservativeInteraction.pass);
-  const passAll = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor && passConservative;
-  const maxReaction = Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
+  const directIncompleteReasons = directMode ? [
+    check.mv?.trigger && check.mv?.unverifiedFallback ? 'High-shear reduced major-axis bending resistance is not available from verified section geometry.' : null,
+    hasZDirectionLoads && !check.momentAvailable ? 'Major-axis bending resistance is not available.' : null,
+    hasZDirectionLoads && !check.shear?.Vrd ? 'Z-direction shear resistance Vz,Rd is not available.' : null,
+    hasYDirectionLoads && !minorCheck.available ? (minorCheck.reason || 'Minor-axis bending resistance is not available.') : null,
+    hasYDirectionLoads && minorCheck.available && minorCheck.IR_Vy === null ? 'Y-direction shear resistance Vy,Rd is not available.' : null,
+    Math.abs(axialEd) > 1e-12 && !(check.axialEd >= 0 ? check.NcRd > 0 : check.NtRd > 0) ? 'Axial resistance is not available.' : null,
+    memberBuckling.active && hasYDirectionLoads ? 'Biaxial member buckling interaction with Mz is not implemented from a verified method.' : null,
+    conservativeInteraction.enabled && !conservativeInteraction.available ? (conservativeInteraction.warnings || []).join(' ') : null
+  ].filter(Boolean) : [];
+  const knownChecksPass = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor && passConservative;
+  const passAll = knownChecksPass && directIncompleteReasons.length === 0;
+  const resultStatus = directIncompleteReasons.length ? 'INCOMPLETE' : (knownChecksPass ? 'PASS' : 'FAIL');
+  const maxReaction = directMode
+    ? Math.max(Math.abs(endForces.Vz1_kN), Math.abs(endForces.Vz2_kN), Math.abs(endForces.Vy1_kN), Math.abs(endForces.Vy2_kN))
+    : Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
   const fullSectionProperties = getFullSectionProperties(section, check);
   const zDirectionSeries = sampleDirectionGraphSeries(uls, sls, { shear: 'Vz', moment: 'My', deflection: 'z' });
   const yDirectionSeries = sampleDirectionGraphSeries(minorUls, minorSls, { shear: 'Vy', moment: 'Mz', deflection: 'y' });
@@ -2067,7 +2346,7 @@ function calculateBeam(input) {
       deflection: 'z-deflection',
       deflectionKey: 'z'
     },
-    message: 'No Z-direction load applied; strong-axis demand is not governing.'
+    message: directMode ? 'No Z-direction end action entered; strong-axis demand is not governing.' : 'No Z-direction load applied; strong-axis demand is not governing.'
   });
   const yDirectionGraphPackage = directionGraphPackage({
     direction: 'Y',
@@ -2083,9 +2362,15 @@ function calculateBeam(input) {
       deflection: 'y-deflection',
       deflectionKey: 'y'
     },
-    message: 'No Y-direction load applied; weak-axis demand is not governing.'
+    message: directMode ? 'No Y-direction end action entered; weak-axis demand is not governing.' : 'No Y-direction load applied; weak-axis demand is not governing.'
   });
-  const normalizedInput = { ...input, axial: axialRaw };
+  if (directMode) {
+    zDirectionGraphPackage.endForces = endForces;
+    yDirectionGraphPackage.endForces = endForces;
+    zDirectionGraphPackage.deflectionUnavailable = true;
+    yDirectionGraphPackage.deflectionUnavailable = true;
+  }
+  const normalizedInput = { ...input, analysisInputMode, endForces, axial: axialRaw };
   const calculationPackage = buildCalculationPackage({
     input: normalizedInput,
     section,
@@ -2115,13 +2400,19 @@ function calculateBeam(input) {
     IR_NM,
     passNM,
     passAll,
+    resultStatus,
+    analysisInputMode,
+    endForces,
+    directProfile,
+    directIncompleteReasons,
     governingIR,
     maxReaction
   });
   return {
     calculationId: randomUUID(),
     generatedAt: new Date().toISOString(),
-    status: passAll ? 'PASS' : 'FAIL',
+    status: resultStatus,
+    analysisInputMode,
     source: getSectionSourceInfo(section),
     inputEcho: {
       span: L,
@@ -2130,7 +2421,10 @@ function calculateBeam(input) {
       units: unit.key,
       material: material.grade,
       section: { family: section.family, name: section.name },
-      combination: lc.name,
+      combination: directMode ? 'No load-combination factors applied - entered values are design actions.' : lc.name,
+      analysisInputMode,
+      analysisInputModeLabel: directMode ? 'Member end forces' : 'Applied loads',
+      endForces: directMode ? endForces : null,
       colbeamAudit: audit
     },
     summary: {
@@ -2142,19 +2436,21 @@ function calculateBeam(input) {
       maxShear: round(Math.max(Math.abs(axisActions.VyEd || 0), Math.abs(axisActions.VzEd || 0)), 5),
       maxShearY: round(axisActions.VyEd, 5),
       maxShearZ: round(axisActions.VzEd, 5),
-      maxReaction: round(unit.fromBaseForce(maxReaction), 5),
-      deflection: round(deflPeak, 5),
-      deflectionLimit: round(deflAllow_mm, 5),
+      maxReaction: directMode ? null : round(unit.fromBaseForce(maxReaction), 5),
+      maxEndShear: directMode ? round(unit.fromBaseForce(maxReaction), 5) : null,
+      deflection: directMode ? null : round(deflPeak, 5),
+      deflectionLimit: directMode ? null : round(deflAllow_mm, 5),
+      deflectionMessage: directMode ? 'Deflection not calculated for direct end-force mode.' : null,
       momentUnit: unit.momentShort,
       forceUnit: unit.forceShort
     },
     checks: {
-      moment: { ir: round(check.IR_M, 5), pass: check.passM, resistance: round(unit.fromBaseMoment(check.momentRdForCheck), 5), label: check.momentLabelForCheck },
-      shear: { ir: round(check.IR_V, 5), pass: check.passV, resistance: round(unit.fromBaseForce(check.VzRd), 5) },
+      moment: { ir: round(check.IR_M, 5), pass: check.passM, resistance: round(unit.fromBaseMoment(check.momentRdForCheck), 5), label: check.momentLabelForCheck, governing: directMode ? { location: directProfile.peaks.My.end, x: directProfile.peaks.My.x, signed: round(unit.fromBaseMoment(directProfile.peaks.My.signed), 5) } : null },
+      shear: { ir: round(check.IR_V, 5), pass: check.passV, resistance: round(unit.fromBaseForce(check.VzRd), 5), governing: directMode ? { location: directProfile.peaks.Vz.end, x: directProfile.peaks.Vz.x, signed: round(unit.fromBaseForce(directProfile.peaks.Vz.signed), 5) } : null },
       axial: { ir: round(check.IR_N, 5), pass: check.passN, axialEd: round(unit.fromBaseForce(check.axialEd), 5) },
-      deflection: { ir: round(deflIR, 5), pass: passDefl },
+      deflection: directMode ? { available: false, excluded: true, message: 'Deflection not calculated for direct end-force mode.' } : { available: true, ir: round(deflIR, 5), pass: passDefl },
       ltb: ltb.enabled ? { ir: ltb.available ? round(ltb.IR_LT, 5) : null, pass: Boolean(ltb.pass), available: Boolean(ltb.available), notRequired: Boolean(ltb.notRequired), message: ltb.message || null } : { enabled: false },
-      support: { ir: round(supportIR, 5), pass: passSupport },
+      support: directMode ? { available: false, excluded: true, message: 'Support reactions are not calculated from direct member end forces.' } : { available: true, ir: round(supportIR, 5), pass: passSupport },
       combined: { ir: round(IR_NM, 5), pass: passNM },
       memberBuckling: memberBuckling.active ? { ir: memberBuckling.available ? round(memberBuckling.governing, 5) : null, pass: Boolean(memberBuckling.pass), available: Boolean(memberBuckling.available), message: memberBuckling.message || null } : { active: false },
       minorAxis: minorCheck.available ? {
@@ -2163,6 +2459,8 @@ function calculateBeam(input) {
         available: true,
         momentResistance: round(unit.fromBaseMoment(minorCheck.MzRd), 5),
         shearResistance: minorCheck.VyRd ? round(unit.fromBaseForce(minorCheck.VyRd), 5) : null,
+        governingMoment: directMode ? { location: directProfile.peaks.Mz.end, x: directProfile.peaks.Mz.x, signed: round(unit.fromBaseMoment(directProfile.peaks.Mz.signed), 5) } : null,
+        governingShear: directMode ? { location: directProfile.peaks.Vy.end, x: directProfile.peaks.Vy.x, signed: round(unit.fromBaseForce(directProfile.peaks.Vy.signed), 5) } : null,
         warnings: minorCheck.warnings
       } : { available: false, message: minorCheck.reason, warnings: minorCheck.warnings },
       conservativeInteraction: {
@@ -2178,6 +2476,7 @@ function calculateBeam(input) {
           irMz: round(conservativeInteraction.components.irMz, 5)
         } : null
       },
+      incompleteReasons: directIncompleteReasons,
       sectionControlSettings: {
         shearFactorEta: {
           configured: check.shear?.meta?.etaConfigured ?? audit.settings.shearFactorEta,
@@ -2217,7 +2516,11 @@ function calculateBeam(input) {
       passDefl,
       conservativeInteraction,
       IR_NM,
-      passNM
+      passNM,
+      directMode,
+      minorCheck,
+      directProfile,
+      directIncompleteReasons
     }),
     loads: {
       raw: rawLoads,
@@ -2227,8 +2530,10 @@ function calculateBeam(input) {
         length: 'm'
       },
       combinations: {
+        applied: !directMode,
         uls: ulsNote,
         sls: slsCombo.note,
+        note: directMode ? 'No load-combination factors applied; entered values are design actions.' : null,
         ulsCoefficients: { cG: round(ulsCoeff.cG, 6), cQ1: round(ulsCoeff.cQ1, 6), cQ2: round(ulsCoeff.cQ2, 6) },
         slsCoefficients: { cG: round(slsCombo.coeff.cG, 6), cQ1: round(slsCombo.coeff.cQ1, 6), cQ2: round(slsCombo.coeff.cQ2, 6) },
         slsDeflectionBasis: slsCombo.basis,
@@ -2246,9 +2551,14 @@ function calculateBeam(input) {
     },
     actions: {
       ulsNote,
-      slsNote: lc.sls.note,
+      slsNote: directMode ? slsCombo.note : lc.sls.note,
       axis: axisActions,
-      reactions: (uls.reactions.supportActions || []).map((r, index) => ({ support: index + 1, x: round(r.x, 5), vertical: round(unit.fromBaseForce(r.V || 0), 5), moment: round(unit.fromBaseMoment(r.M || 0), 5) })),
+      reactions: directMode ? [] : (uls.reactions.supportActions || []).map((r, index) => ({ support: index + 1, x: round(r.x, 5), vertical: round(unit.fromBaseForce(r.V || 0), 5), moment: round(unit.fromBaseMoment(r.M || 0), 5) })),
+      endForces: directMode ? endForces : null,
+      directProfile: directMode ? {
+        peaks: directProfile.peaks,
+        zeroCrossings: directProfile.zeroCrossings
+      } : null,
       peakMoment: { value: round(unit.fromBaseMoment(uls.peakM.val), 5), x: round(uls.peakM.x, 5), signed: round(unit.fromBaseMoment(uls.peakM.signed), 5) },
       peakShear: { value: round(unit.fromBaseForce(uls.peakV.val), 5), x: round(uls.peakV.x, 5), signed: round(unit.fromBaseForce(uls.peakV.signed), 5) }
     },
@@ -2267,9 +2577,9 @@ function calculateBeam(input) {
       zDirectionGraphs: zDirectionGraphPackage,
       yDirectionGraphs: yDirectionGraphPackage,
       basis: {
-        shear: 'ULS',
-        moment: 'ULS',
-        deflection: 'SLS',
+        shear: directMode ? 'Entered design action Ed' : 'ULS',
+        moment: directMode ? 'Entered design action Ed' : 'ULS',
+        deflection: directMode ? 'Not calculated' : 'SLS',
         convention: 'X is the member longitudinal axis. Z-direction loading produces My/Vz/z-deflection. Y-direction loading produces Mz/Vy/y-deflection.'
       }
     }

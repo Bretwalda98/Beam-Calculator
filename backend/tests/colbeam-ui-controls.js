@@ -123,6 +123,15 @@ assert.ok(secureApp.includes('Resistance basis'), 'Audit output should show a fr
 assert.ok(secureApp.includes('MyRd basis'), 'Audit output should show a friendly MyRd basis label.');
 assert.ok(secureApp.includes('MzRd basis'), 'Audit output should show a friendly MzRd basis label.');
 assert.ok(secureApp.includes('advanced-ec3-audit-output.json'), 'secure-app.js should support audit JSON download.');
+assert.ok(indexHtml.includes('id="analysisInputMode"'), 'Analysis input mode selector should be visible.');
+assert.ok(indexHtml.includes('value="endForces"'), 'Member end-force mode should be selectable.');
+['endForceN', 'endForceMy1', 'endForceMy2', 'endForceMz1', 'endForceMz2', 'endForceVz1', 'endForceVz2', 'endForceVy1', 'endForceVy2'].forEach((id) => {
+  assert.ok(indexHtml.includes(`id="${id}"`), `End-force panel should include #${id}.`);
+});
+assert.ok(!indexHtml.match(/endForcesPanel[\s\S]{0,1800}G \/ Q1 \/ Q2/), 'End-force panel must not include G/Q load-case controls.');
+assert.ok(secureApp.includes('function readEndForcesFromFields'), 'Frontend should convert end-force display values to base units.');
+assert.ok(secureApp.includes("analysisInputMode: getAnalysisInputMode()"), 'Calculation requests should include the analysis input mode.');
+assert.ok(secureApp.includes('applyEndForcesToFields(input.endForces || {}'), 'Saved projects should restore end-force fields and migrate old projects safely.');
 assert.ok(!/colbeam/i.test(indexHtml), 'Public index markup must not expose the old reference name.');
 assert.ok(!/colbeam/i.test(secureApp), 'Public secure app bundle must not expose the old reference name.');
 
