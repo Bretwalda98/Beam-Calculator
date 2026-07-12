@@ -1294,6 +1294,15 @@ body.inputs-collapsed #leftDockSplitter{display:none!important}
 .custom-preview{grid-column:1/-1;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--panel-2)}
 .custom-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;color:var(--text);font-size:10.5px;font-weight:700}
 #customSectionPreview{display:block;width:100%;height:230px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.special-section-panel{padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)}
+.special-section-status{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--panel);font-size:11px;line-height:1.45}
+.special-section-status strong{white-space:nowrap}.special-section-status[data-status="GEOMETRY_DERIVED"] strong{color:var(--accent)}
+.special-section-status[data-status="VERIFIED_DATA"] strong{color:var(--good)}
+.special-section-status[data-status="DATA_REQUIRED"] strong,.special-section-status[data-status="INCOMPLETE"] strong{color:var(--warn)}
+.special-property-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:8px}
+.special-property-grid .prop-chip{min-width:0}
+.special-profile-empty{padding:10px;border:1px dashed var(--border);border-radius:7px;color:var(--muted);font-size:11px}
+@media(max-width:620px){.special-property-grid{grid-template-columns:1fr 1fr}.special-section-status{display:block}.special-section-status strong{display:block;margin-bottom:4px}}
 
 /* Modal surfaces and embedded tools follow the active theme. */
 .modal-panel,.modal-head,.modal-body,.modal-toolbar,.modal-side,.chart-modal-panel{color:var(--text)!important;border-color:var(--border)!important}
@@ -3232,6 +3241,8 @@ body.layout-tablet .input-scroll-stack{
         <label>Section source
           <select id="sectionSourceMode">
             <option value="library" selected>Library section</option>
+            <option value="stiff_plate">Stiff Plate</option>
+            <option value="welded">Welded</option>
             <option value="custom">Custom section</option>
           </select>
         </label>
@@ -3417,6 +3428,27 @@ body.layout-tablet .input-scroll-stack{
               </label>
               <div class="metadata-note">Recorded for reference comparison; not yet used by calculation engine.</div>
             </div>
+          </div>
+        </div>
+        <div id="specialSectionPanel" class="full special-section-panel hide">
+          <div class="compact-grid">
+            <label>Section subtype
+              <select id="specialSectionSubtype"></select>
+            </label>
+            <label>Section name
+              <input id="specialSectionName" type="text" maxlength="100" value="Special section">
+            </label>
+            <div id="specialProfileSelectorWrap" class="full hide">
+              <label>Verified profile component
+                <select id="specialProfileRecord"><option value="">No verified section data loaded</option></select>
+              </label>
+            </div>
+            <div id="specialSectionFields" class="full compact-grid"></div>
+            <div id="specialSectionSettings" class="full compact-grid"></div>
+            <div id="specialSectionStatus" class="full special-section-status" data-status="DATA_REQUIRED" aria-live="polite">
+              <strong>DATA REQUIRED</strong><span>Select a subtype and enter its explicit dimensions.</span>
+            </div>
+            <div id="specialSectionPropertyGrid" class="full special-property-grid"></div>
           </div>
         </div>
         <div id="endForcesPanel" class="end-forces-panel hide">

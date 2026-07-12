@@ -26,6 +26,7 @@ const { validateCalculationRequest } = require('./backend/services/validation-se
 const { providers, oauthStart, unauthenticatedSession } = require('./backend/auth/auth-service');
 const { listProjects, readProject, saveProject, archiveProject } = require('./backend/services/project-service');
 const { resultToPdf, buildReportHtml, buildLatexReport, buildHandCalculationPdf } = require('./backend/services/report-service');
+const { listSpecialSectionOptions, resolveSpecialSectionDefinition } = require('./backend/services/special-section-service');
 
 requireProductionSecret();
 
@@ -107,6 +108,13 @@ async function routeApi(req, res, url) {
     }
     if (req.method === 'GET' && pathname === '/api/sections/sources') {
       return sendJson(res, 200, { sources: buildSectionSourceIndex() });
+    }
+    if (req.method === 'GET' && pathname === '/api/special-sections') {
+      return sendJson(res, 200, listSpecialSectionOptions());
+    }
+    if (req.method === 'POST' && pathname === '/api/special-sections/preview') {
+      const body = await parseJsonBody(req);
+      return sendJson(res, 200, resolveSpecialSectionDefinition(body.sectionDefinition || body));
     }
     const previewMatch = pathname.match(/^\/api\/sections\/(.+)\/preview$/);
     if (req.method === 'GET' && previewMatch) {

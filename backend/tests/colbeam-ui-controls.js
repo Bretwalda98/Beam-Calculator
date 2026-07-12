@@ -132,6 +132,13 @@ assert.ok(!indexHtml.match(/endForcesPanel[\s\S]{0,1800}G \/ Q1 \/ Q2/), 'End-fo
 assert.ok(secureApp.includes('function readEndForcesFromFields'), 'Frontend should convert end-force display values to base units.');
 assert.ok(secureApp.includes("analysisInputMode: getAnalysisInputMode()"), 'Calculation requests should include the analysis input mode.');
 assert.ok(secureApp.includes('applyEndForcesToFields(input.endForces || {}'), 'Saved projects should restore end-force fields and migrate old projects safely.');
+assert.ok(indexHtml.includes('<option value="stiff_plate">Stiff Plate</option>'), 'Stiff Plate must be a visible section source.');
+assert.ok(indexHtml.includes('<option value="welded">Welded</option>'), 'Welded must be a visible section source.');
+assert.ok(indexHtml.includes('id="specialSectionPanel"'), 'Special-section controls must be present.');
+assert.ok(secureApp.includes('SPECIAL_SECTION_CONFIGS'), 'Special-section subtype field configurations must be present.');
+assert.ok(secureApp.includes('No verified section data loaded'), 'Profile-backed empty state must be explicit.');
+assert.ok(secureApp.includes('schemaVersion: 5'), 'Saved project schema must be versioned for special sections.');
+assert.ok(secureApp.includes('sectionDefinition: sectionDefinition'), 'Calculation requests must include the discriminated section definition.');
 assert.ok(!/colbeam/i.test(indexHtml), 'Public index markup must not expose the old reference name.');
 assert.ok(!/colbeam/i.test(secureApp), 'Public secure app bundle must not expose the old reference name.');
 

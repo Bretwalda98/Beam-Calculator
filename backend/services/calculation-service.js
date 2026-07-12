@@ -3,6 +3,7 @@ const { getSection, getSectionSourceInfo } = require('./sections-service');
 const { normaliseLoadDirection, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
 const { normaliseAnalysisInputMode, normaliseEndForces, buildDirectActionProfiles } = require('./direct-action-service');
 const { getSectionPropertyProvenance, getSectionBiaxialProvenance } = require('./section-property-provenance');
+const { normaliseSectionDefinition, resolveSpecialSectionDefinition, specialResolutionToSection } = require('./special-section-service');
 const { randomUUID } = require('crypto');
 
 const g = 9.81;
@@ -292,6 +293,7 @@ function getSectionLTBProps(section) {
       sourceRef: section?.ltb_data_source_ref || null
     };
   }
+  if (section?.specialSection) return { It: 0, Iz: Iz?.value || 0, Iw: 0, estimated: false, status: 'missing_verified_special_section_data', verified: false };
   const derived = deriveLtbPropsFromGeometry(section);
   if (derived) return { ...derived, status: 'derived_geometry', verified: false };
   return { It: 0, Iz: 0, Iw: 0, estimated: true, status: 'missing', verified: false };
@@ -750,7 +752,8 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
   const IR_M = MyEd / momentRdForCheck;
   const IR_V = VzEd / VzRd;
   const IR_N = axialEd >= 0 ? (NcRd > 0 ? axialEd / NcRd : Infinity) : (NtRd > 0 ? Math.abs(axialEd) / NtRd : Infinity);
-  const momentAvailable = !(Wsel.unavailable || !(Wsel.W > 0));
+  const momentAvailable = !section.specialSection && !(Wsel.unavailable || !(Wsel.W > 0));
+  const axialAvailable = !section.specialSection || axialEd < 0;
   return {
     cls: sectionClass,
     gammaM0,
@@ -773,9 +776,11 @@ function buildSectionCheck(section, material, actions, axialEd, settings) {
     IR_N,
     IR_My: MyRd > 0 ? MyEd / MyRd : Infinity,
     momentAvailable,
+    axialAvailable,
+    verificationReason: section.specialSection ? 'Family-specific EC3 classification and resistance selection are not yet verified for this plate-built subtype.' : null,
     passM: momentAvailable && IR_M < 1,
     passV: Boolean(shear.Vrd) && IR_V < 1,
-    passN: IR_N < 1
+    passN: axialAvailable && IR_N < 1
   };
 }
 
@@ -790,6 +795,7 @@ function axisUnavailable(axis, reason) {
 }
 
 function buildMinorAxisCheck(section, material, actions, settings) {
+  if (section.specialSection) return axisUnavailable('z', 'Minor-axis resistance is INCOMPLETE until family-specific EC3 classification and resistance selection are verified.');
   const sectionClass = Number(settings.sectionClass || 2);
   const gammaM0 = positiveNumber(settings.gammaM0, 1);
   const auditSettings = settings.audit?.settings || {};
@@ -1334,6 +1340,23 @@ function passFail(pass) {
 
 function getSectionReportGeometry(section) {
   const family = getFamilyKey(section);
+  if (section?.specialSection) {
+    const subtype = section.specialSectionDefinition?.subtype || '';
+    return {
+      family,
+      type: subtype.includes('box') ? 'box' : subtype.includes('l_welded') ? 'angle' : subtype.includes('_t_') || subtype.includes('flatbar') || subtype.includes('t_girder') ? 't' : 'i',
+      h_mm: numOrNull(section.h_mm),
+      b_mm: numOrNull(section.b_mm),
+      tw_mm: numOrNull(section.tw_mm),
+      tf_mm: numOrNull(section.tf_mm),
+      t_mm: null,
+      r_mm: null,
+      centroid_y_mm: section.centroid_y_mm,
+      centroid_z_mm: section.centroid_z_mm,
+      components: section.specialComponents || [],
+      warnings: []
+    };
+  }
   const h = numOrNull(section.h_mm || section.d_mm);
   const b = numOrNull(section.b_mm);
   const area = getSectionAreas(section).A;
@@ -1377,6 +1400,10 @@ function getFullSectionProperties(section, check) {
     Iw_mm6: round(getSectionLTBProps(section).Iw || section.Iw_mm6 || 0, 3),
     Wel_y_mm3: round(moduli.Wel || 0, 3),
     Wel_z_mm3: round(section.Wel_z_mm3 || 0, 3),
+    Wel_y_top_mm3: round(section.Wel_y_top_mm3 || moduli.Wel || 0, 3),
+    Wel_y_bottom_mm3: round(section.Wel_y_bottom_mm3 || moduli.Wel || 0, 3),
+    Wel_z_left_mm3: round(section.Wel_z_left_mm3 || section.Wel_z_mm3 || 0, 3),
+    Wel_z_right_mm3: round(section.Wel_z_right_mm3 || section.Wel_z_mm3 || 0, 3),
     Wpl_y_mm3: round(moduli.Wpl || 0, 3),
     Wpl_z_mm3: round(section.Wpl_z_mm3 || 0, 3),
     Weff_y_mm3: round(moduli.Weff || 0, 3),
@@ -1384,6 +1411,7 @@ function getFullSectionProperties(section, check) {
     Avy_mm2: round(section.Avy_mm2 || 0, 3),
     Avz_mm2: round(section.Avz_mm2 || 0, 3),
     mass_kg_m: round(section.mass_kg_m || 0, 3),
+    exposedSurface_m2_m: round(section.exposedSurface_m2_m || 0, 3),
     classification: `Class ${check.cls}`,
     databaseStatus: section.ltb_data_status || section.section_data_status || 'server_section_row',
     biaxialProvenance: getSectionBiaxialProvenance(section)
@@ -1983,7 +2011,8 @@ function buildCodeCheckControls({
 
   if (directMode) {
     const directLines = [];
-    directLines.push(ratioLine(
+    if (!check.momentAvailable) directLines.push(infoLine(`My,Rd NOT AVAILABLE - ${check.verificationReason || 'family resistance rule is not verified.'}`));
+    else directLines.push(ratioLine(
       `IR = My,Ed/${check.momentLabelForCheck} = ${moment(check.MyEd)}/${moment(check.momentRdForCheck)} = `,
       check.IR_M,
       check.passM,
@@ -2039,20 +2068,18 @@ function buildCodeCheckControls({
     };
   }
 
-  const sectionLines = [
-    ratioLine(
+  const sectionLines = check.momentAvailable ? [ratioLine(
       `IR = My,Ed/My,Rd = ${moment(check.MyEd)}/${moment(check.MyRd)} = `,
       check.IR_My,
       check.momentAvailable && check.IR_My < 1,
       ` ${comparisonText(check.IR_My)} (${fmtXL(uls.peakM.x, L)}; Ch 6.2.5)`
-    )
-  ];
+    )] : [infoLine(`My,Rd NOT AVAILABLE - ${check.verificationReason || `required ${check.Wsel.missing || check.Wsel.label} is unavailable.`}`)];
 
   if (check.Wsel.unavailable) {
     sectionLines.unshift(infoLine(`Class ${check.cls} effective section property ${check.Wsel.missing} is missing; bending resistance is not verified.`));
   }
 
-  if (check.mv?.trigger) {
+  if (check.momentAvailable && check.mv?.trigger) {
     const mvDen = check.mv.available ? check.MvRd : check.MyRd;
     const mvIr = check.MyEd / Math.max(mvDen, 1e-9);
     sectionLines.push(ratioLine(
@@ -2065,7 +2092,8 @@ function buildCodeCheckControls({
 
   if (Math.abs(check.axialEd) > 1e-9) {
     const axialDen = check.axialEd >= 0 ? check.NcRd : check.NtRd;
-    sectionLines.push(ratioLine(
+    if (!check.axialAvailable) sectionLines.push(infoLine(`NRd NOT AVAILABLE - ${check.verificationReason || 'required axial resistance inputs are unavailable.'}`));
+    else sectionLines.push(ratioLine(
       `IR = NEd/NRd+My,Ed/My,Rd = ${force(Math.abs(check.axialEd))}/${force(axialDen)}+${moment(check.MyEd)}/${moment(check.momentRdForCheck)} = `,
       IR_NM,
       passNM,
@@ -2086,12 +2114,15 @@ function buildCodeCheckControls({
     }
   }
 
-  sectionLines.push(ratioLine(
-    `IR = Vz,Ed/Vz,Rd = ${force(check.VzEd)}/${force(check.VzRd)} = `,
-    check.IR_V,
-    check.passV,
-    ` ${comparisonText(check.IR_V)} (${fmtXL(uls.peakV.x, L)}; Ch 6.2.6)`
-  ));
+  if (check.shear?.Vrd) {
+    sectionLines.push(ratioLine(
+      `IR = Vz,Ed/Vz,Rd = ${force(check.VzEd)}/${force(check.VzRd)} = `,
+      check.IR_V,
+      check.passV,
+      ` ${comparisonText(check.IR_V)} (${fmtXL(uls.peakV.x, L)}; Ch 6.2.6)`
+    ));
+  } else sectionLines.push(infoLine('Vz,Rd NOT AVAILABLE - required verified Av,z is unavailable.'));
+  directIncompleteReasons.forEach((reason) => sectionLines.push(infoLine(`INCOMPLETE: ${reason}`)));
 
   const bucklingLines = [];
   const chiLT = ltb.enabled && ltb.available ? ltb.chiLT : 1;
@@ -2151,7 +2182,17 @@ function buildCodeCheckControls({
 
 function calculateBeam(input) {
   const sectionRef = input.section || {};
-  const section = getSection(sectionRef.family, sectionRef.name);
+  const sectionDefinition = normaliseSectionDefinition(input);
+  const specialResolution = ['stiff_plate', 'welded'].includes(sectionDefinition.source)
+    ? resolveSpecialSectionDefinition(sectionDefinition)
+    : null;
+  if (specialResolution && specialResolution.status !== 'GEOMETRY_DERIVED') {
+    const err = new Error(specialResolution.message || 'Special-section data are required.');
+    err.statusCode = 422;
+    err.code = 'special_section_data_required';
+    throw err;
+  }
+  const section = specialResolution ? specialResolutionToSection(specialResolution) : getSection(sectionRef.family, sectionRef.name);
   if (!section) {
     const err = new Error('Selected beam section was not found.');
     err.statusCode = 400;
@@ -2204,6 +2245,19 @@ function calculateBeam(input) {
   const analysisInputMode = normaliseAnalysisInputMode(input.analysisInputMode);
   const directMode = analysisInputMode === 'endForces';
   const endForces = normaliseEndForces(input.endForces || {});
+  if (section.axialOnly) {
+    const directTransverse = ['My1_kNm', 'My2_kNm', 'Mz1_kNm', 'Mz2_kNm', 'Vz1_kN', 'Vz2_kN', 'Vy1_kN', 'Vy2_kN']
+      .some((key) => Math.abs(endForces[key]) > 1e-12);
+    const appliedTransverse = Object.values(input.loads || {}).some((rows) => Array.isArray(rows) && rows.some((row) => (
+      ['G', 'Q1', 'Q2', 'M', 'P', 'q', 'q1', 'q2'].some((key) => Math.abs(Number(row?.[key] || 0)) > 1e-12)
+    )));
+    if (directTransverse || appliedTransverse || input.model?.includeSelfWeight !== false) {
+      const err = new Error('Axial loading only: welded T sections reject My, Mz, Vy, Vz, UDL, transverse point loads, moments and self-weight loading.');
+      err.statusCode = 400;
+      err.code = 'axial_only_section';
+      throw err;
+    }
+  }
   const directProfile = directMode ? buildDirectActionProfiles(endForces, L) : null;
   const rawLoads = directMode
     ? { udls: [], points: [], supportXs: [0, L], selfWeight: 0 }
@@ -2323,9 +2377,20 @@ function calculateBeam(input) {
     memberBuckling.active && hasYDirectionLoads ? 'Biaxial member buckling interaction with Mz is not implemented from a verified method.' : null,
     conservativeInteraction.enabled && !conservativeInteraction.available ? (conservativeInteraction.warnings || []).join(' ') : null
   ].filter(Boolean) : [];
+  const specialIncompleteReasons = section.specialSection ? [
+    'Component-based EC3 plate classification and family-specific resistance selection are not yet verified for this subtype.',
+    settings.sectionClass === 4 ? 'Class 4 effective properties are not available.' : null,
+    hasZDirectionLoads && !check.shear?.Vrd ? 'Vz,Rd is not available because verified Avz is missing.' : null,
+    hasYDirectionLoads && (!minorCheck.available || minorCheck.IR_Vy === null) ? 'Minor-axis Mz/Vy verification is incomplete because a required verified modulus or Avy is missing.' : null,
+    settings.enableLTB && hasZDirectionLoads && !ltb.available && !ltb.notRequired ? 'LTB is incomplete because verified It, Iw and shear-centre data are unavailable.' : null,
+    String(sectionDefinition.settings?.flangeLoadingConsidered) === 'true' ? 'Flange loading distribution rule is recorded but not yet mapped to a verified resistance method.' : null,
+    String(sectionDefinition.settings?.class3WebUpgrade) === 'true' ? 'Class 3 web upgrade is recorded but its verified applicability rule is not yet implemented.' : null,
+    sectionDefinition.settings?.weldSize_mm ? 'Box weld-size/buckling-curve mapping is recorded but not yet verified for resistance calculations.' : null
+  ].filter(Boolean) : [];
+  const incompleteReasons = [...directIncompleteReasons, ...specialIncompleteReasons];
   const knownChecksPass = check.passM && check.passV && check.passN && passDefl && passLTB && passSupport && passNM && passMemberBuckling && passMinor && passConservative;
-  const passAll = knownChecksPass && directIncompleteReasons.length === 0;
-  const resultStatus = directIncompleteReasons.length ? 'INCOMPLETE' : (knownChecksPass ? 'PASS' : 'FAIL');
+  const passAll = knownChecksPass && incompleteReasons.length === 0;
+  const resultStatus = incompleteReasons.length ? 'INCOMPLETE' : (knownChecksPass ? 'PASS' : 'FAIL');
   const maxReaction = directMode
     ? Math.max(Math.abs(endForces.Vz1_kN), Math.abs(endForces.Vz2_kN), Math.abs(endForces.Vy1_kN), Math.abs(endForces.Vy2_kN))
     : Math.max(...((uls.reactions.supportActions || []).map((r) => Math.abs(r.V || 0)).concat([Math.abs(uls.reactions.leftVertical || 0), Math.abs(uls.reactions.rightVertical || 0)])));
@@ -2370,7 +2435,7 @@ function calculateBeam(input) {
     zDirectionGraphPackage.deflectionUnavailable = true;
     yDirectionGraphPackage.deflectionUnavailable = true;
   }
-  const normalizedInput = { ...input, analysisInputMode, endForces, axial: axialRaw };
+  const normalizedInput = { ...input, sectionDefinition, analysisInputMode, endForces, axial: axialRaw };
   const calculationPackage = buildCalculationPackage({
     input: normalizedInput,
     section,
@@ -2404,10 +2469,39 @@ function calculateBeam(input) {
     analysisInputMode,
     endForces,
     directProfile,
-    directIncompleteReasons,
+    directIncompleteReasons: incompleteReasons,
     governingIR,
     maxReaction
   });
+  if (section.specialSection) {
+    calculationPackage.warnings = [...new Set([...(calculationPackage.warnings || []), ...incompleteReasons])];
+    calculationPackage.assumptions = [
+      ...(calculationPackage.assumptions || []),
+      'Special-section gross properties are derived from explicit non-overlapping rectangular plate components.',
+      'Avy, Avz, It, Iw, shear centre, Class 4 effective properties and family-specific EC3 classification are not estimated.'
+    ];
+    calculationPackage.sectionDefinition = sectionDefinition;
+    calculationPackage.calculations.unshift(buildCalculationObject({
+      id: 'special-section-geometry',
+      title: 'Special-section gross geometry',
+      codeReference: 'Composite-area geometry from explicit project plate dimensions',
+      equation: 'A = sum Ai; c = sum(Ai ci)/sum Ai; I = sum(Ii + Ai di^2); Wel = I/e; Wpl = integral |dA| about the plastic neutral axis',
+      variables: [
+        { symbol: 'Components', value: `${section.specialComponents.length} non-overlapping rectangular plates` },
+        { symbol: 'A', value: `${round(fullSectionProperties.A_mm2, 3)} mm2` },
+        { symbol: 'Iy', value: `${round(fullSectionProperties.Iy_mm4, 3)} mm4` },
+        { symbol: 'Iz', value: `${round(fullSectionProperties.Iz_mm4, 3)} mm4` },
+        { symbol: 'Centroid', value: `y=${round(section.centroid_y_mm, 3)} mm; z=${round(section.centroid_z_mm, 3)} mm` }
+      ],
+      substitution: section.specialComponents.map((component) => `${component.id}: ${round(component.width, 3)} x ${round(component.height, 3)} mm at y=${round(component.y0, 3)}, z=${round(component.z0, 3)} mm`).join('; '),
+      unitConversion: 'Plate dimensions in mm produce mm2, mm3 and mm4 properties; mass uses 7850 kg/m3.',
+      result: 'Gross geometry derived. Sign-specific extreme-fibre elastic moduli are retained.',
+      resistance: 'Dependent EC3 resistances remain incomplete until the listed family rules/properties are verified.',
+      utilisation: 'Not applicable to geometry derivation.',
+      status: 'INCOMPLETE',
+      warnings: incompleteReasons
+    }));
+  }
   return {
     calculationId: randomUUID(),
     generatedAt: new Date().toISOString(),
@@ -2421,6 +2515,8 @@ function calculateBeam(input) {
       units: unit.key,
       material: material.grade,
       section: { family: section.family, name: section.name },
+      sectionDefinition,
+      sectionStatus: section.specialSection ? section.specialSectionStatus : 'VERIFIED_DATA',
       combination: directMode ? 'No load-combination factors applied - entered values are design actions.' : lc.name,
       analysisInputMode,
       analysisInputModeLabel: directMode ? 'Member end forces' : 'Applied loads',
@@ -2445,9 +2541,9 @@ function calculateBeam(input) {
       forceUnit: unit.forceShort
     },
     checks: {
-      moment: { ir: round(check.IR_M, 5), pass: check.passM, resistance: round(unit.fromBaseMoment(check.momentRdForCheck), 5), label: check.momentLabelForCheck, governing: directMode ? { location: directProfile.peaks.My.end, x: directProfile.peaks.My.x, signed: round(unit.fromBaseMoment(directProfile.peaks.My.signed), 5) } : null },
+      moment: { available: check.momentAvailable, ir: round(check.IR_M, 5), pass: check.momentAvailable ? check.passM : (section.specialSection ? null : check.passM), resistance: check.momentAvailable ? round(unit.fromBaseMoment(check.momentRdForCheck), 5) : (section.specialSection ? null : round(unit.fromBaseMoment(check.momentRdForCheck), 5)), referenceResistance: round(unit.fromBaseMoment(check.momentRdForCheck), 5), label: check.momentLabelForCheck, message: check.verificationReason || null, governing: directMode ? { location: directProfile.peaks.My.end, x: directProfile.peaks.My.x, signed: round(unit.fromBaseMoment(directProfile.peaks.My.signed), 5) } : null },
       shear: { ir: round(check.IR_V, 5), pass: check.passV, resistance: round(unit.fromBaseForce(check.VzRd), 5), governing: directMode ? { location: directProfile.peaks.Vz.end, x: directProfile.peaks.Vz.x, signed: round(unit.fromBaseForce(directProfile.peaks.Vz.signed), 5) } : null },
-      axial: { ir: round(check.IR_N, 5), pass: check.passN, axialEd: round(unit.fromBaseForce(check.axialEd), 5) },
+      axial: { available: check.axialAvailable, ir: round(check.IR_N, 5), pass: check.axialAvailable ? check.passN : (section.specialSection ? null : check.passN), axialEd: round(unit.fromBaseForce(check.axialEd), 5), message: check.axialAvailable ? null : check.verificationReason },
       deflection: directMode ? { available: false, excluded: true, message: 'Deflection not calculated for direct end-force mode.' } : { available: true, ir: round(deflIR, 5), pass: passDefl },
       ltb: ltb.enabled ? { ir: ltb.available ? round(ltb.IR_LT, 5) : null, pass: Boolean(ltb.pass), available: Boolean(ltb.available), notRequired: Boolean(ltb.notRequired), message: ltb.message || null } : { enabled: false },
       support: directMode ? { available: false, excluded: true, message: 'Support reactions are not calculated from direct member end forces.' } : { available: true, ir: round(supportIR, 5), pass: passSupport },
@@ -2476,7 +2572,7 @@ function calculateBeam(input) {
           irMz: round(conservativeInteraction.components.irMz, 5)
         } : null
       },
-      incompleteReasons: directIncompleteReasons,
+      incompleteReasons,
       sectionControlSettings: {
         shearFactorEta: {
           configured: check.shear?.meta?.etaConfigured ?? audit.settings.shearFactorEta,
@@ -2520,7 +2616,7 @@ function calculateBeam(input) {
       directMode,
       minorCheck,
       directProfile,
-      directIncompleteReasons
+      directIncompleteReasons: incompleteReasons
     }),
     loads: {
       raw: rawLoads,
@@ -2570,6 +2666,13 @@ function calculateBeam(input) {
       modulusLabel: check.Wsel.label,
       source: check.Wsel.source,
       sourceReference: getSectionSourceInfo(section)
+      ,specialSection: section.specialSection ? {
+        status: section.specialSectionStatus,
+        definition: section.specialSectionDefinition,
+        components: section.specialComponents,
+        missingProperties: section.specialMissingProperties,
+        axialOnly: section.axialOnly
+      } : null
     },
     calculationPackage,
     diagrams: {

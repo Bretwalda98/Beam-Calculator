@@ -22,6 +22,8 @@ close(tee.Wel_y_bottom_mm3, tee.Iy_mm4 / 77.5, 1e-6, 'T Wel bottom');
 close(tee.plasticNeutralAxis_z_mm, 100, 1e-7, 'T plastic neutral axis');
 close(tee.Wpl_y_mm3, 55000, 1e-5, 'T plastic modulus y');
 close(tee.Wpl_z_mm3, 27500, 1e-5, 'T plastic modulus z');
+close(tee.exposedPerimeter_mm, 420, 1e-9, 'T exposed perimeter excludes the shared web/flange interface');
+close(tee.exposedSurface_m2_m, 0.42, 1e-12, 'T exposed surface per metre');
 assert.notStrictEqual(tee.Wel_y_top_mm3, tee.Wel_y_bottom_mm3, 'Asymmetric extreme-fibre moduli must remain separate.');
 
 const asymmetricI = derivePlateSubtype('welded_i_single_symmetric', {
@@ -64,5 +66,25 @@ const axialT = resolveSpecialSectionDefinition({
 assert.strictEqual(axialT.status, 'GEOMETRY_DERIVED');
 assert.strictEqual(axialT.axialOnly, true);
 assert.ok(axialT.missingProperties.some((item) => item.startsWith('Avy_mm2')));
+
+const subtypeCases = [
+  ['plate_flatbar', { webHeight_mm: 200, webThickness_mm: 10, flangeWidth_mm: 100, flangeThickness_mm: 12 }, 'GEOMETRY_DERIVED'],
+  ['plate_bulb_flat', {}, 'DATA_REQUIRED'],
+  ['plate_t_girder', { webHeight_mm: 200, webThickness_mm: 10, flangeWidth_mm: 100, flangeThickness_mm: 12 }, 'GEOMETRY_DERIVED'],
+  ['plate_rolled_l', {}, 'DATA_REQUIRED'],
+  ['plate_l_welded', { verticalLeg_mm: 120, horizontalLeg_mm: 80, thickness_mm: 8 }, 'GEOMETRY_DERIVED'],
+  ['welded_hsq_symmetric', {}, 'DATA_REQUIRED'],
+  ['welded_hsq_non_symmetric', {}, 'DATA_REQUIRED'],
+  ['welded_i_single_symmetric', { clearWebHeight_mm: 200, webThickness_mm: 8, topFlangeWidth_mm: 150, topFlangeThickness_mm: 12, bottomFlangeWidth_mm: 120, bottomFlangeThickness_mm: 10 }, 'GEOMETRY_DERIVED'],
+  ['welded_i_double_symmetric', { clearWebHeight_mm: 200, webThickness_mm: 8, topFlangeWidth_mm: 150, topFlangeThickness_mm: 12 }, 'GEOMETRY_DERIVED'],
+  ['welded_box_non_symmetric', { clearWebHeight_mm: 200, webThickness_mm: 8, webCentres_mm: 100, topFlangeWidth_mm: 150, topFlangeThickness_mm: 12, bottomFlangeWidth_mm: 130, bottomFlangeThickness_mm: 10 }, 'GEOMETRY_DERIVED'],
+  ['welded_box_double_symmetric', { clearWebHeight_mm: 200, webThickness_mm: 8, webCentres_mm: 100, topFlangeWidth_mm: 150, topFlangeThickness_mm: 12 }, 'GEOMETRY_DERIVED'],
+  ['welded_t_axial', { webHeight_mm: 200, webThickness_mm: 8, flangeWidth_mm: 150, flangeThickness_mm: 12 }, 'GEOMETRY_DERIVED']
+];
+subtypeCases.forEach(([subtype, dimensions, expected]) => {
+  const source = subtype.startsWith('plate_') ? 'stiff_plate' : 'welded';
+  const resolved = resolveSpecialSectionDefinition({ source, subtype, dimensions, componentRefs: {}, settings: {} });
+  assert.strictEqual(resolved.status, expected, `${subtype} status`);
+});
 
 console.log('special-section geometry ok', { teeArea: tee.A_mm2, teeIy: tee.Iy_mm4, asymmetricCentroid: asymmetricI.centroid_z_mm });

@@ -37,6 +37,7 @@ function validateRecord(record, index = 0) {
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,119}$/.test(String(record.id || ''))) throw dataError(`${prefix} has an invalid id.`);
   if (!SPECIAL_FAMILIES.includes(record.family)) throw dataError(`${prefix} has unsupported family ${record.family || '(missing)'}.`);
   if (!String(record.designation || '').trim()) throw dataError(`${prefix} requires a designation.`);
+  if (!String(record.standard || '').trim()) throw dataError(`${prefix} requires a standard/catalogue name.`);
   if (record.verified !== true) throw dataError(`${prefix} is not verified.`, 'unverified_special_section_data');
   if (!record.source || !String(record.source.name || '').trim() || !String(record.source.reference || '').trim() || !String(record.source.revisionDate || '').trim()) {
     throw dataError(`${prefix} requires source name, reference and revision/date.`);
@@ -52,6 +53,10 @@ function validateRecord(record, index = 0) {
   REQUIRED_PROPERTY_KEYS.forEach((key) => {
     if (!positive(record.properties[key])) throw dataError(`${prefix} requires verified positive property ${key}.`);
   });
+  const expectedMass = Number(record.properties.A_mm2) * 7850 / 1e6;
+  if (Math.abs(Number(record.properties.mass_kg_m) - expectedMass) / expectedMass > 0.08) {
+    throw dataError(`${prefix} mass and area are physically inconsistent for structural steel density.`);
+  }
   ['Wpl_y_mm3', 'Wpl_z_mm3', 'Avy_mm2', 'Avz_mm2', 'It_mm4', 'Iw_mm6'].forEach((key) => {
     if (!finiteOrNull(record.properties[key]) || Number(record.properties[key]) < 0) throw dataError(`${prefix} property ${key} must be null or a non-negative number.`);
   });

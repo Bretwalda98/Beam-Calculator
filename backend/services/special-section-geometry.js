@@ -30,6 +30,17 @@ function overlapArea(a, b) {
   return width > EPS && height > EPS ? width * height : 0;
 }
 
+function sharedEdgeLength(a, b) {
+  let length = 0;
+  if (Math.abs(a.y1 - b.y0) <= EPS || Math.abs(b.y1 - a.y0) <= EPS) {
+    length += Math.max(0, Math.min(a.z1, b.z1) - Math.max(a.z0, b.z0));
+  }
+  if (Math.abs(a.z1 - b.z0) <= EPS || Math.abs(b.z1 - a.z0) <= EPS) {
+    length += Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+  }
+  return length;
+}
+
 function areaBelow(rect, axis, coordinate) {
   const lo = axis === 'z' ? rect.z0 : rect.y0;
   const hi = axis === 'z' ? rect.z1 : rect.y1;
@@ -93,6 +104,10 @@ function deriveCompositeProperties(rawRectangles, options = {}) {
   const pnaY = plasticNeutralAxis(rectangles, 'y', A);
   const WplY = rectangles.reduce((sum, item) => sum + absoluteFirstMoment(item, 'z', pnaZ), 0);
   const WplZ = rectangles.reduce((sum, item) => sum + absoluteFirstMoment(item, 'y', pnaY), 0);
+  let exposedPerimeter = rectangles.reduce((sum, item) => sum + 2 * (item.width + item.height), 0);
+  for (let i = 0; i < rectangles.length; i += 1) {
+    for (let j = i + 1; j < rectangles.length; j += 1) exposedPerimeter -= 2 * sharedEdgeLength(rectangles[i], rectangles[j]);
+  }
   return Object.freeze({
     status: 'GEOMETRY_DERIVED',
     A_mm2: A,
@@ -109,6 +124,8 @@ function deriveCompositeProperties(rawRectangles, options = {}) {
     plasticNeutralAxis_y_mm: pnaY,
     Wpl_y_mm3: WplY,
     Wpl_z_mm3: WplZ,
+    exposedPerimeter_mm: exposedPerimeter,
+    exposedSurface_m2_m: exposedPerimeter / 1000,
     bounds: { minY_mm: minY, maxY_mm: maxY, minZ_mm: minZ, maxZ_mm: maxZ, width_mm: maxY - minY, height_mm: maxZ - minZ },
     components,
     density_kg_m3: STEEL_DENSITY_KG_M3,
@@ -211,6 +228,7 @@ module.exports = {
   STEEL_DENSITY_KG_M3,
   rectangle,
   overlapArea,
+  sharedEdgeLength,
   deriveCompositeProperties,
   derivePlateSubtype,
   geometryError

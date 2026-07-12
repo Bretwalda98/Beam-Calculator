@@ -2,6 +2,7 @@ import calculationService from '../backend/services/calculation-service.js';
 import sectionsService from '../backend/services/sections-service.js';
 import validationService from '../backend/services/validation-service.js';
 import reportService from '../backend/services/report-service.js';
+import specialSectionService from '../backend/services/special-section-service.js';
 
 const { calculateBeam } = calculationService;
 const {
@@ -13,6 +14,7 @@ const {
 } = sectionsService;
 const { validateCalculationRequest } = validationService;
 const { buildReportHtml, buildLatexReport, buildHandCalculationPdf } = reportService;
+const { listSpecialSectionOptions, resolveSpecialSectionDefinition } = specialSectionService;
 
 const VERSION = '1.0.0';
 const ALLOWED_ORIGINS = new Set([
@@ -176,6 +178,15 @@ async function route(request) {
       ok: true,
       sources: buildSectionSourceIndex()
     });
+  }
+
+  if (request.method === 'GET' && pathname === '/api/special-sections') {
+    return jsonResponse(request, 200, { ok: true, ...listSpecialSectionOptions() });
+  }
+
+  if (request.method === 'POST' && pathname === '/api/special-sections/preview') {
+    const body = await readJson(request);
+    return jsonResponse(request, 200, { ok: true, ...resolveSpecialSectionDefinition(body.sectionDefinition || body) });
   }
 
   const previewMatch = pathname.match(/^\/api\/sections\/(.+)\/preview$/);

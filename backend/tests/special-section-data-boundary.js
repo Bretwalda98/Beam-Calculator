@@ -31,6 +31,7 @@ assert.strictEqual(adapter.get(verified.id).designation, verified.designation);
 assert.throws(() => adapter.require('nearest-or-similar', 'rolled_angle'), /not available/);
 assert.throws(() => createSpecialSectionAdapter({ schemaVersion: 1, records: [{ ...verified, verified: false }] }), /not verified/);
 assert.throws(() => createSpecialSectionAdapter({ schemaVersion: 1, records: [{ ...verified, units: { ...verified.units, inertia: 'cm4' } }] }), /must be mm4/);
+assert.throws(() => createSpecialSectionAdapter({ schemaVersion: 1, records: [{ ...verified, properties: { ...verified.properties, mass_kg_m: 1000 } }] }), /physically inconsistent/);
 assert.throws(() => createSpecialSectionAdapter({ schemaVersion: 1, records: [verified, verified] }), /Duplicate/);
 
 console.log('special-section data boundary ok', { catalogueRows: 368, externalRows: 0 });

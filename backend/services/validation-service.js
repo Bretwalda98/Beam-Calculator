@@ -3,6 +3,7 @@ const SUPPORTED_UNITS = new Set(['tonne', 'kn']);
 const SUPPORTED_MATERIALS = new Set(['S235', 'S275', 'S355']);
 const { LOAD_DIRECTIONS, normaliseColbeamAuditInput } = require('./colbeam-audit-settings');
 const { END_FORCE_KEYS, normaliseAnalysisInputMode } = require('./direct-action-service');
+const { normaliseSectionDefinition, resolveSpecialSectionDefinition } = require('./special-section-service');
 
 function fail(message, code = 'validation_error') {
   const err = new Error(message);
@@ -35,7 +36,15 @@ function validateLoadPosition(value, L, name) {
 function validateCalculationRequest(input = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) fail('Calculation request must be a JSON object.');
   const section = input.section || {};
-  if (!section.family || !section.name) fail('Select a valid library section.');
+  const sectionDefinition = normaliseSectionDefinition(input);
+  if (sectionDefinition.source === 'catalogue' && (!section.family || !section.name)) fail('Select a valid library section.');
+  if (sectionDefinition.source === 'stiff_plate' || sectionDefinition.source === 'welded') {
+    resolveSpecialSectionDefinition(sectionDefinition);
+    if (sectionDefinition.settings?.maximumOneFlangePct !== undefined) assertRange(sectionDefinition.settings.maximumOneFlangePct, 50, 90, 'Maximum loading on one flange');
+    if (sectionDefinition.settings?.weldSize_mm !== undefined && sectionDefinition.settings.weldSize_mm !== null && sectionDefinition.settings.weldSize_mm !== '') {
+      assertRange(sectionDefinition.settings.weldSize_mm, 0, 200, 'Weld size');
+    }
+  }
   const L = assertRange(input.model?.span, 0.01, 200, 'Beam span');
   const support = input.model?.supportType || 'ss';
   if (!SUPPORTED_SUPPORTS.has(support)) fail('Unsupported support condition.');

@@ -83,7 +83,12 @@ const state = {
   chartPayloads: new Map(),
   redrawHandle: 0,
   backendOk: false,
-  endForceBase: null
+  endForceBase: null,
+  specialSectionOptions: null,
+  specialSectionDrafts: new Map(),
+  activeSpecialSubtype: null,
+  specialSectionResolution: null,
+  specialPreviewTimer: null
 };
 
 function apiUrl(path) {
@@ -197,6 +202,10 @@ function startNewProject() {
   applyMetadata({ projectName: 'Untitled beam project', calculationTitle: 'Beam section check', date: new Date().toISOString().slice(0, 10) });
   clearLoadCards();
   initLoads();
+  if ($('sectionSourceMode')) $('sectionSourceMode').value = 'library';
+  state.specialSectionDrafts.clear();
+  state.specialSectionResolution = null;
+  syncSectionSourceMode();
   if ($('analysisInputMode')) $('analysisInputMode').value = 'appliedLoads';
   applyEndForcesToFields({}, true);
   syncAnalysisInputModeUi();
@@ -477,11 +486,18 @@ async function updateSectionPreview() {
 }
 
 function syncSectionSourceMode() {
-  const custom = $('sectionSourceMode')?.value === 'custom';
-  $('librarySectionControls')?.classList.toggle('hide', custom);
+  const source = $('sectionSourceMode')?.value || 'library';
+  const custom = source === 'custom';
+  const special = source === 'stiff_plate' || source === 'welded';
+  $('librarySectionControls')?.classList.toggle('hide', custom || special);
   $('customSectionPanel')?.classList.toggle('hide', !custom);
+  $('specialSectionPanel')?.classList.toggle('hide', !special);
   if (custom) renderCustomSectionNotice();
-  else updateSectionPreview().catch((err) => setSaveStatus(err.message, 'error'));
+  else if (special) renderSpecialSectionUi();
+  else {
+    setSpecialCalculationAvailability(true);
+    updateSectionPreview().catch((err) => setSaveStatus(err.message, 'error'));
+  }
 }
 
 function initCustomSectionUi() {
@@ -511,7 +527,7 @@ function renderCustomSectionFields() {
   if (host) {
     host.innerHTML = fields.map(([id, label, value]) => `<label>${esc(label)}<input data-custom-dim="${esc(id)}" type="number" min="0" step="0.1" value="${esc(value)}"></label>`).join('');
   }
-  renderCustomSectionNotice();
+  if ($('sectionSourceMode')?.value === 'custom') renderCustomSectionNotice();
 }
 
 function renderCustomSectionNotice() {
@@ -591,6 +607,199 @@ function drawSectionSvg(section) {
 
 function normaliseLoadType(type) {
   return type === 'trapezoidal' ? 'trap' : type;
+}
+
+const SPECIAL_SECTION_CONFIGS = {
+  plate_flatbar: { label: 'Plate + Flatbar', fields: [['webHeight_mm', 'Plate height', 300], ['webThickness_mm', 'Plate thickness', 10], ['flangeWidth_mm', 'Flatbar width', 120], ['flangeThickness_mm', 'Flatbar thickness', 12]] },
+  plate_bulb_flat: { label: 'Plate + Bulb Flat', profileFamily: 'bulb_flat', fields: [] },
+  plate_t_girder: { label: 'Plate + T-girder', fields: [['webHeight_mm', 'Clear web height', 300], ['webThickness_mm', 'Web thickness', 10], ['flangeWidth_mm', 'Flange width', 160], ['flangeThickness_mm', 'Flange thickness', 14]] },
+  plate_rolled_l: { label: 'Plate + rolled L', profileFamily: 'rolled_angle', fields: [] },
+  plate_l_welded: { label: 'Plate + L-welded', fields: [['verticalLeg_mm', 'Vertical leg', 150], ['horizontalLeg_mm', 'Horizontal leg', 100], ['thickness_mm', 'Plate thickness', 10]] },
+  welded_hsq_symmetric: { label: 'HSQ - symmetric flanges', fields: [], definitionRequired: true },
+  welded_hsq_non_symmetric: { label: 'HSQ - non-symmetric flanges', fields: [], definitionRequired: true },
+  welded_i_single_symmetric: { label: 'I - single symmetric', fields: [['clearWebHeight_mm', 'Clear web height', 300], ['webThickness_mm', 'Web thickness', 10], ['topFlangeWidth_mm', 'Top flange width', 180], ['topFlangeThickness_mm', 'Top flange thickness', 14], ['bottomFlangeWidth_mm', 'Bottom flange width', 140], ['bottomFlangeThickness_mm', 'Bottom flange thickness', 12]] },
+  welded_i_double_symmetric: { label: 'I - double symmetric', fields: [['clearWebHeight_mm', 'Clear web height', 300], ['webThickness_mm', 'Web thickness', 10], ['topFlangeWidth_mm', 'Flange width', 180], ['topFlangeThickness_mm', 'Flange thickness', 14]] },
+  welded_box_non_symmetric: { label: 'Box - non-symmetric flanges', box: true, fields: [['clearWebHeight_mm', 'Clear web height', 300], ['webThickness_mm', 'Web thickness', 10], ['webCentres_mm', 'Web centre spacing', 120], ['topFlangeWidth_mm', 'Top flange width', 180], ['topFlangeThickness_mm', 'Top flange thickness', 14], ['bottomFlangeWidth_mm', 'Bottom flange width', 160], ['bottomFlangeThickness_mm', 'Bottom flange thickness', 12]] },
+  welded_box_double_symmetric: { label: 'Box - double symmetric', box: true, fields: [['clearWebHeight_mm', 'Clear web height', 300], ['webThickness_mm', 'Web thickness', 10], ['webCentres_mm', 'Web centre spacing', 120], ['topFlangeWidth_mm', 'Flange width', 180], ['topFlangeThickness_mm', 'Flange thickness', 14]] },
+  welded_t_axial: { label: 'T section - axial loading only', axialOnly: true, fields: [['webHeight_mm', 'Web height', 200], ['webThickness_mm', 'Web thickness', 10], ['flangeWidth_mm', 'Flange width', 150], ['flangeThickness_mm', 'Flange thickness', 12]] }
+};
+
+function specialSubtypesForSource(source) {
+  const keys = source === 'stiff_plate'
+    ? ['plate_flatbar', 'plate_bulb_flat', 'plate_t_girder', 'plate_rolled_l', 'plate_l_welded']
+    : ['welded_hsq_symmetric', 'welded_hsq_non_symmetric', 'welded_i_single_symmetric', 'welded_i_double_symmetric', 'welded_box_non_symmetric', 'welded_box_double_symmetric', 'welded_t_axial'];
+  return keys;
+}
+
+function specialDraft(subtype) {
+  if (!state.specialSectionDrafts.has(subtype)) {
+    const config = SPECIAL_SECTION_CONFIGS[subtype];
+    state.specialSectionDrafts.set(subtype, {
+      dimensions: Object.fromEntries((config?.fields || []).map(([key, , value]) => [key, value])),
+      componentRefs: {},
+      settings: { flangeLoadingConsidered: false, maximumOneFlangePct: 50, class3WebUpgrade: false, weldSize_mm: null, bucklingCurve: 'not_verified' }
+    });
+  }
+  return state.specialSectionDrafts.get(subtype);
+}
+
+function captureSpecialDraft(subtypeOverride = null) {
+  const subtype = subtypeOverride || $('specialSectionSubtype')?.value;
+  if (!subtype) return;
+  const draft = specialDraft(subtype);
+  draft.settings.name = txt('specialSectionName', draft.settings.name || SPECIAL_SECTION_CONFIGS[subtype]?.label || 'Special section');
+  $$('[data-special-dimension]').forEach((input) => { draft.dimensions[input.dataset.specialDimension] = Number(input.value); });
+  draft.componentRefs.profileRecordId = $('specialProfileRecord')?.value || null;
+  $$('[data-special-setting]').forEach((input) => {
+    draft.settings[input.dataset.specialSetting] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value;
+  });
+}
+
+function readSpecialSectionDefinition() {
+  captureSpecialDraft();
+  const source = $('sectionSourceMode')?.value;
+  if (!['stiff_plate', 'welded'].includes(source)) return null;
+  const subtype = $('specialSectionSubtype')?.value;
+  const draft = specialDraft(subtype);
+  return {
+    schemaVersion: 1,
+    source,
+    subtype,
+    dimensions: { ...draft.dimensions },
+    componentRefs: { ...draft.componentRefs },
+    settings: { ...draft.settings, name: txt('specialSectionName', SPECIAL_SECTION_CONFIGS[subtype]?.label || 'Special section') }
+  };
+}
+
+function renderSpecialSettings(source, config, draft) {
+  const host = $('specialSectionSettings');
+  if (!host) return;
+  const common = source === 'stiff_plate' ? `
+    <label>Flange loading considered<select data-special-setting="flangeLoadingConsidered"><option value="false">No</option><option value="true">Yes</option></select></label>
+    <label>Maximum loading on one flange (%)<input data-special-setting="maximumOneFlangePct" type="number" min="50" max="90" step="1" value="${esc(draft.settings.maximumOneFlangePct ?? 50)}"></label>
+    <label>Class 3 web upgrade<select data-special-setting="class3WebUpgrade"><option value="false">No</option><option value="true">Yes</option></select></label>` : '';
+  const box = config.box ? `
+    <label>Weld size (mm)<input data-special-setting="weldSize_mm" type="number" min="0" step="0.1" value="${esc(draft.settings.weldSize_mm ?? '')}"></label>
+    <label>Buckling curve setting<select data-special-setting="bucklingCurve"><option value="not_verified">Not verified</option></select></label>` : '';
+  host.innerHTML = `${common}${box}${common || box ? '<div class="metadata-note full">These family-specific settings are recorded, but remain INCOMPLETE until their authoritative EC3 rule mapping is supplied.</div>' : ''}`;
+  $$('[data-special-setting="flangeLoadingConsidered"], [data-special-setting="class3WebUpgrade"]').forEach((select) => {
+    select.value = String(Boolean(draft.settings[select.dataset.specialSetting]));
+  });
+}
+
+function renderSpecialSectionUi() {
+  const source = $('sectionSourceMode')?.value || 'stiff_plate';
+  if (!['stiff_plate', 'welded'].includes(source)) return;
+  const select = $('specialSectionSubtype');
+  const keys = specialSubtypesForSource(source);
+  const previous = select?.value;
+  if (select) {
+    select.innerHTML = keys.map((key) => `<option value="${esc(key)}">${esc(SPECIAL_SECTION_CONFIGS[key].label)}</option>`).join('');
+    select.value = keys.includes(previous) ? previous : keys[0];
+  }
+  const subtype = select?.value || keys[0];
+  state.activeSpecialSubtype = subtype;
+  const config = SPECIAL_SECTION_CONFIGS[subtype];
+  const draft = specialDraft(subtype);
+  if ($('specialSectionName')) $('specialSectionName').value = draft.settings.name || config.label;
+  const fieldHost = $('specialSectionFields');
+  if (fieldHost) {
+    fieldHost.innerHTML = config.fields.length
+      ? config.fields.map(([key, label, fallback]) => `<label>${esc(label)} (mm)<input data-special-dimension="${esc(key)}" type="number" min="0.1" step="0.1" value="${esc(draft.dimensions[key] ?? fallback)}"></label>`).join('')
+      : `<div class="special-profile-empty full">${esc(config.definitionRequired ? 'Authoritative component layout and dimension mapping are required before geometry can be calculated.' : 'This subtype requires a verified external profile record. No substitute designation will be offered.')}</div>`;
+  }
+  const profileWrap = $('specialProfileSelectorWrap');
+  profileWrap?.classList.toggle('hide', !config.profileFamily);
+  if (config.profileFamily && $('specialProfileRecord')) {
+    const rows = config.profileFamily === 'bulb_flat' ? state.specialSectionOptions?.bulbFlats : state.specialSectionOptions?.rolledAngles;
+    $('specialProfileRecord').innerHTML = rows?.length
+      ? `<option value="">Select verified record</option>${rows.map((row) => `<option value="${esc(row.id)}">${esc(row.designation)}</option>`).join('')}`
+      : '<option value="">No verified section data loaded</option>';
+    $('specialProfileRecord').value = draft.componentRefs.profileRecordId || '';
+  }
+  renderSpecialSettings(source, config, draft);
+  syncSpecialActionRestrictions(config);
+  queueSpecialPreview();
+}
+
+function syncSpecialActionRestrictions(config = SPECIAL_SECTION_CONFIGS[$('specialSectionSubtype')?.value]) {
+  const axialOnly = Boolean(config?.axialOnly);
+  document.body.classList.toggle('special-axial-only', axialOnly);
+  if ($('includeSW')) {
+    if (axialOnly) $('includeSW').checked = false;
+    $('includeSW').disabled = axialOnly;
+  }
+  if ($('specialSectionStatus') && axialOnly) $('specialSectionStatus').setAttribute('data-axial-only', 'true');
+}
+
+function setSpecialCalculationAvailability(available) {
+  ['recalcBtn', 'reportBtn', 'latexBtn'].forEach((id) => {
+    if ($(id)) $(id).disabled = !available;
+  });
+}
+
+function renderCompositeSectionSvg(resolution) {
+  const p = resolution?.properties;
+  if (!p?.components?.length) return '<div class="special-profile-empty">No verified section geometry available.</div>';
+  const W = 320, H = 250, margin = 35;
+  const b = p.bounds.width_mm || 1, h = p.bounds.height_mm || 1;
+  const scale = Math.min((W - 2 * margin) / b, (H - 2 * margin) / h);
+  const ox = W / 2 - p.centroid_y_mm * scale;
+  const oz = H / 2 + p.centroid_z_mm * scale;
+  const rects = p.components.map((c) => `<rect x="${ox + c.y0 * scale}" y="${oz - c.z1 * scale}" width="${c.width * scale}" height="${c.height * scale}" fill="var(--section-steel,#dbe4ee)" stroke="var(--section-line,#334155)"/>`).join('');
+  return `<svg class="section-svg section-svg-full" viewBox="0 0 ${W} ${H}" role="img" aria-label="Derived special-section geometry"><line x1="${margin}" y1="${H / 2}" x2="${W - margin}" y2="${H / 2}" stroke="var(--accent)" stroke-dasharray="4 3"/><line x1="${W / 2}" y1="${margin}" x2="${W / 2}" y2="${H - margin}" stroke="var(--accent)" stroke-dasharray="4 3"/>${rects}<circle cx="${W / 2}" cy="${H / 2}" r="3" fill="#dc2626"/><text x="${W / 2 + 7}" y="${H / 2 - 7}" fill="var(--text)" font-size="10">centroid</text><text x="${W - margin}" y="${H / 2 - 6}" fill="var(--text)" font-size="10">y-y</text><text x="${W / 2 + 6}" y="${margin}" fill="var(--text)" font-size="10">z-z</text></svg>`;
+}
+
+function renderSpecialPreviewResolution(resolution) {
+  state.specialSectionResolution = resolution;
+  const status = resolution?.status || 'DATA_REQUIRED';
+  const host = $('specialSectionStatus');
+  if (host) {
+    host.dataset.status = status;
+    const axialNote = resolution?.axialOnly ? ' Axial loading only: remove all transverse actions and self-weight before calculation.' : '';
+    host.innerHTML = `<strong>${esc(status.replaceAll('_', ' '))}</strong><span>${esc((resolution?.message || 'Special-section data are required.') + axialNote)}</span>`;
+  }
+  setSpecialCalculationAvailability(status === 'GEOMETRY_DERIVED' || status === 'VERIFIED_DATA');
+  if ($('sectionPreviewName')) $('sectionPreviewName').textContent = txt('specialSectionName', 'Special section');
+  if ($('sectionPreviewType')) $('sectionPreviewType').textContent = status.replaceAll('_', ' ');
+  if ($('sectionProfilePreview')) $('sectionProfilePreview').innerHTML = renderCompositeSectionSvg(resolution);
+  const p = resolution?.properties;
+  const rows = p ? [
+    ['A', p.A_mm2, 'mm2'], ['Mass', p.mass_kg_m, 'kg/m'], ['Iy', p.Iy_mm4, 'mm4'], ['Iz', p.Iz_mm4, 'mm4'],
+    ['Wel,y top', p.Wel_y_top_mm3, 'mm3'], ['Wel,y bottom', p.Wel_y_bottom_mm3, 'mm3'],
+    ['Wel,z left', p.Wel_z_left_mm3, 'mm3'], ['Wel,z right', p.Wel_z_right_mm3, 'mm3'], ['Wpl,y', p.Wpl_y_mm3, 'mm3'], ['Wpl,z', p.Wpl_z_mm3, 'mm3'],
+    ['Exposed surface', p.exposedSurface_m2_m, 'm2/m']
+  ] : [];
+  const html = rows.map(([label, value, unit]) => `<div class="prop-chip" title="${esc(`${label} ${fmtReadable(value, 2)} ${unit}`)}"><strong>${esc(label)}</strong><span>${esc(fmtReadable(value, value < 100 ? 2 : 0))} ${esc(unit)}</span></div>`).join('');
+  if ($('specialSectionPropertyGrid')) $('specialSectionPropertyGrid').innerHTML = html;
+  if ($('sectionPreviewFacts')) $('sectionPreviewFacts').innerHTML = html;
+  const warning = $('sectionPreviewWarning');
+  if (warning) {
+    const issues = resolution?.missingProperties || [];
+    warning.classList.toggle('hide', !issues.length);
+    warning.textContent = issues.join(' ');
+  }
+  if ($('sec_summary')) $('sec_summary').textContent = `${status.replaceAll('_', ' ')}: ${resolution?.message || ''}`;
+  if (['GEOMETRY_DERIVED', 'VERIFIED_DATA'].includes(status) && state.settings.autoRecalc !== false) recalculateDebounced();
+}
+
+async function updateSpecialSectionPreview() {
+  const definition = readSpecialSectionDefinition();
+  if (!definition) return;
+  const res = await api('/api/special-sections/preview', { method: 'POST', body: JSON.stringify({ sectionDefinition: definition }) });
+  renderSpecialPreviewResolution(await safeJson(res, '/api/special-sections/preview'));
+}
+
+function queueSpecialPreview() {
+  clearTimeout(state.specialPreviewTimer);
+  state.specialPreviewTimer = setTimeout(() => updateSpecialSectionPreview().catch((error) => {
+    renderSpecialPreviewResolution({ status: 'INCOMPLETE', message: error.message, missingProperties: [error.message] });
+  }), 120);
+}
+
+async function loadSpecialSectionOptions() {
+  const res = await api('/api/special-sections');
+  state.specialSectionOptions = await safeJson(res, '/api/special-sections');
 }
 
 function countLoadCards(type) {
@@ -1075,15 +1284,23 @@ function updateLCPreview() {
 }
 
 function buildRequest() {
-  if ($('sectionSourceMode')?.value === 'custom') {
+  const sectionSource = $('sectionSourceMode')?.value || 'library';
+  if (sectionSource === 'custom') {
     throw new Error('Custom section calculations require backend custom-section support. Select a library section for this secure build.');
   }
+  const sectionDefinition = readSpecialSectionDefinition();
+  if (sectionDefinition && !['GEOMETRY_DERIVED', 'VERIFIED_DATA'].includes(state.specialSectionResolution?.status)) {
+    throw new Error(state.specialSectionResolution?.message || 'Special-section data or valid geometry are required before calculation.');
+  }
   return {
-    version: 2,
+    version: 3,
+    sectionDefinition: sectionDefinition || { source: 'catalogue', family: $('sec_series')?.value, recordId: $('sec_size')?.value },
     analysisInputMode: getAnalysisInputMode(),
     endForces: readEndForcesFromFields(),
     metadata: readMetadata(),
-    section: { family: $('sec_series')?.value, name: $('sec_size')?.value },
+    section: sectionDefinition
+      ? { family: 'SPECIAL', name: sectionDefinition.settings.name }
+      : { family: $('sec_series')?.value, name: $('sec_size')?.value },
     material: { grade: $('material')?.value || 'S355' },
     units: $('loadUnit')?.value || 'tonne',
     model: {
@@ -1210,7 +1427,8 @@ function buildAxisOverviewModels(result = {}) {
     ...(c.minorAxis?.warnings || []),
     ...axisWarningsFrom(result, 'z')
   ].filter(Boolean))] : [];
-  const zStatus = !zDemand ? 'Not governing' : (Number(majorBendIr || 0) < 1 && Number(majorShearIr || 0) < 1) ? 'PASS' : 'FAIL';
+  const zAvailable = c.moment?.available !== false && c.shear?.pass !== false;
+  const zStatus = !zDemand ? 'Not governing' : !zAvailable ? 'INCOMPLETE' : (Number(majorBendIr || 0) < 1 && Number(majorShearIr || 0) < 1) ? 'PASS' : 'FAIL';
   const yStatus = !yDemand ? 'Not governing' : minorAvailable ? ((Number(minorBendIr || 0) < 1 && (minorShearIr === null || Number(minorShearIr) < 1)) ? 'PASS' : 'FAIL') : 'Unavailable';
   const governingDirection = axis.governingDirection || (Number(minorBendIr || 0) > Number(majorBendIr || 0) ? 'Y' : 'Z');
   const governingParts = [
@@ -1228,21 +1446,21 @@ function buildAxisOverviewModels(result = {}) {
       zDeflection: directMode ? 'Not calculated for direct end-force mode' : axisValue(axis.zDeflection ?? s.deflection, 'mm')
     },
     resistance: {
-      MyRd: axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
-      VzRd: axisValue(axis.VzRd ?? c.shear?.resistance, forceUnit)
+      MyRd: c.moment?.available === false ? 'Not available' : axisValue(axis.MyRd ?? c.moment?.resistance, momentUnit),
+      VzRd: c.shear?.pass === false && !c.shear?.resistance ? 'Not available' : axisValue(axis.VzRd ?? c.shear?.resistance, forceUnit)
     },
     utilisation: {
-      bending: zDemand ? axisValue(majorBendIr, '', 3) : '0.000',
-      shear: zDemand ? axisValue(majorShearIr, '', 3) : '0.000'
+      bending: zDemand ? (c.moment?.available === false ? 'Not available' : axisValue(majorBendIr, '', 3)) : '0.000',
+      shear: zDemand ? (c.shear?.pass === false && !c.shear?.resistance ? 'Not available' : axisValue(majorShearIr, '', 3)) : '0.000'
     },
     basis: {
       bending: basis.zDirection || basis.y || 'Not available',
-      momentResistance: basis.MyRdBasis || c.moment?.label || 'Not available',
+      momentResistance: c.moment?.available === false ? 'Not verified' : (basis.MyRdBasis || c.moment?.label || 'Not available'),
       shearResistance: axis.shearEta?.zDirection?.shearAreaSource || axis.shearEta?.z?.shearAreaSource || 'Not available'
     },
     status: zStatus,
     message: zDemand ? '' : directMode ? 'No Z-direction end action entered; strong-axis demand is not governing.' : 'No Z-direction load applied; strong-axis demand is not governing.',
-    warnings: []
+    warnings: zAvailable ? [] : (c.incompleteReasons || [])
   };
   const yDirectionOverview = {
     title: 'Y-direction loading - weak-axis bending Mz / shear Vy',
@@ -2515,7 +2733,7 @@ function advancedEc3AuditJsonBlob() {
 }
 
 function saveLocalProject() {
-  const payload = { schemaVersion: 4, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
+  const payload = { schemaVersion: 5, savedAt: new Date().toISOString(), input: buildRequest(), result: state.last?.result || null };
   localStorage.setItem('beam_project_secure_draft_v1', JSON.stringify(payload));
   if ($('projectStatus')) $('projectStatus').textContent = `Saved locally ${new Date().toLocaleTimeString()}`;
   setSaveStatus('Project saved locally. Cloud save requires sign-in/backend storage.', 'ok');
@@ -2531,7 +2749,20 @@ function loadLocalProject() {
 
 function applyInput(input = {}) {
   applyMetadata(input.metadata || input.project || input);
-  if (input.section?.family) {
+  const definition = input.sectionDefinition;
+  if (definition && ['stiff_plate', 'welded'].includes(definition.source)) {
+    $('sectionSourceMode').value = definition.source;
+    const draft = specialDraft(definition.subtype);
+    draft.dimensions = { ...(definition.dimensions || {}) };
+    draft.componentRefs = { ...(definition.componentRefs || {}) };
+    draft.settings = { ...draft.settings, ...(definition.settings || {}) };
+    renderSpecialSectionUi();
+    $('specialSectionSubtype').value = definition.subtype;
+    state.activeSpecialSubtype = definition.subtype;
+    $('specialSectionName').value = definition.settings?.name || SPECIAL_SECTION_CONFIGS[definition.subtype]?.label || 'Special section';
+    renderSpecialSectionUi();
+  } else if (input.section?.family) {
+    $('sectionSourceMode').value = 'library';
     $('sec_series').value = input.section.family;
     populateSectionNames(input.section.name);
   }
@@ -2837,7 +3068,7 @@ function bindEvents() {
   initCustomSectionUi();
   $('sectionSourceMode')?.addEventListener('change', () => {
     syncSectionSourceMode();
-    recalculateDebounced();
+    if ($('sectionSourceMode').value === 'library') recalculateDebounced();
   });
   $('analysisMode')?.addEventListener('change', () => {
     syncBeamModeUi();
@@ -2846,6 +3077,25 @@ function bindEvents() {
   });
   $('customSectionType')?.addEventListener('change', renderCustomSectionFields);
   $('customSectionName')?.addEventListener('input', renderCustomSectionNotice);
+  $('specialSectionSubtype')?.addEventListener('change', () => {
+    captureSpecialDraft(state.activeSpecialSubtype);
+    state.activeSpecialSubtype = $('specialSectionSubtype').value;
+    renderSpecialSectionUi();
+  });
+  $('specialSectionName')?.addEventListener('input', queueSpecialPreview);
+  $('specialProfileRecord')?.addEventListener('change', queueSpecialPreview);
+  $('specialSectionPanel')?.addEventListener('input', (event) => {
+    if (event.target.matches('[data-special-dimension], [data-special-setting]')) {
+      captureSpecialDraft();
+      queueSpecialPreview();
+    }
+  });
+  $('specialSectionPanel')?.addEventListener('change', (event) => {
+    if (event.target.matches('[data-special-dimension], [data-special-setting], #specialProfileRecord')) {
+      captureSpecialDraft();
+      queueSpecialPreview();
+    }
+  });
   $('saveCustomSectionBtn')?.addEventListener('click', () => setSaveStatus('Custom sections require backend storage before they can be saved in this secure build.', 'error'));
   $('deleteCustomSectionBtn')?.addEventListener('click', () => setSaveStatus('No backend custom-section storage is configured yet.', 'error'));
   $('resetCustomSectionBtn')?.addEventListener('click', renderCustomSectionFields);
@@ -3046,6 +3296,7 @@ async function init() {
     state.backendOk = true;
     ensureStartBackendStatus('Calculation service connected.', 'ok');
     await loadSections();
+    await loadSpecialSectionOptions();
     loadSources().catch((err) => {
       const host = $('sectionSourceIndex');
       if (host) host.innerHTML = `<h3>Section Data Sources</h3><p>${esc(err.message || 'Source index unavailable.')}</p>`;

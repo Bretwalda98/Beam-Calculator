@@ -186,7 +186,18 @@ function buildSectionSvg(sectionProperties = {}) {
   const { h, b, s, pxH, pxB, x0, y0, cx, cy } = scaled;
   let shape = '';
 
-  if (type === 'rhs') {
+  if (Array.isArray(g.components) && g.components.length) {
+    const centroidY = finite(g.centroid_y_mm) || 0;
+    const centroidZ = finite(g.centroid_z_mm) || 0;
+    shape = `${g.components.map((component) => {
+      const x = cx + (component.y0 - centroidY) * s;
+      const y = cy - (component.z1 - centroidZ) * s;
+      return `<rect x="${x}" y="${y}" width="${component.width * s}" height="${component.height * s}" class="section-fill"/>`;
+    }).join('')}
+      ${dimLine(x0 + pxB + 36, y0, x0 + pxB + 36, y0 + pxH, `h = ${round(g.h_mm, 1)} mm`, x0 + pxB + 46, cy)}
+      ${dimLine(x0, y0 + pxH + 36, x0 + pxB, y0 + pxH + 36, `b = ${round(g.b_mm, 1)} mm`, cx - 44, y0 + pxH + 58)}
+      <circle cx="${cx}" cy="${cy}" r="4" fill="#b91c1c"/><text x="${cx + 8}" y="${cy - 8}" class="axis-text">centroid</text>`;
+  } else if (type === 'rhs') {
     const t = Math.max(4, (finite(g.t_mm) || finite(g.tf_mm) || Math.min(h, b) * 0.06) * s);
     shape = `<rect x="${x0}" y="${y0}" width="${pxB}" height="${pxH}" rx="${Math.max(0, r)}" class="section-fill"/>
       <rect x="${x0 + t}" y="${y0 + t}" width="${Math.max(1, pxB - 2 * t)}" height="${Math.max(1, pxH - 2 * t)}" rx="${Math.max(0, r - t)}" class="section-hole"/>
@@ -498,7 +509,8 @@ function formatDirectionOverviewRows(result = {}) {
   const directMode = result.analysisInputMode === 'endForces';
   const hasZ = axis.hasZDirectionLoads === true || Math.abs(Number(axis.MyEd || 0)) > 1e-9 || Math.abs(Number(axis.VzEd || 0)) > 1e-9;
   const hasY = axis.hasYDirectionLoads === true || Math.abs(Number(axis.MzEd || 0)) > 1e-9 || Math.abs(Number(axis.VyEd || 0)) > 1e-9;
-  const zStatus = hasZ ? (Number(axis.MyIR || checks.moment?.ir || 0) < 1 && Number(axis.VzIR || checks.shear?.ir || 0) < 1 ? 'PASS' : 'FAIL') : 'Not governing';
+  const zAvailable = checks.moment?.available !== false && !(checks.shear?.pass === false && !checks.shear?.resistance);
+  const zStatus = hasZ ? (!zAvailable ? 'INCOMPLETE' : (Number(axis.MyIR || checks.moment?.ir || 0) < 1 && Number(axis.VzIR || checks.shear?.ir || 0) < 1 ? 'PASS' : 'FAIL')) : 'Not governing';
   const yStatus = hasY
     ? checks.minorAxis?.available === true
       ? (Number(axis.MzIR || checks.minorAxis?.ir || 0) < 1 && (axis.VyIR === null || Number(axis.VyIR || 0) < 1) ? 'PASS' : 'FAIL')
@@ -510,11 +522,11 @@ function formatDirectionOverviewRows(result = {}) {
       ['My,Ed', axisValue(axis.MyEd || 0, moment)],
       ['Vz,Ed', axisValue(axis.VzEd || 0, force)],
       ['z-deflection', directMode ? 'Not calculated for direct end-force mode' : axisValue(axis.zDeflection ?? summary.deflection ?? 0, 'mm')],
-      ['My,Rd', axisValue(axis.MyRd ?? checks.moment?.resistance, moment)],
-      ['Vz,Rd', axisValue(axis.VzRd ?? checks.shear?.resistance, force)],
-      ['My utilisation', axisValue(hasZ ? (axis.MyIR ?? checks.moment?.ir) : 0, '', 3)],
-      ['Vz utilisation', axisValue(hasZ ? (axis.VzIR ?? checks.shear?.ir) : 0, '', 3)],
-      ['Basis', axis.bendingResistanceBasis?.MyRdBasis || checks.moment?.label || 'Not available'],
+      ['My,Rd', checks.moment?.available === false ? 'Not available' : axisValue(axis.MyRd ?? checks.moment?.resistance, moment)],
+      ['Vz,Rd', checks.shear?.pass === false && !checks.shear?.resistance ? 'Not available' : axisValue(axis.VzRd ?? checks.shear?.resistance, force)],
+      ['My utilisation', checks.moment?.available === false ? 'Not available' : axisValue(hasZ ? (axis.MyIR ?? checks.moment?.ir) : 0, '', 3)],
+      ['Vz utilisation', checks.shear?.pass === false && !checks.shear?.resistance ? 'Not available' : axisValue(hasZ ? (axis.VzIR ?? checks.shear?.ir) : 0, '', 3)],
+      ['Basis', checks.moment?.available === false ? 'Not verified' : (axis.bendingResistanceBasis?.MyRdBasis || checks.moment?.label || 'Not available')],
       ['Status', zStatus],
       ['Message', hasZ ? '-' : directMode ? 'No Z-direction end action entered; strong-axis demand is not governing.' : 'No Z-direction load applied; strong-axis demand is not governing.']
     ],
@@ -546,10 +558,15 @@ function formatSectionRows(props = {}) {
     ['Iz', props.Iz_mm4, 'mm4'],
     ['Wel,y', props.Wel_y_mm3, 'mm3'],
     ['Wel,z', props.Wel_z_mm3, 'mm3'],
+    ['Wel,y top', props.Wel_y_top_mm3, 'mm3'],
+    ['Wel,y bottom', props.Wel_y_bottom_mm3, 'mm3'],
+    ['Wel,z left', props.Wel_z_left_mm3, 'mm3'],
+    ['Wel,z right', props.Wel_z_right_mm3, 'mm3'],
     ['Wpl,y', props.Wpl_y_mm3, 'mm3'],
     ['Wpl,z', props.Wpl_z_mm3, 'mm3'],
     ['Av,z', props.Avz_mm2, 'mm2'],
     ['Mass', props.mass_kg_m, 'kg/m'],
+    ['Exposed surface', props.exposedSurface_m2_m, 'm2/m'],
     ['Classification', props.classification, '']
   ];
   const g = props.dimensions || {};
@@ -629,6 +646,7 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
   const ySeries = directionGraphSeries(result, 'Y');
   const directMode = result.analysisInputMode === 'endForces';
   const deflectionUnavailable = 'Deflection not calculated for direct end-force mode.';
+  const specialSection = result.sectionProperties?.specialSection || null;
   return {
     meta,
     result,
@@ -657,6 +675,18 @@ function buildReportModel(input = {}, result = {}, suppliedMetadata = {}) {
     },
     checksRows: formatCheckRows(result),
     sectionRows: formatSectionRows(result.sectionProperties || {}),
+    specialSection,
+    specialDefinitionRows: specialSection ? [
+      ['Definition source', specialSection.definition?.source || '-'],
+      ['Subtype', specialSection.definition?.subtype || '-'],
+      ['Source status', specialSection.status || 'INCOMPLETE'],
+      ['External record ID', specialSection.definition?.componentRefs?.profileRecordId || 'Not applicable / not supplied'],
+      ['Axial-only restriction', specialSection.axialOnly ? 'Yes' : 'No']
+    ] : [],
+    specialComponentRows: specialSection ? (specialSection.components || []).map((component) => [
+      component.id, component.role, round(component.width, 3), round(component.height, 3), round(component.y0, 3), round(component.z0, 3), round(component.area_mm2, 3)
+    ]) : [],
+    specialUnavailableRows: specialSection ? (specialSection.missingProperties || []).map((item) => [item]) : [],
     loadRows: formatLoadRows(result),
     directionOverview: formatDirectionOverviewRows(result)
   };
@@ -910,6 +940,12 @@ function buildReportHtml(input = {}, result = {}, suppliedMetadata = {}) {
         ['Section types', result.inputEcho?.section?.family || 'Source to be confirmed'],
         ['Assumptions/limitations', source.detail || 'Source to be confirmed']
       ])}
+      ${model.specialSection ? `<h2>Special Section Definition</h2>
+        ${definitionTableHtml(model.specialDefinitionRows)}
+        <h3>Explicit geometry inputs</h3>
+        ${rowsToHtml(['Component', 'Role', 'Width mm', 'Height mm', 'y0 mm', 'z0 mm', 'Area mm2'], model.specialComponentRows)}
+        <h3>Unavailable / incomplete properties</h3>
+        ${rowsToHtml(['Reason'], model.specialUnavailableRows.length ? model.specialUnavailableRows : [['None']])}` : ''}
     </section>
 
     <section class="page">
@@ -1040,6 +1076,16 @@ function buildLatexReport(input = {}, result = {}, suppliedMetadata = {}) {
   const yDirectionRows = tableRows(model.directionOverview.yRows);
   const combinedDirectionRows = tableRows(model.directionOverview.combinedRows);
   const sectionRows = model.sectionRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} \\\\`).join('\n');
+  const specialDefinitionLatex = model.specialSection ? [
+    '\\subsection{Special Section Definition}',
+    `Source status: ${escLatex(model.specialSection.status || 'INCOMPLETE')}\\\\`,
+    `Subtype: ${escLatex(model.specialSection.definition?.subtype || '-')}\\\\`,
+    `External record ID: ${escLatex(model.specialSection.definition?.componentRefs?.profileRecordId || 'Not supplied')}\\\\`,
+    '\\subsection{Explicit Plate Components}',
+    ...(model.specialSection.components || []).map((component) => `${escLatex(component.id)}: ${escLatex(round(component.width, 3))} x ${escLatex(round(component.height, 3))} mm at y0=${escLatex(round(component.y0, 3))}, z0=${escLatex(round(component.z0, 3))} mm.\\\\`),
+    '\\subsection{Unavailable Properties}',
+    ...((model.specialSection.missingProperties || []).map((item) => `${escLatex(item)}\\\\`))
+  ].join('\n') : '';
   const checkRows = model.checksRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} & ${escLatex(row[3])} \\\\`).join('\n');
   const loadRows = model.loadRows.map((row) => `${escLatex(row[0])} & ${escLatex(row[1])} & ${escLatex(row[2])} & ${escLatex(row[3])} \\\\`).join('\n');
   return `\\documentclass[11pt,a4paper]{article}
@@ -1130,6 +1176,8 @@ ${loadRows}
 \\textbf{Property} & \\textbf{Value} & \\textbf{Unit} \\\\
 ${sectionRows}
 \\end{longtable}
+
+${specialDefinitionLatex}
 
 \\section{Engineering Calculations}
 ${(packageData.calculations || []).map(calculationLatex).join('\n')}

@@ -164,6 +164,13 @@ function getSectionSourceInfo(section) {
       url: 'In-app custom section builder'
     };
   }
+  if (section.source_type === 'special_geometry') {
+    return {
+      title: 'User-defined plate-built section',
+      detail: section.geometry_quality_note || 'Gross properties derived from explicit user-entered plate geometry. Dependent unverified properties remain incomplete.',
+      url: 'Explicit project geometry; no external catalogue substitution'
+    };
+  }
   if (section.ltb_source_name) {
     const edition = section.ltb_source_edition ? ` (${section.ltb_source_edition})` : '';
     const status = section.ltb_data_status ? String(section.ltb_data_status).replaceAll('_', ' ') : 'published section data';
