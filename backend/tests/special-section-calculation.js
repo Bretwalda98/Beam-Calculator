@@ -3,7 +3,7 @@
 const assert = require('assert');
 const { calculateBeam } = require('../services/calculation-service');
 const { validateCalculationRequest } = require('../services/validation-service');
-const { buildReportHtml, buildLatexReport } = require('../services/report-service');
+const { buildReportHtml, buildLatexReport, buildHandCalculationPdf } = require('../services/report-service');
 const { normaliseSectionDefinition } = require('../services/special-section-service');
 
 function baseInput(sectionDefinition, overrides = {}) {
@@ -40,6 +40,8 @@ assert.ok(result.calculationPackage.warnings.some((reason) => reason.includes('c
 assert.ok(result.calculationPackage.calculations.some((calculation) => calculation.id === 'special-section-geometry'));
 const report = buildReportHtml(input, result, {});
 const latex = buildLatexReport(input, result, {});
+const handPdf = buildHandCalculationPdf(input, result, {});
+assert.ok(Buffer.isBuffer(handPdf) && handPdf.subarray(0, 4).toString() === '%PDF', 'Special-section hand calculation must compile to PDF.');
 [report, latex].forEach((output) => {
   assert.match(output, /Special Section Definition|special-section gross geometry|Special-section gross geometry/i);
   assert.match(output, /INCOMPLETE/);
