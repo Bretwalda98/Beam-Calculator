@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "id": "EXAMPLE-ONLY-REMOVE-BEFORE-USE",
+      "family": "bulb_flat",
+      "designation": "Example only",
+      "standard": "Source to be supplied",
+      "source": {
+        "name": "Source to be supplied",
+        "reference": "Source to be supplied",
+        "revisionDate": "YYYY-MM-DD"
+      },
+      "verified": false,
+      "units": {
+        "length": "mm",
+        "area": "mm2",
+        "sectionModulus": "mm3",
+        "inertia": "mm4",
+        "warping": "mm6",
+        "mass": "kg/m"
+      },
+      "dimensions": {},
+      "properties": {
+        "A_mm2": null,
+        "mass_kg_m": null,
+        "Iy_mm4": null,
+        "Iz_mm4": null,
+        "Wel_y_top_mm3": null,
+        "Wel_y_bottom_mm3": null,
+        "Wel_z_left_mm3": null,
+        "Wel_z_right_mm3": null,
+        "Wpl_y_mm3": null,
+        "Wpl_z_mm3": null,
+        "Avy_mm2": null,
+        "Avz_mm2": null,
+        "It_mm4": null,
+        "Iw_mm6": null,
+        "centroid_y_mm": null,
+        "centroid_z_mm": null,
+        "shear_centre_y_mm": null,
+        "shear_centre_z_mm": null
+      },
+      "qualityNotes": [
+        "Template only. This record is deliberately unverified and will be rejected."
+      ]
+    }
+  ]
+}

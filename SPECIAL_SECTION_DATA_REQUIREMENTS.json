@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "statusValues": ["VERIFIED_DATA", "GEOMETRY_DERIVED", "DATA_REQUIRED", "INCOMPLETE"],
+  "families": {
+    "bulb_flat": {
+      "profileBacked": true,
+      "requiredForSelection": ["id", "designation", "standard", "source.name", "source.reference", "source.revisionDate", "verified", "units", "dimensions", "properties.A_mm2", "properties.mass_kg_m", "properties.Iy_mm4", "properties.Iz_mm4", "properties.Wel_y_top_mm3", "properties.Wel_y_bottom_mm3", "properties.Wel_z_left_mm3", "properties.Wel_z_right_mm3"],
+      "requiredForShear": ["properties.Avy_mm2", "properties.Avz_mm2"],
+      "requiredForPlasticResistance": ["properties.Wpl_y_mm3", "properties.Wpl_z_mm3"],
+      "requiredForLTB": ["properties.It_mm4", "properties.Iw_mm6", "properties.shear_centre_y_mm", "properties.shear_centre_z_mm"],
+      "qualityRequirement": "Published or independently verified profile properties and geometry; no substitute designation."
+    },
+    "rolled_angle": {
+      "profileBacked": true,
+      "requiredForSelection": ["id", "designation", "standard", "source.name", "source.reference", "source.revisionDate", "verified", "units", "dimensions", "properties.A_mm2", "properties.mass_kg_m", "properties.Iy_mm4", "properties.Iz_mm4", "properties.Wel_y_top_mm3", "properties.Wel_y_bottom_mm3", "properties.Wel_z_left_mm3", "properties.Wel_z_right_mm3", "properties.centroid_y_mm", "properties.centroid_z_mm"],
+      "requiredForShear": ["properties.Avy_mm2", "properties.Avz_mm2"],
+      "requiredForPlasticResistance": ["properties.Wpl_y_mm3", "properties.Wpl_z_mm3"],
+      "requiredForLTB": ["properties.It_mm4", "properties.Iw_mm6", "properties.shear_centre_y_mm", "properties.shear_centre_z_mm"],
+      "qualityRequirement": "Verified rolled-angle properties including asymmetric extreme-fibre moduli and centroid."
+    },
+    "plate_built_general": {
+      "profileBacked": false,
+      "derivedFromExplicitGeometry": ["A_mm2", "mass_kg_m", "centroid_y_mm", "centroid_z_mm", "Iy_mm4", "Iz_mm4", "Wel_y_top_mm3", "Wel_y_bottom_mm3", "Wel_z_left_mm3", "Wel_z_right_mm3", "Wpl_y_mm3", "Wpl_z_mm3", "boundingDimensions", "componentList"],
+      "notEstimated": ["Avy_mm2", "Avz_mm2", "It_mm4", "Iw_mm6", "shearCentre", "Class4EffectiveProperties"],
+      "requiredRuleMapping": ["component classification limits", "sign-sensitive family resistance selection", "high-shear reduction applicability", "member buckling curve", "LTB applicability and coefficients"]
+    },
+    "welded_hsq": {
+      "profileBacked": false,
+      "status": "DATA_REQUIRED",
+      "missingDefinition": ["authoritative component layout and dimension mapping", "weld overlap/deduction convention", "applicable shear area formula", "buckling/LTB rule mapping"]
+    }
+  },
+  "globalEngineeringGaps": {
+    "class4": "Effective widths/properties require a verified EC3 plate-reduction implementation for each component and stress distribution.",
+    "ltb": "It, Iw, shear centre and family applicability must be exact or verified before LTB is enabled.",
+    "memberBuckling": "Buckling curves and biaxial interaction factors require documented family mapping.",
+    "flangeLoading": "The flange loading percentage control requires the authoritative family-specific rule before it may affect resistance.",
+    "class3WebUpgrade": "Requires the authoritative mapped rule and applicability limits.",
+    "boxWeldBucklingCurve": "Requires the documented weld-size/buckling-curve mapping."
+  }
+}
