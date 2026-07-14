@@ -155,6 +155,7 @@ function hideModal(id) {
 function showStartScreen() {
   toggleMenu('fileMenu', 'fileMenuBtn', false);
   toggleMenu('moreMenu', 'moreMenuBtn', false);
+  toggleMenu('exportMenu', 'exportMenuBtn', false);
   populateStartProjects();
   ensureStartBackendStatus(state.backendOk ? 'Calculation service connected.' : 'Checking calculation service...', state.backendOk ? 'ok' : 'muted');
   showModal('startScreen');
@@ -198,7 +199,22 @@ function populateStartProjects() {
 }
 
 function startNewProject() {
+  toggleMenu('fileMenu', 'fileMenuBtn', false);
   hideStartScreen();
+  if ($('newAnalysisMode')) $('newAnalysisMode').value = state.settings.defaultMode || 'single';
+  if ($('newAnalysisInputMode')) $('newAnalysisInputMode').value = 'appliedLoads';
+  if ($('newSupportType')) $('newSupportType').value = 'ss';
+  if ($('newSpan')) $('newSpan').value = '6';
+  if ($('newLoadUnit')) $('newLoadUnit').value = state.settings.defaultUnit || 'tonne';
+  if ($('newMaterial')) $('newMaterial').value = 'S355';
+  if ($('newLoadCombo')) $('newLoadCombo').value = 'en1990_610';
+  showModal('newProjectSetupModal');
+}
+
+function createNewProjectFromSetup() {
+  const mode = $('newAnalysisMode')?.value || 'single';
+  const inputMode = mode === 'multi' ? 'appliedLoads' : ($('newAnalysisInputMode')?.value || 'appliedLoads');
+  hideModal('newProjectSetupModal');
   applyMetadata({ projectName: 'Untitled beam project', calculationTitle: 'Beam section check', date: new Date().toISOString().slice(0, 10) });
   clearLoadCards();
   initLoads();
@@ -206,10 +222,19 @@ function startNewProject() {
   state.specialSectionDrafts.clear();
   state.specialSectionResolution = null;
   syncSectionSourceMode();
-  if ($('analysisInputMode')) $('analysisInputMode').value = 'appliedLoads';
+  if ($('analysisMode')) $('analysisMode').value = mode;
+  if ($('analysisInputMode')) $('analysisInputMode').value = inputMode;
+  if ($('supportType')) $('supportType').value = $('newSupportType')?.value || 'ss';
+  if ($('span')) $('span').value = $('newSpan')?.value || '6';
+  if ($('loadUnit')) $('loadUnit').value = $('newLoadUnit')?.value || 'tonne';
+  if ($('material')) $('material').value = $('newMaterial')?.value || 'S355';
+  if ($('load_combo')) $('load_combo').value = $('newLoadCombo')?.value || 'en1990_610';
   applyEndForcesToFields({}, true);
+  syncBeamModeUi();
   syncAnalysisInputModeUi();
   applyDefaultMetadata(true);
+  if ($('projectAccordion')) $('projectAccordion').open = false;
+  if ($('sectionAccordion')) $('sectionAccordion').open = true;
   recalculateDebounced();
   setSaveStatus('New project ready.', 'ok');
 }
@@ -741,13 +766,43 @@ function setSpecialCalculationAvailability(available) {
 function renderCompositeSectionSvg(resolution) {
   const p = resolution?.properties;
   if (!p?.components?.length) return '<div class="special-profile-empty">No verified section geometry available.</div>';
-  const W = 320, H = 250, margin = 35;
-  const b = p.bounds.width_mm || 1, h = p.bounds.height_mm || 1;
-  const scale = Math.min((W - 2 * margin) / b, (H - 2 * margin) / h);
-  const ox = W / 2 - p.centroid_y_mm * scale;
-  const oz = H / 2 + p.centroid_z_mm * scale;
-  const rects = p.components.map((c) => `<rect x="${ox + c.y0 * scale}" y="${oz - c.z1 * scale}" width="${c.width * scale}" height="${c.height * scale}" fill="var(--section-steel,#dbe4ee)" stroke="var(--section-line,#334155)"/>`).join('');
-  return `<svg class="section-svg section-svg-full" viewBox="0 0 ${W} ${H}" role="img" aria-label="Derived special-section geometry"><line x1="${margin}" y1="${H / 2}" x2="${W - margin}" y2="${H / 2}" stroke="var(--accent)" stroke-dasharray="4 3"/><line x1="${W / 2}" y1="${margin}" x2="${W / 2}" y2="${H - margin}" stroke="var(--accent)" stroke-dasharray="4 3"/>${rects}<circle cx="${W / 2}" cy="${H / 2}" r="3" fill="#dc2626"/><text x="${W / 2 + 7}" y="${H / 2 - 7}" fill="var(--text)" font-size="10">centroid</text><text x="${W - margin}" y="${H / 2 - 6}" fill="var(--text)" font-size="10">y-y</text><text x="${W / 2 + 6}" y="${margin}" fill="var(--text)" font-size="10">z-z</text></svg>`;
+  const W = 360, H = 260;
+  const bounds = p.components.reduce((acc, component) => ({
+    minY: Math.min(acc.minY, component.y0),
+    maxY: Math.max(acc.maxY, component.y1),
+    minZ: Math.min(acc.minZ, component.z0),
+    maxZ: Math.max(acc.maxZ, component.z1)
+  }), { minY: Infinity, maxY: -Infinity, minZ: Infinity, maxZ: -Infinity });
+  const width = Math.max(bounds.maxY - bounds.minY, 1);
+  const height = Math.max(bounds.maxZ - bounds.minZ, 1);
+  const plot = { left: 58, right: 278, top: 28, bottom: 205 };
+  const scale = Math.min((plot.right - plot.left) / width, (plot.bottom - plot.top) / height);
+  const drawWidth = width * scale;
+  const drawHeight = height * scale;
+  const left = (plot.left + plot.right - drawWidth) / 2;
+  const top = (plot.top + plot.bottom - drawHeight) / 2;
+  const xOf = (value) => left + (value - bounds.minY) * scale;
+  const yOf = (value) => top + (bounds.maxZ - value) * scale;
+  const rects = p.components.map((component) => `<rect x="${xOf(component.y0)}" y="${yOf(component.z1)}" width="${component.width * scale}" height="${component.height * scale}" fill="var(--section-steel,#dbe4ee)" stroke="var(--section-line,#334155)" stroke-width="1.2"/>`).join('');
+  const cx = xOf(p.centroid_y_mm);
+  const cy = yOf(p.centroid_z_mm);
+  const web = p.components.find((component) => component.role === 'web' || /web/i.test(component.id || ''));
+  const flange = [...p.components].filter((component) => component.role === 'flange' || /flange/i.test(component.id || '')).sort((a, b) => b.z1 - a.z1)[0];
+  const bLabel = `b = ${fmtReadable(width, 1)} mm`;
+  const hLabel = `h = ${fmtReadable(height, 1)} mm`;
+  const webCallout = web ? `<path class="leader" d="M ${xOf(web.y1)} ${yOf((web.z0 + web.z1) / 2)} L 292 ${yOf((web.z0 + web.z1) / 2)}"/><text class="note" x="296" y="${yOf((web.z0 + web.z1) / 2) - 3}">web</text><text class="note value" x="296" y="${yOf((web.z0 + web.z1) / 2) + 10}">tw = ${fmtReadable(web.width, 1)} mm</text>` : '';
+  const flangeCallout = flange ? `<path class="leader" d="M ${xOf(flange.y1)} ${yOf((flange.z0 + flange.z1) / 2)} L 292 ${yOf((flange.z0 + flange.z1) / 2)}"/><text class="note" x="296" y="${yOf((flange.z0 + flange.z1) / 2) - 3}">flange</text><text class="note value" x="296" y="${yOf((flange.z0 + flange.z1) / 2) + 10}">tf = ${fmtReadable(flange.height, 1)} mm</text>` : '';
+  return `<svg class="section-svg section-svg-full" viewBox="0 0 ${W} ${H}" role="img" aria-label="Derived special-section geometry with CAD dimensions">
+    <defs><marker id="specialDimArrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M 0 3 L 6 0 L 6 6 Z" fill="var(--muted,#64748b)"/></marker></defs>
+    <style>.axis-special{stroke:var(--accent);stroke-width:1.15;stroke-dasharray:5 4}.extension,.dimension,.leader{stroke:var(--muted,#64748b);stroke-width:.9;fill:none}.dimension{marker-start:url(#specialDimArrow);marker-end:url(#specialDimArrow)}.cad-label,.note{font:9px Inter,Arial,sans-serif;fill:var(--text,#0f172a);font-weight:700;letter-spacing:0}.note.value{font-size:8.5px;fill:var(--muted,#64748b)}.axis-label{font:9px Inter,Arial,sans-serif;fill:var(--accent);font-weight:800}.centroid-special{fill:#dc2626;stroke:var(--panel,#fff);stroke-width:1.5}</style>
+    ${rects}
+    <line class="axis-special" x1="${left - 18}" y1="${cy}" x2="${left + drawWidth + 18}" y2="${cy}"/><line class="axis-special" x1="${cx}" y1="${top - 16}" x2="${cx}" y2="${top + drawHeight + 16}"/>
+    <text class="axis-label" x="${left + drawWidth + 20}" y="${cy - 4}">y-y</text><text class="axis-label" x="${cx + 5}" y="${top - 17}">z-z</text>
+    <circle class="centroid-special" cx="${cx}" cy="${cy}" r="3"/><text class="cad-label" x="${cx + 7}" y="${cy + 12}">centroid</text>
+    <line class="extension" x1="${left}" y1="${top + drawHeight + 4}" x2="${left}" y2="232"/><line class="extension" x1="${left + drawWidth}" y1="${top + drawHeight + 4}" x2="${left + drawWidth}" y2="232"/><line class="dimension" x1="${left + 3}" y1="228" x2="${left + drawWidth - 3}" y2="228"/><text class="cad-label" x="${left + drawWidth / 2}" y="245" text-anchor="middle">${bLabel}</text>
+    <line class="extension" x1="${left - 4}" y1="${top}" x2="30" y2="${top}"/><line class="extension" x1="${left - 4}" y1="${top + drawHeight}" x2="30" y2="${top + drawHeight}"/><line class="dimension" x1="34" y1="${top + 3}" x2="34" y2="${top + drawHeight - 3}"/><text class="cad-label" x="15" y="${top + drawHeight / 2}" text-anchor="middle" transform="rotate(-90 15 ${top + drawHeight / 2})">${hLabel}</text>
+    ${webCallout}${flangeCallout}
+  </svg>`;
 }
 
 function renderSpecialPreviewResolution(resolution) {
@@ -2565,8 +2620,9 @@ function drawChart(id, series, key, title, color, options = {}) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = getVar('--panel') || '#fff';
   ctx.fillRect(0, 0, W, H);
+  const compactChart = W < 260;
   ctx.fillStyle = getVar('--text') || '#111827';
-  ctx.font = '900 13px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+  ctx.font = `${compactChart ? '800 11px' : '900 13px'} system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial`;
   ctx.fillText(title, padL, 22);
   if (!series.length) return;
   const xs = series.map((p) => Number(p.x) || 0);
@@ -2628,8 +2684,8 @@ function drawChart(id, series, key, title, color, options = {}) {
   ctx.arc(X(peak.x), Y(peak.y), 3.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = getVar('--muted') || '#64748b';
-  ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
-  ctx.fillText('x [m]', W - padR - 36, H - 12);
+  ctx.font = `${compactChart ? '700 9px' : '700 11px'} system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial`;
+  if (!compactChart) ctx.fillText('x [m]', W - padR - 36, H - 12);
   ctx.save();
   ctx.translate(14, padT + (H - padT - padB) / 2);
   ctx.rotate(-Math.PI / 2);
@@ -2643,7 +2699,7 @@ function drawChart(id, series, key, title, color, options = {}) {
   ctx.fillText(axisLabel, 0, 0);
   ctx.restore();
   ctx.fillStyle = getVar('--text') || '#111827';
-  ctx.font = '700 11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+  ctx.font = `${compactChart ? '700 9px' : '700 11px'} system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial`;
   ctx.fillText(`peak ${fmt3(peak.y)} at x=${fmt(peak.x, 2)} m`, padL, H - 10);
   if (options.endpointLabels && ys.length > 1) {
     ctx.font = '700 10px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
@@ -3150,8 +3206,8 @@ function bindEvents() {
     $('codeChecksPanel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   $('recalcBtn')?.addEventListener('click', () => calculate().catch((err) => setSaveStatus(err.message, 'error')));
-  $('reportBtn')?.addEventListener('click', () => openReport().catch((err) => setSaveStatus(err.message, 'error')));
-  $('latexBtn')?.addEventListener('click', () => openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')));
+  $('reportBtn')?.addEventListener('click', () => { toggleMenu('exportMenu', 'exportMenuBtn', false); openReport().catch((err) => setSaveStatus(err.message, 'error')); });
+  $('latexBtn')?.addEventListener('click', () => { toggleMenu('exportMenu', 'exportMenuBtn', false); openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')); });
   $('latexRefreshBtn')?.addEventListener('click', () => openHandCalculation().catch((err) => setSaveStatus(err.message, 'error')));
   $('latexDownloadBtn')?.addEventListener('click', () => {
     const blob = window._lastHandCalculationPdfBlob;
@@ -3164,7 +3220,9 @@ function bindEvents() {
   $('latexModalClose')?.addEventListener('click', () => hideModal('latexModal'));
   $('helpBtn')?.addEventListener('click', () => { $('helpModalBody').innerHTML = '<p>This production build uses the secure backend for calculations, reports and hand calculations. Enter beam data, press Recalculate, then review returned checks and diagrams.</p>'; showModal('helpModal'); });
   $('helpModalClose')?.addEventListener('click', () => hideModal('helpModal'));
-  $('themeBtn')?.addEventListener('click', () => showModal('settingsModal'));
+  $('themeBtn')?.addEventListener('click', () => { toggleMenu('fileMenu', 'fileMenuBtn', false); showModal('settingsModal'); });
+  $('advancedEc3AuditBtn')?.addEventListener('click', () => { toggleMenu('fileMenu', 'fileMenuBtn', false); showModal('advancedEc3AuditModal'); });
+  $('advancedEc3AuditClose')?.addEventListener('click', () => hideModal('advancedEc3AuditModal'));
   $('railToggleBtn')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
   $('inputRailToggle')?.addEventListener('click', () => document.body.classList.toggle('inputs-collapsed'));
   $('sectionPreviewToggle')?.addEventListener('click', () => {
@@ -3205,6 +3263,15 @@ function bindEvents() {
   $('saveToolbarBtn')?.addEventListener('click', saveLocalProject);
   $('saveProjectBtn')?.addEventListener('click', saveLocalProject);
   $('newProjectBtn')?.addEventListener('click', startNewProject);
+  $('newProjectSetupClose')?.addEventListener('click', () => hideModal('newProjectSetupModal'));
+  $('newProjectSetupCreate')?.addEventListener('click', createNewProjectFromSetup);
+  $('newAnalysisMode')?.addEventListener('change', () => {
+    const multi = $('newAnalysisMode').value === 'multi';
+    const endForces = $('newAnalysisInputMode')?.querySelector('option[value="endForces"]');
+    if (endForces) endForces.disabled = multi;
+    if (multi && $('newAnalysisInputMode')) $('newAnalysisInputMode').value = 'appliedLoads';
+    if ($('newSupportType')) $('newSupportType').disabled = multi;
+  });
   $('openProjectBtn')?.addEventListener('click', showStartScreen);
   $('downloadProjectBtn')?.addEventListener('click', () => downloadBlob(new Blob([JSON.stringify({ input: buildRequest(), result: state.last?.result || null }, null, 2)], { type: 'application/json' }), 'beam-project.json'));
   $('copyAdvancedEc3AuditJson')?.addEventListener('click', async () => {
@@ -3247,6 +3314,7 @@ function bindEvents() {
   });
   $('startContinue')?.addEventListener('click', hideStartScreen);
   $('fileMenuBtn')?.addEventListener('click', () => $('fileMenu')?.classList.toggle('hide'));
+  $('exportMenuBtn')?.addEventListener('click', () => toggleMenu('exportMenu', 'exportMenuBtn'));
   $('moreMenuBtn')?.addEventListener('click', () => toggleMenu('moreMenu', 'moreMenuBtn'));
   $$('[data-more-action]').forEach((btn) => btn.addEventListener('click', () => handleMoreAction(btn.dataset.moreAction)));
   $('chartModalClose')?.addEventListener('click', () => hideModal('chartModal'));
@@ -3259,6 +3327,7 @@ function bindEvents() {
   initCanvasObservers();
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.file-menu-wrap')) toggleMenu('fileMenu', 'fileMenuBtn', false);
+    if (!event.target.closest('.export-menu-wrap')) toggleMenu('exportMenu', 'exportMenuBtn', false);
     if (!event.target.closest('.more-menu-wrap')) toggleMenu('moreMenu', 'moreMenuBtn', false);
     if (event.target.classList.contains('modal')) hideModal(event.target.id);
     if (event.target.classList.contains('chart-modal')) hideModal(event.target.id);

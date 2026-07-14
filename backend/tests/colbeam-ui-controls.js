@@ -84,6 +84,16 @@ assert.ok(!indexHtml.includes('id="axialQ2"'), 'Fixed axial Q2 input should be r
 assert.ok(indexHtml.includes('Recorded for reference comparison; not yet used by calculation engine.'), 'Metadata-only warning should be visible.');
 assert.ok(indexHtml.includes('Current engine uses simplified interaction; reference Method 1/2 recorded for comparison.'), 'Simplified interaction warning should be visible.');
 assert.ok(indexHtml.includes('Advanced EC3 Audit Output'), 'Advanced EC3 audit output panel should be visible.');
+assert.ok(indexHtml.includes('id="advancedEc3AuditModal"'), 'Advanced EC3 audit output should open in a modal.');
+assert.ok(indexHtml.includes('id="advancedEc3AuditBtn"'), 'File menu should expose the Advanced EC3 audit action.');
+assert.ok(indexHtml.includes('id="exportMenuBtn"'), 'Toolbar should expose a compact Export menu.');
+assert.ok(indexHtml.includes('top-action-label-main">File<'), 'Primary project command should be labelled File.');
+assert.ok(!indexHtml.includes('<div class="stage-subhead"><div class="section-title">Overview</div><div class="pill">Sketch + quick charts</div></div>'), 'Redundant overview heading should be removed.');
+assert.ok(indexHtml.includes('#sponsorSlot{display:none!important}'), 'Unapproved advertising slot should remain hidden.');
+assert.ok(indexHtml.includes('id="newProjectSetupModal"'), 'New calculations should use a dedicated setup step.');
+assert.ok(secureApp.includes('function createNewProjectFromSetup'), 'New-project setup should apply values before entering the workspace.');
+assert.ok(secureApp.includes('CAD dimensions'), 'Special-section SVG should expose CAD-style dimensions.');
+assert.ok(secureApp.includes('web</text>') && secureApp.includes('flange</text>'), 'Special-section SVG should label web and flange geometry.');
 assert.ok(indexHtml.includes('id="axisOverview"'), 'index.html should include the axis overview mount point.');
 assert.ok(indexHtml.includes('id="directionGraphWindows"'), 'index.html should include the direction graph window grid.');
 assert.ok(!indexHtml.includes('<div class="stage-tabs">'), 'Overview/Shear/Moment/Deflection/Tables tab bar should be removed.');
