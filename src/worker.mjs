@@ -21,6 +21,7 @@ const VERSION = '1.0.0';
 const ALLOWED_ORIGINS = new Set([
   'https://beam-calculator.pages.dev',
   'https://beamcalculatorstudio.com',
+  'https://codex-frame3d-foundation-v1.beam-calculator.pages.dev',
   'http://localhost:8787',
   'http://localhost:8765',
   'http://localhost:4173',

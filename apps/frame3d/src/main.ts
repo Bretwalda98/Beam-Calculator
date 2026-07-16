@@ -25,6 +25,13 @@ import { renderResults } from './ui/results';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const colourScheme = matchMedia('(prefers-color-scheme: dark)');
+const FRAME3D_API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? ''
+  : 'https://beam-calculator-api.harrynixon98.workers.dev';
+
+function apiUrl(path: `/api/${string}`): string {
+  return `${FRAME3D_API_BASE}${path}`;
+}
 
 function applyTheme(): void {
   document.documentElement.dataset.theme = colourScheme.matches ? 'dark' : 'light';
@@ -299,7 +306,7 @@ async function loadSectionLibrary(): Promise<void> {
   const status = byId('section-library-status');
   status.textContent = 'Loading section properties…';
   try {
-    const response = await fetch('/api/frame3d/sections', { headers: { Accept: 'application/json' } });
+    const response = await fetch(apiUrl('/api/frame3d/sections'), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Section service returned ${response.status}.`);
     const body = await response.json() as { sections?: Frame3DSectionLibraryItem[] };
     sectionLibrary = body.sections ?? [];

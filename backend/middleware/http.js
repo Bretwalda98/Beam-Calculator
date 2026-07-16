@@ -45,7 +45,7 @@ function setSecurityHeaders(res, options = {}) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' https://beam-calculator-api.harrynixon98.workers.dev",
     "base-uri 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'"
