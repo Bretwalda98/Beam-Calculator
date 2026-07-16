@@ -1,0 +1,15 @@
+.git
+.github
+.terraform
+.wrangler
+artifacts
+crates
+dist
+docs
+infra
+node_modules
+storage
+services
+apps
+packages
+*.log

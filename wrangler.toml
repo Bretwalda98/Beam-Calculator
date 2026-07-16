@@ -3,3 +3,10 @@ main = "src/worker.mjs"
 compatibility_date = "2026-06-28"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
+
+[vars]
+# Configure these per staging environment. CAD_FEM_GATEWAY_TOKEN is a secret
+# and must be set with `wrangler secret put`, never committed here.
+CF_ACCESS_TEAM_DOMAIN = ""
+CF_ACCESS_AUD = ""
+CAD_FEM_ORIGIN_URL = ""

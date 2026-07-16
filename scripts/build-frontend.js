@@ -43,11 +43,17 @@ if (fs.existsSync(path.join(root, 'public', 'styles.css'))) {
 });
 copyFile(path.join(root, 'privacy', 'index.html'), path.join(dist, 'privacy', 'index.html'), minify);
 
-execFileSync(process.execPath, [
-  path.join(root, 'node_modules', 'vite', 'bin', 'vite.js'),
-  'build',
-  '--config',
-  path.join(root, 'apps', 'frame3d', 'vite.config.ts')
-], { cwd: root, stdio: 'inherit' });
+[
+  path.join(root, 'apps', 'frame3d-hub', 'vite.config.ts'),
+  path.join(root, 'apps', 'frame3d', 'vite.config.ts'),
+  path.join(root, 'apps', 'solid-fem', 'vite.config.ts')
+].forEach((configPath) => {
+  execFileSync(process.execPath, [
+    path.join(root, 'node_modules', 'vite', 'bin', 'vite.js'),
+    'build',
+    '--config',
+    configPath
+  ], { cwd: root, stdio: 'inherit' });
+});
 execFileSync(process.execPath, [path.join(root, 'scripts', 'check-public-bundle.js')], { stdio: 'inherit' });
 console.log(`Frontend build complete: ${path.relative(root, dist)}`);

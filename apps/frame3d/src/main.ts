@@ -42,9 +42,9 @@ colourScheme.addEventListener?.('change', applyTheme);
 
 app.innerHTML = `
   <header class="topbar">
-    <a class="brand" href="/"><span class="mark">BC</span><span>Beam Calculator Studio</span></a>
+    <a class="brand" href="/frame3d/"><span class="mark">BC</span><span>Beam Calculator Studio</span></a>
     <div class="product"><strong>3D Frame Analysis</strong><span>Foundation</span></div>
-    <a class="beam-link" href="/beam/">Beam EC3</a>
+    <a class="beam-link" href="/frame3d/solid/">Solid CAD/FEM</a>
   </header>
   <main>
     <div class="foundation-notice">Foundation release: linear-elastic 3D frame analysis using beam elements. Results must be independently verified before engineering use.</div>

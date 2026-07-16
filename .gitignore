@@ -2,6 +2,9 @@ artifacts/
 dist/
 storage/
 .wrangler/
+.terraform/
+*.tfstate
+*.tfstate.*
 node_modules/
 crates/**/target/
 *.log

@@ -1,5 +1,6 @@
 const { createHmac, timingSafeEqual } = require('crypto');
 const { config } = require('../config');
+const { resolveGatewayIdentity } = require('../services/cad-fem-postgres-repository');
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 120;
@@ -130,6 +131,12 @@ function verifySignedValue(value, signature) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+function safeEqualText(left, right) {
+  const a = Buffer.from(String(left || ''));
+  const b = Buffer.from(String(right || ''));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 function parseCookies(req) {
   const raw = req.headers.cookie || '';
   return Object.fromEntries(raw.split(';').map((part) => {
@@ -164,8 +171,28 @@ function clearSessionCookie(res) {
   res.setHeader('Set-Cookie', `beam_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${secure}`);
 }
 
-function requireAuth(req, res) {
-  const session = getSession(req);
+async function requireAuth(req, res) {
+  let session = getSession(req);
+  if (!session && config.cadFemGatewayToken && safeEqualText(
+    req.headers['x-cad-fem-gateway-token'],
+    config.cadFemGatewayToken
+  )) {
+    try {
+      const identity = await resolveGatewayIdentity({
+        email: String(req.headers['x-beam-user-email'] || ''),
+        subject: String(req.headers['x-beam-user-subject'] || ''),
+        name: String(req.headers['x-beam-user-name'] || '')
+      });
+      session = {
+        userId: identity.id,
+        email: identity.email,
+        name: identity.name || ''
+      };
+    } catch (error) {
+      sendError(res, error.statusCode || 401, error.message, error.code || 'gateway_identity_invalid');
+      return null;
+    }
+  }
   if (!session) {
     sendError(res, 401, 'Sign in is required for this action.', 'auth_required');
     return null;

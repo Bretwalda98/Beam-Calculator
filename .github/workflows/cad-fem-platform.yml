@@ -1,0 +1,72 @@
+name: CAD FEM platform
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cad-fem-platform.yml"
+      - "Dockerfile.api"
+      - "apps/frame3d-hub/**"
+      - "apps/solid-fem/**"
+      - "backend/config.js"
+      - "backend/db/**"
+      - "backend/middleware/http.js"
+      - "backend/services/cad-fem-*.js"
+      - "backend/tests/cad-fem-service.js"
+      - "backend/tests/worker-route-smoke.mjs"
+      - "infra/aws/staging/**"
+      - "packages/cad-fem-*/**"
+      - "scripts/migrate-database.js"
+      - "services/cad-fem-native/**"
+      - "src/worker.mjs"
+      - "server.js"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - run: npm ci --ignore-scripts
+      - run: npm audit --audit-level=high
+      - run: npm run check
+      - run: npm run check:rust
+      - run: npm test
+      - run: npm run build:frontend
+      - run: node backend/tests/worker-route-smoke.mjs
+      - run: node backend/tests/routing-smoke.js
+      - name: Build staging API image
+        run: docker build --file Dockerfile.api --tag beam-cad-fem-api:test .
+
+  terraform:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: infra/aws/staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
+  native-linear:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build pinned native image and run CTest
+        run: docker build --progress=plain --tag beam-cad-fem-native:test services/cad-fem-native

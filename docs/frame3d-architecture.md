@@ -5,13 +5,15 @@
 Frame3D is independent from Beam EC3.
 
 - `/beam/` retains the existing Beam EC3 document, state keys and `/api/...` calculation/report requests.
-- `/frame3d/` is a Vite/TypeScript application under `apps/frame3d`.
+- `/frame3d/` is the project/study selector under `apps/frame3d-hub`.
+- `/frame3d/frame/` is the existing Vite/TypeScript frame application under `apps/frame3d`.
+- `/frame3d/solid/` is a separate React/Three.js workbench under `apps/solid-fem`.
 - Shared serialisable types, unit helpers and browser-side validation live under `packages/frame3d-*`.
 - The numerical solver lives under `crates/frame3d-solver` and is compiled to WebAssembly with `wasm-bindgen`.
 - A dedicated browser Web Worker imports the generated WASM package. The main browser thread does not assemble or solve stiffness matrices.
 - The Cloudflare Worker is not used for structural solution. It only exposes the existing APIs plus read-only Frame3D-compatible section snapshots at `GET /api/frame3d/sections`.
 
-Frame3D state is held only in `apps/frame3d/src/state/store.ts`. It does not read or mutate Beam EC3 draft keys.
+Frame3D state is held only in `apps/frame3d/src/state/store.ts`. Existing Frame3D JSON and local-storage data continue to open in Frame mode. It does not read or mutate Beam EC3 or Solid-mode project state.
 
 ## Analysis pipeline
 
@@ -51,4 +53,6 @@ Assigning a catalogue section adds that snapshot to the model. A later database 
 
 ## Deployment structure
 
-The requested `apps/`, `packages/` and `crates/` structure is used. Generated static files remain in `dist/` because the repository’s Cloudflare Pages process already publishes that directory. Generated `wasm-bindgen` files are committed under `apps/frame3d/src/wasm` so the existing Node-only Pages build can bundle Frame3D without requiring Rust in the Pages environment. They are regenerated with `npm run build:wasm`; `npm run build:verified` regenerates them before the production frontend build.
+The requested `apps/`, `packages/` and `crates/` structure is used. Generated static files remain in `dist/` because the repository’s Cloudflare Pages process already publishes that directory. Generated `wasm-bindgen` files are committed under `apps/frame3d/src/wasm` so the existing Node-only Pages build can bundle Frame mode without requiring Rust in the Pages environment. They are regenerated with `npm run build:wasm`; `npm run build:verified` regenerates them before the production frontend build.
+
+Solid mode deliberately does not reuse this solver. Its B-rep, mesh and result artifacts are authoritative on the native service and are transported through the versioned `CadFEMProject`, job and result manifests described in `docs/cad-fem-platform.md`.

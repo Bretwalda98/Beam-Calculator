@@ -1,6 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 const http = require('http');
+const { Readable } = require('stream');
 const { config, requireProductionSecret } = require('./backend/config');
 const {
   sendJson,
@@ -26,6 +27,19 @@ const {
 const { validateCalculationRequest } = require('./backend/services/validation-service');
 const { providers, oauthStart, unauthenticatedSession } = require('./backend/auth/auth-service');
 const { listProjects, readProject, saveProject, archiveProject } = require('./backend/services/project-service');
+const {
+  listCadFemProjects,
+  createCadFemProject,
+  readCadFemProject,
+  applyCadFemCommand,
+  createCadFemImportUpload,
+  queueCadFemImport,
+  queueCadFemJob,
+  getCadFemJob,
+  cancelCadFemJob,
+  getCadFemJobEvents,
+  getCadFemArtifact
+} = require('./backend/services/cad-fem-service');
 const { resultToPdf, buildReportHtml, buildLatexReport, buildHandCalculationPdf } = require('./backend/services/report-service');
 const { listSpecialSectionOptions, resolveSpecialSectionDefinition } = require('./backend/services/special-section-service');
 
@@ -51,7 +65,11 @@ function publicPath(urlPath) {
     ['/privacy', path.join(config.publicDir, 'privacy', 'index.html')],
     ['/privacy/', path.join(config.publicDir, 'privacy', 'index.html')],
     ['/frame3d', path.join(config.publicDir, 'dist', 'frame3d', 'index.html')],
-    ['/frame3d/', path.join(config.publicDir, 'dist', 'frame3d', 'index.html')]
+    ['/frame3d/', path.join(config.publicDir, 'dist', 'frame3d', 'index.html')],
+    ['/frame3d/frame', path.join(config.publicDir, 'dist', 'frame3d', 'frame', 'index.html')],
+    ['/frame3d/frame/', path.join(config.publicDir, 'dist', 'frame3d', 'frame', 'index.html')],
+    ['/frame3d/solid', path.join(config.publicDir, 'dist', 'frame3d', 'solid', 'index.html')],
+    ['/frame3d/solid/', path.join(config.publicDir, 'dist', 'frame3d', 'solid', 'index.html')]
   ]);
   if (routeMap.has(decoded)) return routeMap.get(decoded);
   const safePath = decoded.replace(/^\/+/, '');
@@ -96,6 +114,26 @@ async function serveStatic(req, res, pathname) {
   }
 }
 
+function proxyNativeResponse(res, response) {
+  const headers = {};
+  for (const name of [
+    'content-type',
+    'content-length',
+    'content-disposition',
+    'cache-control',
+    'etag',
+    'last-modified',
+    'location',
+    'retry-after'
+  ]) {
+    const value = response.headers.get(name);
+    if (value) headers[name] = value;
+  }
+  res.writeHead(response.status, headers);
+  if (!response.body) return res.end();
+  return Readable.fromWeb(response.body).pipe(res);
+}
+
 async function routeApi(req, res, url) {
   if (!rateLimit(req, res)) return;
   const pathname = url.pathname;
@@ -126,7 +164,7 @@ async function routeApi(req, res, url) {
       throw err;
     }
     if (req.method === 'DELETE' && pathname === '/api/account') {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       return sendJson(res, 202, { ok: true, message: 'Account deletion request accepted. Production deployment must queue verified data deletion and audit logging.' });
     }
@@ -215,29 +253,29 @@ async function routeApi(req, res, url) {
       return res.end(latex);
     }
     if (pathname === '/api/projects' && req.method === 'GET') {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       return sendJson(res, 200, { projects: await listProjects(session.userId) });
     }
     if (pathname === '/api/projects' && req.method === 'POST') {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       const body = await parseJsonBody(req);
       return sendJson(res, 200, { project: await saveProject(session.userId, body) });
     }
     const projectMatch = pathname.match(/^\/api\/projects\/([a-f0-9-]{36})(?:\/(archive|pdf))?$/i);
     if (projectMatch && req.method === 'GET' && !projectMatch[2]) {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       return sendJson(res, 200, { project: await readProject(session.userId, projectMatch[1]) });
     }
     if (projectMatch && req.method === 'POST' && projectMatch[2] === 'archive') {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       return sendJson(res, 200, { project: await archiveProject(session.userId, projectMatch[1]) });
     }
     if (projectMatch && req.method === 'GET' && projectMatch[2] === 'pdf') {
-      const session = requireAuth(req, res);
+      const session = await requireAuth(req, res);
       if (!session) return;
       const project = await readProject(session.userId, projectMatch[1]);
       const result = project.latestInput ? calculateBeam(project.latestInput) : project.latestResult;
@@ -248,6 +286,85 @@ async function routeApi(req, res, url) {
         'Content-Length': pdf.length
       });
       return res.end(pdf);
+    }
+    if (pathname === '/api/cad/projects' && req.method === 'GET') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, { projects: await listCadFemProjects(session.userId) });
+    }
+    if (pathname === '/api/cad/projects' && req.method === 'POST') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      const body = await parseJsonBody(req, 1024 * 1024);
+      return sendJson(res, 201, { project: await createCadFemProject(session.userId, body.project) });
+    }
+    if (pathname === '/api/cad/projects' && req.method === 'PATCH') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      const body = await parseJsonBody(req);
+      return sendJson(
+        res,
+        200,
+        await applyCadFemCommand(session.userId, body.projectId, body)
+      );
+    }
+    const cadProjectMatch = pathname.match(/^\/api\/cad\/projects\/([a-f0-9-]{36})(?:\/(commands|imports))?$/i);
+    if (cadProjectMatch && req.method === 'GET' && !cadProjectMatch[2]) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, { project: await readCadFemProject(session.userId, cadProjectMatch[1]) });
+    }
+    if (cadProjectMatch && req.method === 'POST' && cadProjectMatch[2] === 'commands') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, await applyCadFemCommand(session.userId, cadProjectMatch[1], await parseJsonBody(req)));
+    }
+    if (cadProjectMatch && req.method === 'PATCH' && !cadProjectMatch[2]) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, await applyCadFemCommand(session.userId, cadProjectMatch[1], await parseJsonBody(req)));
+    }
+    if (cadProjectMatch && req.method === 'POST' && cadProjectMatch[2] === 'imports') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      const body = await parseJsonBody(req);
+      if (!body.stepArtifactId) {
+        return sendJson(res, 201, await createCadFemImportUpload(session.userId, cadProjectMatch[1], body));
+      }
+      return sendJson(res, 202, await queueCadFemImport(session.userId, cadProjectMatch[1], body));
+    }
+    const studyJobMatch = pathname.match(/^\/api\/fea\/studies\/([a-f0-9-]{36})\/(mesh|solve)-jobs$/i);
+    if (studyJobMatch && req.method === 'POST') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 202, await queueCadFemJob(session.userId, studyJobMatch[1], studyJobMatch[2], await parseJsonBody(req)));
+    }
+    const jobMatch = pathname.match(/^\/api\/jobs\/([a-f0-9-]{36})(?:\/(events)|\/artifacts\/([a-f0-9-]{36}))?$/i);
+    if (jobMatch && req.method === 'GET' && !jobMatch[2] && !jobMatch[3]) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, await getCadFemJob(session.userId, jobMatch[1]));
+    }
+    if (jobMatch && req.method === 'DELETE' && !jobMatch[2] && !jobMatch[3]) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 202, await cancelCadFemJob(session.userId, jobMatch[1]));
+    }
+    if (jobMatch && req.method === 'GET' && jobMatch[2] === 'events') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return proxyNativeResponse(
+        res,
+        await getCadFemJobEvents(session.userId, jobMatch[1], req.headers['last-event-id'])
+      );
+    }
+    if (jobMatch && req.method === 'GET' && jobMatch[3]) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return proxyNativeResponse(
+        res,
+        await getCadFemArtifact(session.userId, jobMatch[1], jobMatch[3])
+      );
     }
     return sendError(res, 404, 'API endpoint not found.', 'not_found');
   } catch (err) {

@@ -10,7 +10,9 @@ Run `npm run build:frontend`, then open:
 
 - `http://127.0.0.1:4173/` for tool selection
 - `http://127.0.0.1:4173/beam/` for Beam EC3
-- `http://127.0.0.1:4173/frame3d/` for 3D Frame Analysis
+- `http://127.0.0.1:4173/frame3d/` for 3D project/study selection
+- `http://127.0.0.1:4173/frame3d/frame/` for the existing 3D Frame Analysis
+- `http://127.0.0.1:4173/frame3d/solid/` for the Solid FEM Beta workbench
 
 The Beam EC3 document is a backend API client at `/beam/`. It does not load the old public `sections_database.js` file and does not run the protected Beam solver in the browser.
 
@@ -34,7 +36,7 @@ BEAM_API_BASE_URL=https://your-backend.example.com npm run build:frontend
 
 Production source maps are not generated. `npm run security:bundle-check` fails if protected solver names, report generators, `PROFILE_DB`, or `sections_database.js` appear in the public static files.
 
-Cloudflare Pages publishes `dist/`. The `_redirects` file canonicalises `/beam`, `/frame3d` and `/privacy` to their directory routes. The generated `_headers` file grants WebAssembly compilation only below `/frame3d/`. The API Worker remains separate; all existing `/api/...` routes are preserved and the read-only `/api/frame3d/sections` route is additive.
+Cloudflare Pages publishes `dist/`. The `_redirects` file canonicalises `/beam`, `/frame3d`, `/frame3d/frame`, `/frame3d/solid` and `/privacy` to their directory routes. The generated `_headers` file grants WebAssembly compilation only below `/frame3d/`. The API Worker remains separate; all existing `/api/...` routes are preserved and the read-only `/api/frame3d/sections` plus authenticated `/api/cad/...`, `/api/fea/...` and `/api/jobs/...` routes are additive.
 
 ## Environment
 
@@ -48,6 +50,18 @@ Required for production:
 - Apple OAuth variables
 - Database connection variables for PostgreSQL
 - Object storage credentials for uploaded logos/files, if enabled
+
+Solid-mode staging additionally requires:
+
+- `DATABASE_URL` or split PostgreSQL connection variables
+- `CAD_FEM_DATABASE_CA_PATH` for the reviewed AWS RDS trust bundle when TLS is enabled
+- `CAD_FEM_GATEWAY_TOKEN`
+- `CF_ACCESS_TEAM_DOMAIN`
+- `CF_ACCESS_AUD`
+- `CAD_FEM_ORIGIN_URL` when the Worker proxies through Cloudflare Tunnel
+- AWS Batch region, queue and job definition
+- R2 endpoint, bucket, access key and secret
+- `CAD_FEM_VERIFICATION_STEP_SHA256` for the reviewed axial-bar fixture
 
 ## Cloudflare Worker API
 
@@ -78,7 +92,7 @@ Required live API URL:
 https://beam-calculator-api.harrynixon98.workers.dev
 ```
 
-The Cloudflare Pages frontend defaults to this API base URL when hosted at `https://beam-calculator.pages.dev` or `https://beamcalculatorstudio.com`.
+The Cloudflare Pages frontend defaults to this API base URL when hosted at `https://beam-calculator.pages.dev` or `https://beamcalculatorstudio.com`. Solid mode uses same-origin absolute `/api/...` paths so Cloudflare Access and the Worker gateway remain in the request path.
 
 ## HTTPS
 
@@ -86,7 +100,13 @@ Terminate TLS at the platform load balancer or reverse proxy. Redirect HTTP to H
 
 ## Database
 
-Use PostgreSQL and apply `backend/db/schema.sql`. The JSON store is for local development only.
+Use PostgreSQL and run `npm run db:migrate`. The command applies `backend/db/schema.sql` and ordered migrations under `backend/db/migrations/`, recording checksums. The JSON store is for local development only and is rejected for production Solid-mode paths.
+
+## Isolated CAD/FEM staging
+
+`infra/aws/staging` defines a private ECS Fargate API service with a `cloudflared` sidecar, encrypted RDS PostgreSQL 16 and AWS Batch on Fargate in `eu-west-2`. The native Batch image reads immutable job inputs from R2 and writes status, logs, meshes and result manifests back to R2.
+
+The Terraform requires immutable API, native and `cloudflared` image references. It has been formatted and validated locally, but no plan, apply, secret creation, DNS change or production deployment is part of this branch.
 
 ## Backups
 

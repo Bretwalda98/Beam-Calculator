@@ -1,5 +1,37 @@
 # Frame3D foundation task log
 
+## CAD-integrated solid FEM programme — 16 July 2026
+
+- Stacked branch: `codex/fea-platform-spike`, based on the open foundation branch at `59c3263`; foundation PR #9 is not yet merged into `main`.
+- Baseline `npm run check`: passed.
+- Baseline `npm run verify:frame3d`: passed (26 Rust tests, 7 compiled-WASM analytical comparisons, Worker and direct-route smoke tests).
+- Baseline `npm run smoke`: retains the previously recorded section-catalogue SHA-256 mismatch and reaches no new failure before that assertion.
+- Native environment: Rust/Node/Git are available. Docker, WSL, CMake, Ninja, AWS CLI and a system C++ toolchain are not installed. A portable LLVM-MinGW compiler is available outside the repository.
+- Native CAD/FEM code must therefore have a reproducible Linux container/CI build and must fail clearly when OCCT, Netgen, MFEM or Tribol are unavailable. No browser or JavaScript solid-solver substitute is permitted.
+
+### Staged implementation plan
+
+1. Add a separate versioned `CadFEMProject` contract, validation package, PostgreSQL migration, immutable command/job interfaces and authenticated edge/native-service boundaries.
+2. Split `/frame3d/` into a project selector, preserve the existing solver at `/frame3d/frame/`, and add a separate React/Three.js solid workbench at `/frame3d/solid/`.
+3. Add the C++20 native service, pinned dependency/container build, OCCT document and STEP pipeline, Netgen tetrahedral meshing, MFEM linear elasticity and structured result artefacts.
+4. Add assembly mates, bonded interfaces, nonlinear frictionless Tribol contact and convergence diagnostics only after their native benchmarks pass.
+5. Add AWS ECS/Batch/RDS staging infrastructure and Cloudflare gateway/R2 configuration without changing production DNS, secrets or routes.
+6. Run existing Beam/Frame regressions plus CAD schema, routing, native build and benchmark gates. Never label solid/contact results verified until those gates pass.
+
+### Platform-spike outcome
+
+- `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.
+- Added the separate versioned `CadFEMProject` schema, validation and solve-readiness gates without mixing it with `Frame3DModel`.
+- Added PostgreSQL project/revision/command/study/job/artifact persistence, Cloudflare Access gateway validation, idempotent APIs, short-lived R2 artifact transport and AWS Batch submission/cancellation/reconciliation.
+- Added a pinned C++20 native container pipeline for STEP/OCCT/OCAF regeneration, Netgen tetrahedral meshing and MFEM Float64 linear elasticity, plus an optional MFEM/Tribol frictionless contact patch.
+- Added isolated `eu-west-2` ECS/RDS/Batch staging Terraform and CI jobs. Terraform formatting and validation pass; nothing has been applied or deployed.
+- Local TypeScript, contract, route and existing Frame3D checks pass. The native container and benchmark have not run locally because Docker/CMake/native dependencies are unavailable; CI is the required gate.
+- Final local audit: `npm run check`, `npm test`, `npm run verify:cad-fem`, full `npm audit`, Git Bash syntax checking and Terraform 1.15.8 formatting/validation pass. The 13-route smoke includes `/`, `/beam/`, `/frame3d/`, `/frame3d/frame/` and `/frame3d/solid/`.
+- Final `npm run smoke` reaches the same pre-existing section-catalogue SHA mismatch: actual `ad2022577fb81246c808f7ae213419bd82e31f62eac5d8ee0d274f5251fd181d`, expected `a9d15c34db320151fcb36730e04b87c41eeaeecd26bd404fff62b688906d9d26`.
+- The final source audit corrected the OCCT/Netgen release pins to their resolvable annotated-tag commits, strips browser credentials at the Tunnel boundary, preserves Beam-only production startup and requires an exact reviewed STEP hash plus fixed benchmark settings for native solve submission.
+- Arbitrary solid solves remain disabled. Only the named axial-bar verification profile may be submitted, and no solid/contact result is described as verified.
+- This branch is stacked on the unmerged foundation branch because the programme requires later stages to begin only after the preceding stage is reviewed and merged. Stages 2–5 have not been started.
+
 ## Baseline — 16 July 2026
 
 - Branch: `codex/frame3d-foundation-v1`, created from `origin/main` at `9b5ee6e`.
