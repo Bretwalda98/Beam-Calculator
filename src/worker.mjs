@@ -8,6 +8,7 @@ const { calculateBeam } = calculationService;
 const {
   listSectionFamilies,
   listPublicSections,
+  listFrame3dSections,
   getSectionById,
   buildSectionPreview,
   buildSectionSourceIndex
@@ -177,6 +178,13 @@ async function route(request) {
     return jsonResponse(request, 200, {
       ok: true,
       sources: buildSectionSourceIndex()
+    });
+  }
+
+  if (request.method === 'GET' && pathname === '/api/frame3d/sections') {
+    return jsonResponse(request, 200, {
+      ok: true,
+      sections: listFrame3dSections()
     });
   }
 

@@ -4,6 +4,8 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const publicRoots = [
   path.join(root, 'index.html'),
+  path.join(root, 'beam'),
+  path.join(root, 'privacy'),
   path.join(root, 'public'),
   path.join(root, 'dist')
 ];

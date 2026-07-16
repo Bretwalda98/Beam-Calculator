@@ -55,6 +55,44 @@ function listSectionNames(family) {
   })).filter((row) => row.name);
 }
 
+function listFrame3dSections() {
+  return familyKeys().flatMap((family) => (PROFILE_DB[family] || []).map((row) => {
+    const section = getSection(family, row.name);
+    const preview = buildSectionPreview(section);
+    const properties = preview?.visibleProperties || {};
+    const required = {
+      area: visibleNumber(properties.A_mm2),
+      iy: visibleNumber(properties.Iy_mm4),
+      iz: visibleNumber(properties.Iz_mm4),
+      torsionConstant: visibleNumber(properties.It_mm4)
+    };
+    const labels = { area: 'A', iy: 'Iy', iz: 'Iz', torsionConstant: 'J/It' };
+    const missingProperties = Object.entries(required)
+      .filter(([, value]) => !value)
+      .map(([key]) => labels[key]);
+    return {
+      id: sectionId(family, row.name),
+      designation: row.name,
+      family,
+      available: missingProperties.length === 0,
+      missingProperties,
+      snapshot: missingProperties.length ? null : {
+        id: `LIB-${sectionId(family, row.name).replaceAll('|', '-')}`,
+        designation: row.name,
+        sourceSectionId: sectionId(family, row.name),
+        area: required.area,
+        iy: required.iy,
+        iz: required.iz,
+        torsionConstant: required.torsionConstant,
+        sourceRevision: [
+          preview.source?.title,
+          preview.source?.detail
+        ].filter(Boolean).join(' — ')
+      }
+    };
+  }));
+}
+
 function getSection(family, name) {
   const key = String(family || '').toUpperCase();
   const rows = PROFILE_DB[key] || [];
@@ -237,6 +275,7 @@ module.exports = {
   listSectionFamilies,
   listPublicSections,
   listSectionNames,
+  listFrame3dSections,
   getSection,
   getSectionById,
   buildSectionPreview,

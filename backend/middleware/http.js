@@ -21,13 +21,14 @@ function sendError(res, statusCode, message, code = 'request_error') {
 
 function setSecurityHeaders(res, options = {}) {
   const legacyFrontend = Boolean(options.legacyFrontend);
+  const frame3dFrontend = Boolean(options.frame3dFrontend);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
-  res.setHeader('Content-Security-Policy', legacyFrontend ? [
+  const policy = legacyFrontend ? [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
@@ -37,7 +38,18 @@ function setSecurityHeaders(res, options = {}) {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'"
-  ].join('; ') : [
+  ] : frame3dFrontend ? [
+    "default-src 'self'",
+    "script-src 'self' 'wasm-unsafe-eval'",
+    "worker-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ] : [
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
@@ -47,7 +59,8 @@ function setSecurityHeaders(res, options = {}) {
     "base-uri 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'"
-  ].join('; '));
+  ];
+  res.setHeader('Content-Security-Policy', policy.join('; '));
 }
 
 function applyCors(req, res) {

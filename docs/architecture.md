@@ -4,13 +4,17 @@
 
 The application is now structured as a backend-first web app.
 
-- Frontend: `index.html`, `public/secure-app.js`, `public/styles.css`
+- Tool selection: `index.html`
+- Beam EC3 frontend: `beam/index.html`, `public/secure-app.js`, `public/styles.css`
+- Frame3D frontend: `apps/frame3d/**`, shared TypeScript packages under `packages/frame3d-*`, and the Rust solver under `crates/frame3d-solver`
 - Backend API: `server.js`, `backend/**`
 - Server data: `backend/data/sections-database.js`, `backend/data/materials.js`
 - Legacy parity source: `backend/legacy/legacy-index.html`
 - Database design: `backend/db/schema.sql`
 
-The public frontend is only a presentation layer. It handles forms, theme/layout preferences, diagram drawing from returned arrays, and report/download actions. It does not contain engineering equations, design rules, material tables, section properties, or the full section database.
+The Beam EC3 public frontend is only a presentation layer. It handles forms, theme/layout preferences, diagram drawing from returned arrays, and report/download actions. It does not contain engineering equations, design rules, material tables, section properties, or the full section database.
+
+Frame3D is a separate Vite/TypeScript application. It has its own state and validation packages and executes its Rust/WebAssembly space-frame solver in a browser Web Worker. It does not use Beam EC3 state or calculation services.
 
 ## Request Flow
 
@@ -36,7 +40,7 @@ The previous monolithic browser app is stored at `backend/legacy/legacy-index.ht
 
 ## Public Bundle Guard
 
-`scripts/check-public-bundle.js` scans the production static surface and fails if protected tokens such as `PROFILE_DB`, the old section database script, solver functions, or report-generation functions appear in `index.html` or `public/**`.
+`scripts/check-public-bundle.js` scans the production static surface and fails if protected Beam tokens such as `PROFILE_DB`, the old section database script, Beam solver functions, or report-generation functions appear in the public files. The independent, permissively licensed Frame3D WebAssembly solver is intentionally part of the public Frame3D bundle.
 
 ## Production Target
 
