@@ -38,11 +38,19 @@
 #include <utility>
 #include <vector>
 
+// Netgen exposes the C++ nglib implementation from its nglib namespace.  The
+// public headers intentionally contain the declarations without a namespace,
+// so include them inside the namespace to keep the declarations ABI-compatible
+// with the shared library exported by the pinned Netgen build.
+namespace nglib {
 #include <nglib.h>
 #include <nglib_occ.h>
+}  // namespace nglib
 
 namespace cad_fem {
 namespace {
+
+using namespace nglib;
 
 void require_file(const std::filesystem::path& path, std::string_view label) {
   if (!std::filesystem::is_regular_file(path)) {
