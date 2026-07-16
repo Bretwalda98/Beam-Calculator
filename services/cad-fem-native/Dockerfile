@@ -91,7 +91,11 @@ RUN cmake -S /src/cad-fem-native -B /build/cad-fem-native -G Ninja \
 
 FROM ubuntu:24.04 AS runtime
 ARG DEBIAN_FRONTEND=noninteractive
+ARG AWS_CLI_VERSION=2.35.24
+ARG AWS_CLI_SHA256=d71b4388a3f9e2c56819de40936b018674b04352766eef615b444c4c38b043d7
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
     libblas3 \
     libfontconfig1 \
     libfreetype6 \
@@ -102,11 +106,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-6 \
     libxext6 \
     libxmu6 \
-    awscli \
     jq \
     tcl8.6 \
     tk8.6 \
-  && rm -rf /var/lib/apt/lists/*
+    unzip \
+  && curl --fail --location --silent --show-error \
+    "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" \
+    --output /tmp/awscliv2.zip \
+  && echo "${AWS_CLI_SHA256}  /tmp/awscliv2.zip" | sha256sum --check --strict \
+  && unzip -q /tmp/awscliv2.zip -d /tmp \
+  && /tmp/aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli \
+  && rm -rf /tmp/aws /tmp/awscliv2.zip /var/lib/apt/lists/*
 
 COPY --from=native-build /opt/cad-fem /opt/cad-fem
 COPY --from=native-build /opt/cad-fem/share/licenses /usr/share/licenses/beam-calculator-cad-fem/upstream

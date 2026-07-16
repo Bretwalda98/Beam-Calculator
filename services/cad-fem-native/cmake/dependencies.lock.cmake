@@ -20,3 +20,6 @@ set(CAD_FEM_AXOM_REVISION "4839900850b7b43bcc2accf7041e3479cea59515") # reviewed
 
 set(CAD_FEM_CERES_REPOSITORY "https://github.com/ceres-solver/ceres-solver.git")
 set(CAD_FEM_CERES_REVISION "2.2.0") # stage-two sketch solver pin
+
+set(CAD_FEM_AWS_CLI_VERSION "2.35.24")
+set(CAD_FEM_AWS_CLI_ARCHIVE_SHA256 "d71b4388a3f9e2c56819de40936b018674b04352766eef615b444c4c38b043d7")
