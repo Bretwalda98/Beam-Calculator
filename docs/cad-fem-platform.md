@@ -52,6 +52,8 @@ Job input and output prefixes are immutable. The API supports cancellation and r
 
 ## Verification state
 
-TypeScript, schema, service, route and Terraform validation run locally. The workstation used for this branch does not have Docker, CMake, Ninja or the pinned native dependencies, so the OCCT/Netgen/MFEM container and its benchmark must run in CI. Until that passes, the UI remains visibly labelled Beta and the project must not claim verified solid or contact results.
+TypeScript, schema, service, route and Terraform validation pass locally and in CI. The workstation used for this branch does not have Docker, CMake, Ninja or the pinned native dependencies, so the native pipeline runs in the reproducible Linux CI image. CI run `29621269146` passed all eight sanitised native CTests. Its 203-node/426-tetrahedron axial-bar solve returned `0.00474927 mm` against `0.00476190 mm` analytically (0.2654% error) and a `3.9343 × 10^-11` normalised equilibrium residual, passing the named proof benchmark's 1% and `1 × 10^-8` gates.
+
+That result verifies only the axial proof fixture and native integration path. It does not satisfy the wider bending, torsion, pressure, multi-material, mesh-convergence or contact benchmark matrix required for a verified Solid FEM release. The UI therefore remains visibly labelled Beta, arbitrary solid solves remain disabled, and the project makes no verified solid/contact product claim.
 
 Later workbench, assembly/meshing, solid-linear and contact branches start only after this spike is reviewed and merged.

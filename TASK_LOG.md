@@ -39,6 +39,8 @@ Native exchange diagnosis: CI run `29620524855` passed the patched Netgen mesh l
 
 Reaction-recovery diagnosis: CI run `29621105838` loaded the neutral mesh, converged the quadratic MFEM solve and produced `0.004749267 mm` average end displacement against `0.004761905 mm` analytically (0.2654% error, inside the 1% gate). Its equilibrium gate exposed that reaction recovery was multiplying by MFEM's boundary-eliminated matrix and decoding `Ordering::byVDIM` as component-block ordering. Recovery now uses MFEM's full uneliminated operator, the preserved assembled load vector and the documented interleaved component mapping. The equilibrium gate remains pending until CI confirms the correction.
 
+Native benchmark outcome: CI run `29621269146` passed all eight staged CTests in the pinned sanitised image. The final 203-node/426-tetrahedron quadratic-displacement axial bar returned `0.00474927 mm` against `0.00476190 mm` analytically (0.2654% relative error) and a `3.9343 × 10^-11` normalised equilibrium residual, passing the 1% and `1 × 10^-8` gates. This verifies the named proof benchmark only; the broader linear benchmark matrix and nonlinear contact release gates have not run and the Solid workbench remains Beta with arbitrary solves disabled.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.
