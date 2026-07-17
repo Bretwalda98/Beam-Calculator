@@ -41,6 +41,8 @@ Reaction-recovery diagnosis: CI run `29621105838` loaded the neutral mesh, conve
 
 Native benchmark outcome: CI run `29621269146` passed all eight staged CTests in the pinned sanitised image. The final 203-node/426-tetrahedron quadratic-displacement axial bar returned `0.00474927 mm` against `0.00476190 mm` analytically (0.2654% relative error) and a `3.9343 × 10^-11` normalised equilibrium residual, passing the 1% and `1 × 10^-8` gates. This verifies the named proof benchmark only; the broader linear benchmark matrix and nonlinear contact release gates have not run and the Solid workbench remains Beta with arbitrary solves disabled.
 
+Preview deployment isolation: the first automatic Cloudflare Pages branch build used the production API because the Git integration did not supply the two optional API-base variables. The frontend build now recognises only the exact `codex/fea-platform-spike` value from Cloudflare's `CF_PAGES_BRANCH`, resolves Beam and Frame/Solid to the isolated preview Worker, propagates those values into the bundle security check and permits explicit environment overrides. A regression test confirms that `main` and unrelated branches retain their existing same-origin behaviour.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.

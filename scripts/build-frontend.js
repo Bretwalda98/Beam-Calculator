@@ -1,11 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { resolveFrontendApiBases } = require('./frontend-api-config');
 
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
-const apiBase = process.env.BEAM_API_BASE_URL || '';
-const viteApiBase = process.env.VITE_API_BASE_URL || '';
+const { beamApiBase: apiBase, frameApiBase: viteApiBase } = resolveFrontendApiBases();
+const buildEnv = {
+  ...process.env,
+  BEAM_API_BASE_URL: apiBase,
+  VITE_API_BASE_URL: viteApiBase
+};
 
 function absoluteOrigin(value) {
   if (!value) return '';
@@ -80,7 +85,10 @@ copyFile(path.join(root, 'privacy', 'index.html'), path.join(dist, 'privacy', 'i
     'build',
     '--config',
     configPath
-  ], { cwd: root, stdio: 'inherit' });
+  ], { cwd: root, stdio: 'inherit', env: buildEnv });
 });
-execFileSync(process.execPath, [path.join(root, 'scripts', 'check-public-bundle.js')], { stdio: 'inherit' });
+execFileSync(process.execPath, [path.join(root, 'scripts', 'check-public-bundle.js')], {
+  stdio: 'inherit',
+  env: buildEnv
+});
 console.log(`Frontend build complete: ${path.relative(root, dist)}`);

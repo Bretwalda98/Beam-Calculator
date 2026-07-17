@@ -40,6 +40,8 @@ For a static Frame/Solid preview, set `VITE_API_BASE_URL` to the matching previe
 BEAM_API_BASE_URL=https://preview-api.example.com VITE_API_BASE_URL=https://preview-api.example.com npm run build:frontend
 ```
 
+Cloudflare's Git build sets `CF_PAGES_BRANCH`. For the exact `codex/fea-platform-spike` branch, the build resolves both API bases to the isolated `codex-fea-platform-spike-beam-calculator-api` Worker automatically. Explicit `BEAM_API_BASE_URL` and `VITE_API_BASE_URL` settings still take precedence. Other branches, including `main`, retain the default same-origin behaviour.
+
 Production source maps are not generated. `npm run security:bundle-check` fails if protected solver names, report generators, `PROFILE_DB`, or `sections_database.js` appear in the public static files.
 
 Cloudflare Pages publishes `dist/`. The `_redirects` file canonicalises `/beam`, `/frame3d`, `/frame3d/frame`, `/frame3d/solid` and `/privacy` to their directory routes. The generated `_headers` file grants WebAssembly compilation only below `/frame3d/`. The API Worker remains separate; all existing `/api/...` routes are preserved and the read-only `/api/frame3d/sections` plus authenticated `/api/cad/...`, `/api/fea/...` and `/api/jobs/...` routes are additive.
