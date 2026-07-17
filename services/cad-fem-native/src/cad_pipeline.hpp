@@ -38,6 +38,7 @@ struct MeshOptions {
 
 struct MeshArtifacts {
   std::filesystem::path netgen_mesh_path;
+  std::filesystem::path mfem_mesh_path;
   std::size_t node_count = 0;
   std::size_t surface_element_count = 0;
   std::size_t volume_element_count = 0;

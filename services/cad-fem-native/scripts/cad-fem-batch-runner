@@ -63,6 +63,7 @@ write_artifacts() {
       topology.json) kind="topology"; content_type="application/json" ;;
       tessellation.json) kind="tessellation"; content_type="application/json" ;;
       mesh.vol) kind="mesh"; content_type="application/octet-stream" ;;
+      mesh.mfem) kind="mesh"; content_type="text/plain" ;;
       *.vtu) kind="vtu"; content_type="application/vnd.vtk" ;;
       *.csv) kind="csv"; content_type="text/csv" ;;
       *.json) kind="resultField"; content_type="application/json" ;;

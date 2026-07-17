@@ -186,6 +186,50 @@ class NetgenSession {
   NetgenSession& operator=(const NetgenSession&) = delete;
 };
 
+void write_mfem_netgen_neutral_mesh(
+    const std::filesystem::path& path,
+    Ng_Mesh* mesh) {
+  std::ofstream stream(path);
+  if (!stream) {
+    throw std::runtime_error("Could not create the MFEM mesh exchange artifact: " + path.string());
+  }
+  stream << std::setprecision(17);
+  stream << "NETGEN\n";
+
+  const int point_count = Ng_GetNP(mesh);
+  stream << point_count << '\n';
+  for (int point = 1; point <= point_count; ++point) {
+    std::array<double, 3> coordinates{};
+    Ng_GetPoint(mesh, point, coordinates.data());
+    stream << coordinates[0] << ' ' << coordinates[1] << ' ' << coordinates[2] << '\n';
+  }
+
+  const int volume_element_count = Ng_GetNE(mesh);
+  stream << volume_element_count << '\n';
+  for (int element = 1; element <= volume_element_count; ++element) {
+    std::array<int, NG_VOLUME_ELEMENT_MAXPOINTS> vertices{};
+    if (Ng_GetVolumeElement(mesh, element, vertices.data()) != NG_TET) {
+      throw std::runtime_error("The MFEM exchange currently permits first-order tetrahedra only.");
+    }
+    stream << "1 " << vertices[0] << ' ' << vertices[1] << ' '
+           << vertices[2] << ' ' << vertices[3] << '\n';
+  }
+
+  const int surface_element_count = Ng_GetNSE(mesh);
+  stream << surface_element_count << '\n';
+  for (int element = 1; element <= surface_element_count; ++element) {
+    std::array<int, NG_SURFACE_ELEMENT_MAXPOINTS> vertices{};
+    if (Ng_GetSurfaceElement(mesh, element, vertices.data()) != NG_TRIG) {
+      throw std::runtime_error("The MFEM exchange currently permits first-order boundary triangles only.");
+    }
+    stream << "1 " << vertices[0] << ' ' << vertices[1] << ' ' << vertices[2] << '\n';
+  }
+  stream.flush();
+  if (!stream) {
+    throw std::runtime_error("Could not finish the MFEM mesh exchange artifact: " + path.string());
+  }
+}
+
 }  // namespace
 
 GeometryArtifacts regenerate_step_with_ocaf(const GeometryOptions& options) {
@@ -369,6 +413,7 @@ MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
 
   MeshArtifacts artifacts;
   artifacts.netgen_mesh_path = options.output_directory / "mesh.vol";
+  artifacts.mfem_mesh_path = options.output_directory / "mesh.mfem";
   artifacts.node_count = static_cast<std::size_t>(Ng_GetNP(mesh));
   artifacts.surface_element_count = static_cast<std::size_t>(Ng_GetNSE(mesh));
   artifacts.volume_element_count = static_cast<std::size_t>(Ng_GetNE(mesh));
@@ -376,10 +421,18 @@ MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
     cleanup();
     throw std::runtime_error("Netgen returned an empty volume mesh.");
   }
-  progress("mesh: writing Netgen mesh");
-  Ng_SaveMesh(mesh, artifacts.netgen_mesh_path.string().c_str());
+  try {
+    progress("mesh: writing Netgen mesh");
+    Ng_SaveMesh(mesh, artifacts.netgen_mesh_path.string().c_str());
+    progress("mesh: writing MFEM exchange mesh");
+    write_mfem_netgen_neutral_mesh(artifacts.mfem_mesh_path, mesh);
+  } catch (...) {
+    cleanup();
+    throw;
+  }
   cleanup();
   require_file(artifacts.netgen_mesh_path, "Netgen mesh artifact");
+  require_file(artifacts.mfem_mesh_path, "MFEM mesh exchange artifact");
   progress("mesh: complete");
   return artifacts;
 }

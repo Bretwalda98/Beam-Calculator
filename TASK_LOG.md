@@ -35,6 +35,8 @@ CI packaging correction: the native diagnostic job now loads a slim test image c
 
 Native benchmark diagnosis: CI run `29618078259` built the pinned image and passed STEP generation plus both OCAF geometry stages. Netgen then produced and saved a valid 203-node/426-tetrahedron mesh, but AddressSanitizer found a double free inside upstream `Ng_DeleteMesh`: `Mesh::DeleteMesh()` deleted boundary-name pointers without clearing the pointer array, and the immediately following `Mesh` destructor deleted them again. The image now applies and distributes a one-line pinned-source patch that clears the array after the first deletion. Mesh and solve CTests remain the acceptance gate; this diagnosis alone is not a verified-solver claim.
 
+Native exchange diagnosis: CI run `29620524855` passed the patched Netgen mesh lifecycle test, including the 203-node/426-tetrahedron mesh under AddressSanitizer. The solve then stopped before assembly because Netgen 6.2's modern `mesh3d` `.vol` header is not one of the formats recognised by the pinned MFEM loader. The pipeline now retains that native audit artefact and separately writes MFEM's documented `NETGEN` neutral stream from the in-memory first-order tetrahedra and boundary triangles, rejecting any unsupported element type. The axial displacement and equilibrium gates remain pending until the replacement CI run passes.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.

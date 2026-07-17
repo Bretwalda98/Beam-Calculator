@@ -152,12 +152,13 @@ int main(int argc, char** argv) {
       std::cout << "Native CAD meshing complete.\n"
                 << "  Mesh nodes: " << mesh.node_count << '\n'
                 << "  Tetrahedra: " << mesh.volume_element_count << '\n'
-                << "  Mesh: " << mesh.netgen_mesh_path << '\n';
+                << "  Netgen mesh: " << mesh.netgen_mesh_path << '\n'
+                << "  MFEM exchange mesh: " << mesh.mfem_mesh_path << '\n';
       return 0;
     }
     std::cerr << "[cad-fem] pipeline: starting solve stage\n" << std::flush;
     const auto solution = cad_fem::solve_linear_elasticity({
-        .mesh_path = mesh.netgen_mesh_path,
+        .mesh_path = mesh.mfem_mesh_path,
         .output_directory = arguments.output_directory,
         .elastic_modulus_n_per_mm2 = arguments.elastic_modulus,
         .poisson_ratio = arguments.poisson_ratio,

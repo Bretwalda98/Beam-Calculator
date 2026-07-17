@@ -10,6 +10,12 @@ This service proves the authoritative native path:
 5. Export displacement, stress and von Mises fields in ParaView/VTU form plus
    a machine-readable result manifest.
 
+The meshing stage retains Netgen's native `mesh.vol` artefact and also writes a
+`mesh.mfem` exchange artefact directly from Netgen's in-memory Float64 node,
+tetrahedron and boundary-triangle data. This explicit neutral stream avoids
+depending on incompatible Netgen/MFEM file-format version detection; unsupported
+element types are rejected rather than converted silently.
+
 No JavaScript solver fallback exists. If the native service, mesher or solver is
 unavailable, the public API returns a failure and does not create a result.
 
