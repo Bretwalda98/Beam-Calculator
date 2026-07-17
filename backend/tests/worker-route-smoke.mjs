@@ -21,8 +21,12 @@ assert.match(available?.snapshot?.catalogueRevision, /^[a-f0-9]{64}$/);
 assert.equal(available?.snapshot?.profile?.catalogue, 'beam-ec3');
 assert.equal(available?.snapshot?.profile?.units, 'mm');
 
-const catalogue = await worker.fetch(new Request('https://beam-calculator.pages.dev/api/sections'));
+const catalogue = await worker.fetch(new Request('https://beam-calculator.pages.dev/api/sections', {
+  headers: { Origin: 'https://codex-fea-platform-spike.beam-calculator.pages.dev' }
+}));
 assert.equal(catalogue.status, 200);
+assert.equal(catalogue.headers.get('Access-Control-Allow-Origin'), 'https://codex-fea-platform-spike.beam-calculator.pages.dev');
+assert.equal(catalogue.headers.get('Access-Control-Allow-Credentials'), 'true');
 const catalogueBody = await catalogue.json();
 assert.equal(catalogueBody.sections.length, 368);
 const solidSection = catalogueBody.sections.find((section) => section.solidProfileAvailable);
