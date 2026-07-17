@@ -49,7 +49,10 @@ RUN git clone --filter=blob:none https://github.com/Open-Cascade-SAS/OCCT.git oc
       -DBUILD_SHARED_LIBS=ON \
       -DUSE_TBB=OFF \
   && cmake --build /build/occt --parallel \
-  && cmake --install /build/occt
+  && cmake --install /build/occt \
+  && install -D /src/occt/LICENSE_LGPL_21.txt /opt/cad-fem/share/licenses/occt/LICENSE_LGPL_21.txt \
+  && install -D /src/occt/OCCT_LGPL_EXCEPTION.txt /opt/cad-fem/share/licenses/occt/OCCT_LGPL_EXCEPTION.txt \
+  && rm -rf /src/occt /build/occt
 
 RUN git clone --filter=blob:none --recurse-submodules https://github.com/NGSolve/netgen.git netgen \
   && git -C netgen checkout "${NETGEN_REVISION}" \
@@ -68,7 +71,9 @@ RUN git clone --filter=blob:none --recurse-submodules https://github.com/NGSolve
       -DNGCORE_LIBRARY_TYPE=SHARED \
       -DBUILD_TESTING=OFF \
   && cmake --build /build/netgen --parallel \
-  && cmake --install /build/netgen
+  && cmake --install /build/netgen \
+  && install -D /src/netgen/LICENSE /opt/cad-fem/share/licenses/netgen/LICENSE \
+  && rm -rf /src/netgen /build/netgen
 
 RUN git clone --filter=blob:none https://github.com/mfem/mfem.git mfem \
   && git -C mfem checkout "${MFEM_REVISION}" \
@@ -82,13 +87,11 @@ RUN git clone --filter=blob:none https://github.com/mfem/mfem.git mfem \
       -DMFEM_BUILD_MINIAPPS=OFF \
       -DMFEM_ENABLE_TESTING=OFF \
   && cmake --build /build/mfem --parallel \
-  && cmake --install /build/mfem
-
-RUN install -D /src/occt/LICENSE_LGPL_21.txt /opt/cad-fem/share/licenses/occt/LICENSE_LGPL_21.txt \
-  && install -D /src/occt/OCCT_LGPL_EXCEPTION.txt /opt/cad-fem/share/licenses/occt/OCCT_LGPL_EXCEPTION.txt \
-  && install -D /src/netgen/LICENSE /opt/cad-fem/share/licenses/netgen/LICENSE \
+  && cmake --install /build/mfem \
   && install -D /src/mfem/LICENSE /opt/cad-fem/share/licenses/mfem/LICENSE \
-  && install -D /usr/share/doc/rapidjson-dev/copyright /opt/cad-fem/share/licenses/rapidjson/copyright
+  && rm -rf /src/mfem /build/mfem
+
+RUN install -D /usr/share/doc/rapidjson-dev/copyright /opt/cad-fem/share/licenses/rapidjson/copyright
 
 COPY . /src/cad-fem-native
 RUN cmake -S /src/cad-fem-native -B /build/cad-fem-native -G Ninja \
@@ -142,3 +145,42 @@ ENV CSF_ResourcesDefaults=/opt/cad-fem/share/opencascade/resources/StdResource
 ENV PATH=/opt/cad-fem/bin:${PATH}
 USER 65532:65532
 ENTRYPOINT ["cad-fem-batch-runner"]
+
+FROM ubuntu:24.04 AS native-test
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake \
+    gdb \
+    libasan8 \
+    libblas3 \
+    libfontconfig1 \
+    libfreetype6 \
+    libgl1 \
+    libgomp1 \
+    liblapack3 \
+    libmetis5 \
+    libubsan1 \
+    libx11-6 \
+    libxext6 \
+    libxmu6 \
+    tcl8.6 \
+    tk8.6 \
+  && rm -rf /var/lib/apt/lists/*
+COPY --from=native-build /opt/cad-fem /opt/cad-fem
+COPY --from=native-build \
+  /build/cad-fem-native/CTestTestfile.cmake \
+  /build/cad-fem-native/cad-fem-generate-box \
+  /build/cad-fem-native/cad-fem-pipeline \
+  /build/cad-fem-native/cad-fem-section-step \
+  /build/cad-fem-native/
+COPY --from=native-build /src/cad-fem-native/src /src/cad-fem-native/src
+COPY --from=native-build /src/cad-fem-native/tests /src/cad-fem-native/tests
+ENV LD_LIBRARY_PATH=/opt/cad-fem/lib:/opt/cad-fem/lib64
+ENV OCCT_RESOURCE_PATH=/opt/cad-fem/share/opencascade/resources
+ENV CSF_OCCTResourcePath=/opt/cad-fem/share/opencascade/resources
+ENV CSF_PluginDefaults=/opt/cad-fem/share/opencascade/resources/StdResource
+ENV CSF_StandardDefaults=/opt/cad-fem/share/opencascade/resources/StdResource
+ENV CSF_XCAFDefaults=/opt/cad-fem/share/opencascade/resources/StdResource
+ENV CSF_ResourcesDefaults=/opt/cad-fem/share/opencascade/resources/StdResource
+ENV PATH=/opt/cad-fem/bin:${PATH}
+ENTRYPOINT ["ctest", "--test-dir", "/build/cad-fem-native", "--output-on-failure"]

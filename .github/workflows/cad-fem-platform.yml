@@ -26,6 +26,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cad-fem-platform-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   web-contract:
     runs-on: ubuntu-24.04
@@ -73,7 +77,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: services/cad-fem-native
-          target: native-build
+          target: native-test
           load: true
           tags: beam-cad-fem-native:test
           build-args: |

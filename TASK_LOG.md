@@ -31,6 +31,8 @@ Implemented locally: all 368 profiles have complete verified source snapshots; F
 
 The previously recorded raw-file catalogue checksum failure is removed. The test now pins a canonical data fingerprint and separately verifies row count, profile availability, provenance and flange-slope coverage. `npm run smoke` now passes without altering the Beam engineering engine.
 
+CI packaging correction: the native diagnostic job now loads a slim test image containing installed runtime libraries, CTest metadata and test executables rather than the complete upstream source/build trees. Upstream build directories are removed in their own image layers after installation, cache export remains useful without transferring those trees, and branch concurrency cancels superseded runs.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.
