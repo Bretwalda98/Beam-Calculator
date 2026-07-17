@@ -5,6 +5,29 @@ const { execFileSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const apiBase = process.env.BEAM_API_BASE_URL || '';
+const viteApiBase = process.env.VITE_API_BASE_URL || '';
+
+function absoluteOrigin(value) {
+  if (!value) return '';
+  try {
+    return new URL(value).origin;
+  } catch {
+    throw new Error(`Static API base must be an absolute URL: ${value}`);
+  }
+}
+
+function injectFrameApiOrigins(text) {
+  const productionOrigin = 'https://beam-calculator-api.harrynixon98.workers.dev';
+  const origins = [...new Set([
+    productionOrigin,
+    absoluteOrigin(apiBase),
+    absoluteOrigin(viteApiBase)
+  ].filter(Boolean))];
+  return text.replace(
+    `connect-src 'self' ${productionOrigin};`,
+    `connect-src 'self' ${origins.join(' ')};`
+  );
+}
 
 function cleanDir(dir) {
   fs.rmSync(dir, { recursive: true, force: true });
@@ -39,7 +62,11 @@ if (fs.existsSync(path.join(root, 'public', 'styles.css'))) {
 
 ['ads.txt', 'robots.txt', 'sitemap.xml', '_redirects', '_headers'].forEach((filename) => {
   const source = path.join(root, filename);
-  if (fs.existsSync(source)) copyFile(source, path.join(dist, filename));
+  if (fs.existsSync(source)) copyFile(
+    source,
+    path.join(dist, filename),
+    filename === '_headers' ? injectFrameApiOrigins : undefined
+  );
 });
 copyFile(path.join(root, 'privacy', 'index.html'), path.join(dist, 'privacy', 'index.html'), minify);
 

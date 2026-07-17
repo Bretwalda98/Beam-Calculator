@@ -48,6 +48,20 @@ files.forEach((file) => {
 const publicDb = path.join(root, 'public', 'sections_database.js');
 if (fs.existsSync(publicDb)) failures.push('public/sections_database.js must not exist in the production static tree.');
 
+const configuredFrameApi = process.env.VITE_API_BASE_URL || '';
+if (configuredFrameApi) {
+  const origin = new URL(configuredFrameApi).origin;
+  const headersPath = path.join(root, 'dist', '_headers');
+  const headers = fs.existsSync(headersPath) ? fs.readFileSync(headersPath, 'utf8') : '';
+  if (!headers.includes(`connect-src 'self'`) || !headers.includes(origin)) {
+    failures.push(`dist/_headers does not permit the configured Frame/Solid API origin: ${origin}`);
+  }
+  const frameBundles = walk(path.join(root, 'dist', 'frame3d')).filter((file) => file.endsWith('.js'));
+  if (!frameBundles.some((file) => fs.readFileSync(file, 'utf8').includes(origin))) {
+    failures.push(`Frame/Solid bundles do not contain the configured API origin: ${origin}`);
+  }
+}
+
 if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
