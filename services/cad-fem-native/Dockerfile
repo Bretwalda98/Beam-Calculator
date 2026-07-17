@@ -28,6 +28,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /src
 ENV LD_LIBRARY_PATH=/opt/cad-fem/lib:/opt/cad-fem/lib64
+ENV OCCT_RESOURCE_PATH=/opt/cad-fem/share/opencascade/resources
+ENV CSF_OCCTResourcePath=/opt/cad-fem/share/opencascade/resources
+ENV CSF_PluginDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_StandardDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_XCAFDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_ResourcesDefaults=/opt/cad-fem/share/opencascade/resources
 RUN git clone --filter=blob:none https://github.com/Open-Cascade-SAS/OCCT.git occt \
   && git -C occt checkout "${OCCT_REVISION}" \
   && cmake -S occt -B /build/occt -G Ninja \
@@ -123,6 +129,12 @@ COPY --from=native-build /opt/cad-fem /opt/cad-fem
 COPY --from=native-build /opt/cad-fem/share/licenses /usr/share/licenses/beam-calculator-cad-fem/upstream
 COPY NOTICE.md THIRD_PARTY_LICENSES.md /usr/share/licenses/beam-calculator-cad-fem/
 ENV LD_LIBRARY_PATH=/opt/cad-fem/lib:/opt/cad-fem/lib64
+ENV OCCT_RESOURCE_PATH=/opt/cad-fem/share/opencascade/resources
+ENV CSF_OCCTResourcePath=/opt/cad-fem/share/opencascade/resources
+ENV CSF_PluginDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_StandardDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_XCAFDefaults=/opt/cad-fem/share/opencascade/resources
+ENV CSF_ResourcesDefaults=/opt/cad-fem/share/opencascade/resources
 ENV PATH=/opt/cad-fem/bin:${PATH}
 USER 65532:65532
 ENTRYPOINT ["cad-fem-batch-runner"]
