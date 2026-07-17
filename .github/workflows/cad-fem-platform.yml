@@ -68,5 +68,60 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-      - name: Build pinned native image and run CTest
-        run: docker build --progress=plain --tag beam-cad-fem-native:test services/cad-fem-native
+      - uses: docker/setup-buildx-action@v3
+      - name: Build pinned native diagnostic image
+        uses: docker/build-push-action@v6
+        with:
+          context: services/cad-fem-native
+          target: native-build
+          load: true
+          tags: beam-cad-fem-native:test
+          build-args: |
+            CAD_FEM_BUILD_TYPE=RelWithDebInfo
+            CAD_FEM_ENABLE_SANITIZERS=ON
+          cache-from: type=gha,scope=cad-fem-native
+          cache-to: type=gha,mode=max,scope=cad-fem-native
+      - name: Run staged native benchmarks
+        shell: bash
+        run: |
+          mkdir -p native-test-artifacts
+          set +e
+          docker run --rm \
+            --volume "$PWD/native-test-artifacts:/build/cad-fem-native/verification" \
+            --env ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:symbolize=1 \
+            --env UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            --entrypoint ctest \
+            beam-cad-fem-native:test \
+            --test-dir /build/cad-fem-native --output-on-failure --verbose \
+            2>&1 | tee native-test-artifacts/ctest.log
+          test_status=${PIPESTATUS[0]}
+          if [[ $test_status -ne 0 && -f native-test-artifacts/fixture/axial-bar.step ]]; then
+            docker run --rm \
+              --volume "$PWD/native-test-artifacts:/build/cad-fem-native/verification" \
+              --env ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:symbolize=1 \
+              --env UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+              --entrypoint gdb \
+              beam-cad-fem-native:test \
+              --batch \
+              --ex "set pagination off" \
+              --ex run \
+              --ex "thread apply all bt full" \
+              --args /build/cad-fem-native/cad-fem-pipeline \
+              --step /build/cad-fem-native/verification/fixture/axial-bar.step \
+              --output /build/cad-fem-native/verification/debug \
+              --mesh-size 40 --mesh-min-size 4 --element-order 2 \
+              --elastic-modulus 210000 --poisson-ratio 0.3 \
+              --traction-x 1 --traction-y 0 --traction-z 0 \
+              --relative-tolerance 1e-10 --maximum-iterations 2000 \
+              --benchmark-component x --benchmark-value 0.004761904761904762 \
+              --benchmark-relative-tolerance 0.01 \
+              > native-test-artifacts/gdb.log 2>&1 || true
+          fi
+          exit "$test_status"
+      - name: Upload native diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-fem-native-diagnostics
+          path: native-test-artifacts
+          if-no-files-found: warn

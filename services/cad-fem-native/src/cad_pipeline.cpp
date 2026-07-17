@@ -1,6 +1,7 @@
 #include "cad_pipeline.hpp"
 
 #include <BRepBndLib.hxx>
+#include <BRepCheck_Analyzer.hxx>
 #include <BRepGProp.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
@@ -32,6 +33,7 @@
 #include <cmath>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -51,6 +53,10 @@ namespace cad_fem {
 namespace {
 
 using namespace nglib;
+
+void progress(std::string_view stage) {
+  std::cerr << "[cad-fem] " << stage << '\n' << std::flush;
+}
 
 void require_file(const std::filesystem::path& path, std::string_view label) {
   if (!std::filesystem::is_regular_file(path)) {
@@ -183,31 +189,39 @@ class NetgenSession {
 }  // namespace
 
 GeometryArtifacts regenerate_step_with_ocaf(const GeometryOptions& options) {
+  progress("geometry: validating input");
   require_file(options.step_path, "STEP input");
   require_positive(options.tessellation_deflection, "Tessellation deflection");
   require_positive(options.tessellation_angle_rad, "Tessellation angle");
   std::filesystem::create_directories(options.output_directory);
 
+  progress("geometry: opening OCAF document");
   const Handle(XCAFApp_Application) application = XCAFApp_Application::GetApplication();
   Handle(TDocStd_Document) document;
   application->NewDocument("BinXCAF", document);
 
+  progress("geometry: reading STEP file");
   STEPCAFControl_Reader reader;
   reader.SetColorMode(Standard_True);
   reader.SetNameMode(Standard_True);
   reader.SetLayerMode(Standard_True);
   reader.SetPropsMode(Standard_True);
   if (reader.ReadFile(options.step_path.string().c_str()) != IFSelect_RetDone) {
+    application->Close(document);
     throw std::runtime_error("OCCT could not read the STEP input.");
   }
+  progress("geometry: transferring STEP model into OCAF");
   if (!reader.Transfer(document)) {
+    application->Close(document);
     throw std::runtime_error("OCCT could not transfer the STEP model into OCAF.");
   }
 
+  progress("geometry: collecting free shapes");
   const Handle(XCAFDoc_ShapeTool) shape_tool = XCAFDoc_DocumentTool::ShapeTool(document->Main());
   TDF_LabelSequence free_shape_labels;
   shape_tool->GetFreeShapes(free_shape_labels);
   if (free_shape_labels.Length() == 0) {
+    application->Close(document);
     throw std::runtime_error("The STEP document contains no transferable free shapes.");
   }
 
@@ -217,6 +231,10 @@ GeometryArtifacts regenerate_step_with_ocaf(const GeometryOptions& options) {
   for (int index = 1; index <= free_shape_labels.Length(); ++index) {
     builder.Add(compound, shape_tool->GetShape(free_shape_labels.Value(index)));
   }
+  if (compound.IsNull() || !BRepCheck_Analyzer(compound, Standard_True).IsValid()) {
+    application->Close(document);
+    throw std::runtime_error("The transferred STEP model is not a valid OCCT B-rep.");
+  }
 
   GeometryArtifacts artifacts;
   artifacts.ocaf_path = options.output_directory / "geometry.xbf";
@@ -225,10 +243,14 @@ GeometryArtifacts regenerate_step_with_ocaf(const GeometryOptions& options) {
   artifacts.tessellation_path = options.output_directory / "tessellation.json";
   artifacts.free_shape_count = static_cast<std::size_t>(free_shape_labels.Length());
 
+  progress("geometry: writing OCAF document");
   if (application->SaveAs(document, artifacts.ocaf_path.string().c_str()) != PCDM_SS_OK) {
+    application->Close(document);
     throw std::runtime_error("OCCT could not persist the OCAF document.");
   }
+  progress("geometry: writing B-rep");
   if (!BRepTools::Write(compound, artifacts.brep_path.string().c_str())) {
+    application->Close(document);
     throw std::runtime_error("OCCT could not persist the regenerated B-rep.");
   }
 
@@ -255,21 +277,32 @@ GeometryArtifacts regenerate_step_with_ocaf(const GeometryOptions& options) {
   BRepGProp::VolumeProperties(compound, volume_properties);
   artifacts.volume_mm3 = volume_properties.Mass();
 
+  progress("geometry: writing topology metadata");
   write_topology_json(
       artifacts.topology_path,
       compound,
       artifacts.free_shape_count,
       artifacts.bounds_mm,
       artifacts.volume_mm3);
+  progress("geometry: writing tessellation");
   write_tessellation_json(
       artifacts.tessellation_path,
       compound,
       options.tessellation_deflection,
       options.tessellation_angle_rad);
+
+  // Netgen's OCCT integration uses the process-wide XCAF application and
+  // explicitly requires existing documents to be closed before it starts.
+  // Keeping this document open can therefore invalidate handles inside the
+  // subsequent OCC meshing stage.
+  progress("geometry: closing OCAF document");
+  application->Close(document);
+  progress("geometry: complete");
   return artifacts;
 }
 
 MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
+  progress("mesh: validating B-rep input");
   require_file(options.brep_path, "B-rep input");
   require_positive(options.maximum_size_mm, "Maximum mesh size");
   require_positive(options.minimum_size_mm, "Minimum mesh size");
@@ -281,11 +314,14 @@ MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
   }
   std::filesystem::create_directories(options.output_directory);
 
+  progress("mesh: initialising Netgen");
   NetgenSession netgen_session;
+  progress("mesh: loading OCCT B-rep");
   Ng_OCC_Geometry* geometry = Ng_OCC_Load_BREP(options.brep_path.string().c_str());
   if (geometry == nullptr) {
     throw std::runtime_error("Netgen could not load the regenerated OCCT B-rep.");
   }
+  progress("mesh: allocating mesh");
   Ng_Mesh* mesh = Ng_NewMesh();
   if (mesh == nullptr) {
     Ng_OCC_DeleteGeometry(geometry);
@@ -310,12 +346,25 @@ MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
   parameters.check_overlap = 1;
   parameters.check_overlapping_boundary = 1;
 
-  if (Ng_OCC_SetLocalMeshSize(geometry, mesh, &parameters) != NG_OK ||
-      Ng_OCC_GenerateEdgeMesh(geometry, mesh, &parameters) != NG_OK ||
-      Ng_OCC_GenerateSurfaceMesh(geometry, mesh, &parameters) != NG_OK ||
-      Ng_GenerateVolumeMesh(mesh, &parameters) != NG_OK) {
+  progress("mesh: setting local mesh sizes");
+  if (Ng_OCC_SetLocalMeshSize(geometry, mesh, &parameters) != NG_OK) {
     cleanup();
-    throw std::runtime_error("Netgen failed while generating the tetrahedral mesh.");
+    throw std::runtime_error("Netgen failed while setting local mesh sizes.");
+  }
+  progress("mesh: generating edge mesh");
+  if (Ng_OCC_GenerateEdgeMesh(geometry, mesh, &parameters) != NG_OK) {
+    cleanup();
+    throw std::runtime_error("Netgen failed while generating the edge mesh.");
+  }
+  progress("mesh: generating surface mesh");
+  if (Ng_OCC_GenerateSurfaceMesh(geometry, mesh, &parameters) != NG_OK) {
+    cleanup();
+    throw std::runtime_error("Netgen failed while generating the surface mesh.");
+  }
+  progress("mesh: generating volume mesh");
+  if (Ng_GenerateVolumeMesh(mesh, &parameters) != NG_OK) {
+    cleanup();
+    throw std::runtime_error("Netgen failed while generating the volume mesh.");
   }
 
   MeshArtifacts artifacts;
@@ -327,9 +376,11 @@ MeshArtifacts mesh_brep_with_netgen(const MeshOptions& options) {
     cleanup();
     throw std::runtime_error("Netgen returned an empty volume mesh.");
   }
+  progress("mesh: writing Netgen mesh");
   Ng_SaveMesh(mesh, artifacts.netgen_mesh_path.string().c_str());
   cleanup();
   require_file(artifacts.netgen_mesh_path, "Netgen mesh artifact");
+  progress("mesh: complete");
   return artifacts;
 }
 

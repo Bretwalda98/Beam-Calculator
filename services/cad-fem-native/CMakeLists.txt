@@ -9,6 +9,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(CAD_FEM_BUILD_TESTS "Build native pipeline verification tests" ON)
 option(CAD_FEM_ENABLE_CONTACT "Build the Tribol contact spike" OFF)
+option(CAD_FEM_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviourSanitizer" OFF)
 
 find_package(OpenCASCADE CONFIG REQUIRED)
 find_package(Netgen CONFIG REQUIRED)
@@ -54,6 +55,10 @@ if(MSVC)
   target_compile_options(cad_fem_pipeline PRIVATE /W4 /permissive-)
 else()
   target_compile_options(cad_fem_pipeline PRIVATE -Wall -Wextra -Wpedantic)
+  if(CAD_FEM_ENABLE_SANITIZERS)
+    target_compile_options(cad_fem_pipeline PUBLIC -fno-omit-frame-pointer -fsanitize=address,undefined)
+    target_link_options(cad_fem_pipeline PUBLIC -fno-omit-frame-pointer -fsanitize=address,undefined)
+  endif()
 endif()
 
 add_executable(cad-fem-pipeline src/main.cpp)
@@ -104,11 +109,12 @@ if(CAD_FEM_BUILD_TESTS)
   target_include_directories(cad-fem-generate-box PRIVATE ${OpenCASCADE_INCLUDE_DIR})
   target_link_libraries(cad-fem-generate-box PRIVATE ${OpenCASCADE_LIBRARIES})
 
-  set(CAD_FEM_TEST_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/verification/axial-bar)
+  set(CAD_FEM_TEST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/verification)
+  set(CAD_FEM_TEST_STEP ${CAD_FEM_TEST_ROOT}/fixture/axial-bar.step)
   add_test(
     NAME cad_fem_generate_axial_bar_step
     COMMAND cad-fem-generate-box
-      --output ${CAD_FEM_TEST_OUTPUT}/axial-bar.step
+      --output ${CAD_FEM_TEST_STEP}
       --length 1000
       --width 50
       --height 100
@@ -116,10 +122,29 @@ if(CAD_FEM_BUILD_TESTS)
   set_tests_properties(cad_fem_generate_axial_bar_step PROPERTIES FIXTURES_SETUP axial_bar_step)
 
   add_test(
+    NAME cad_fem_step_ocaf_geometry
+    COMMAND cad-fem-pipeline
+      --step ${CAD_FEM_TEST_STEP}
+      --output ${CAD_FEM_TEST_ROOT}/geometry
+      --stage geometry
+      --mesh-min-size 4
+  )
+
+  add_test(
+    NAME cad_fem_step_netgen_mesh
+    COMMAND cad-fem-pipeline
+      --step ${CAD_FEM_TEST_STEP}
+      --output ${CAD_FEM_TEST_ROOT}/mesh
+      --stage mesh
+      --mesh-size 40
+      --mesh-min-size 4
+  )
+
+  add_test(
     NAME cad_fem_step_netgen_mfem_axial_bar
     COMMAND cad-fem-pipeline
-      --step ${CAD_FEM_TEST_OUTPUT}/axial-bar.step
-      --output ${CAD_FEM_TEST_OUTPUT}
+      --step ${CAD_FEM_TEST_STEP}
+      --output ${CAD_FEM_TEST_ROOT}/solve
       --mesh-size 40
       --mesh-min-size 4
       --element-order 2
@@ -135,10 +160,13 @@ if(CAD_FEM_BUILD_TESTS)
       --benchmark-relative-tolerance 0.01
   )
   set_tests_properties(
+    cad_fem_step_ocaf_geometry
+    cad_fem_step_netgen_mesh
     cad_fem_step_netgen_mfem_axial_bar
     PROPERTIES
       FIXTURES_REQUIRED axial_bar_step
       TIMEOUT 600
+      RUN_SERIAL TRUE
   )
 
   if(CAD_FEM_ENABLE_CONTACT)

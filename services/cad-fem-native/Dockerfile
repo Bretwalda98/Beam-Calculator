@@ -5,11 +5,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG OCCT_REVISION=a016080bf6738d6aeae020badee4e888ad1540a5
 ARG NETGEN_REVISION=a3e08f0ec196b442f7de3b9b717ab86c6993f1ab
 ARG MFEM_REVISION=d9d6526cc1749980a2ba1da16e2c1ca1e07d82ec
+ARG CAD_FEM_BUILD_TYPE=Release
+ARG CAD_FEM_ENABLE_SANITIZERS=OFF
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     cmake \
+    gdb \
     git \
     libblas-dev \
     libeigen3-dev \
@@ -88,12 +91,12 @@ RUN install -D /src/occt/LICENSE_LGPL_21.txt /opt/cad-fem/share/licenses/occt/LI
 
 COPY . /src/cad-fem-native
 RUN cmake -S /src/cad-fem-native -B /build/cad-fem-native -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${CAD_FEM_BUILD_TYPE} \
       -DCMAKE_PREFIX_PATH=/opt/cad-fem \
       -DCMAKE_INSTALL_PREFIX=/opt/cad-fem \
       -DCAD_FEM_BUILD_TESTS=ON \
+      -DCAD_FEM_ENABLE_SANITIZERS=${CAD_FEM_ENABLE_SANITIZERS} \
   && cmake --build /build/cad-fem-native --parallel \
-  && ctest --test-dir /build/cad-fem-native --output-on-failure \
   && cmake --install /build/cad-fem-native
 
 FROM ubuntu:24.04 AS runtime

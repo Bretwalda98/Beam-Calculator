@@ -124,6 +124,7 @@ Arguments parse_arguments(int argc, char** argv) {
 int main(int argc, char** argv) {
   try {
     const Arguments arguments = parse_arguments(argc, argv);
+    std::cerr << "[cad-fem] pipeline: starting geometry stage\n" << std::flush;
     const auto geometry = cad_fem::regenerate_step_with_ocaf({
         .step_path = arguments.step_path,
         .output_directory = arguments.output_directory,
@@ -138,6 +139,7 @@ int main(int argc, char** argv) {
                 << "  Tessellation: " << geometry.tessellation_path << '\n';
       return 0;
     }
+    std::cerr << "[cad-fem] pipeline: starting mesh stage\n" << std::flush;
     const auto mesh = cad_fem::mesh_brep_with_netgen({
         .brep_path = geometry.brep_path,
         .output_directory = arguments.output_directory,
@@ -153,6 +155,7 @@ int main(int argc, char** argv) {
                 << "  Mesh: " << mesh.netgen_mesh_path << '\n';
       return 0;
     }
+    std::cerr << "[cad-fem] pipeline: starting solve stage\n" << std::flush;
     const auto solution = cad_fem::solve_linear_elasticity({
         .mesh_path = mesh.netgen_mesh_path,
         .output_directory = arguments.output_directory,
