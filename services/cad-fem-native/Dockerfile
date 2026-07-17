@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
+ENV LD_LIBRARY_PATH=/opt/cad-fem/lib:/opt/cad-fem/lib64
 RUN git clone --filter=blob:none https://github.com/Open-Cascade-SAS/OCCT.git occt \
   && git -C occt checkout "${OCCT_REVISION}" \
   && cmake -S occt -B /build/occt -G Ninja \
