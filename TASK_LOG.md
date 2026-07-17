@@ -37,6 +37,8 @@ Native benchmark diagnosis: CI run `29618078259` built the pinned image and pass
 
 Native exchange diagnosis: CI run `29620524855` passed the patched Netgen mesh lifecycle test, including the 203-node/426-tetrahedron mesh under AddressSanitizer. The solve then stopped before assembly because Netgen 6.2's modern `mesh3d` `.vol` header is not one of the formats recognised by the pinned MFEM loader. The pipeline now retains that native audit artefact and separately writes MFEM's documented `NETGEN` neutral stream from the in-memory first-order tetrahedra and boundary triangles, rejecting any unsupported element type. The axial displacement and equilibrium gates remain pending until the replacement CI run passes.
 
+Reaction-recovery diagnosis: CI run `29621105838` loaded the neutral mesh, converged the quadratic MFEM solve and produced `0.004749267 mm` average end displacement against `0.004761905 mm` analytically (0.2654% error, inside the 1% gate). Its equilibrium gate exposed that reaction recovery was multiplying by MFEM's boundary-eliminated matrix and decoding `Ordering::byVDIM` as component-block ordering. Recovery now uses MFEM's full uneliminated operator, the preserved assembled load vector and the documented interleaved component mapping. The equilibrium gate remains pending until CI confirms the correction.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.

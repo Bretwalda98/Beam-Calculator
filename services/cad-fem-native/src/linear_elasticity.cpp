@@ -68,6 +68,13 @@ double vector_norm(const std::array<double, 3>& value) {
   return std::sqrt(value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
 }
 
+int vector_component(const FiniteElementSpace& space, int vdof) {
+  if (space.GetOrdering() == Ordering::byVDIM) {
+    return vdof % space.GetVDim();
+  }
+  return vdof / space.GetNDofs();
+}
+
 void classify_boundary_faces(Mesh& mesh) {
   Vector minimum;
   Vector maximum;
@@ -242,6 +249,7 @@ LinearElasticityResult solve_linear_elasticity(const LinearElasticityOptions& op
   LinearForm load(&displacement_space);
   load.AddBoundaryIntegrator(new VectorBoundaryLFIntegrator(traction_coefficient), load_marker);
   load.Assemble();
+  const Vector assembled_load(load);
 
   const double shear_modulus =
       options.elastic_modulus_n_per_mm2 / (2.0 * (1.0 + options.poisson_ratio));
@@ -299,14 +307,13 @@ LinearElasticityResult solve_linear_elasticity(const LinearElasticityOptions& op
       sample_maximum_displacement(mesh, displacement, options.element_order);
 
   Vector internal_force(displacement_space.GetVSize());
-  stiffness.Mult(displacement, internal_force);
-  internal_force -= load;
+  stiffness.FullMult(displacement, internal_force);
+  internal_force -= assembled_load;
   Array<int> fixed_vdof_marker;
   displacement_space.GetEssentialVDofs(fixed_marker, fixed_vdof_marker);
-  const int scalar_dofs = displacement_space.GetNDofs();
   for (int vdof = 0; vdof < fixed_vdof_marker.Size(); ++vdof) {
     if (fixed_vdof_marker[vdof] < 0) {
-      const int component = std::min(vdof / scalar_dofs, 2);
+      const int component = vector_component(displacement_space, vdof);
       result.reaction_force_n[component] += internal_force(vdof);
     }
   }
@@ -318,7 +325,7 @@ LinearElasticityResult solve_linear_elasticity(const LinearElasticityOptions& op
       vector_norm(imbalance) / std::max(vector_norm(result.applied_force_n), std::numeric_limits<double>::epsilon());
 
   Vector stiffness_times_displacement(displacement_space.GetVSize());
-  stiffness.Mult(displacement, stiffness_times_displacement);
+  stiffness.FullMult(displacement, stiffness_times_displacement);
   result.strain_energy_n_mm = 0.5 * (displacement * stiffness_times_displacement);
 
   L2_FECollection stress_collection(0, 3);
