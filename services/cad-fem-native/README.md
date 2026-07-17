@@ -33,6 +33,12 @@ tetrahedra describe the geometry; MFEM uses a second-order displacement basis
 by default. Curved high-order geometry and mesh-to-CAD projection remain a
 separate release gate.
 
+The pinned Netgen source is built with the small patch in
+`patches/netgen-ng-delete-mesh-double-free.patch`. It clears deleted boundary
+name pointers before the `Mesh` destructor runs, preventing `Ng_DeleteMesh`
+from freeing those pointers twice after an OCCT volume mesh has been written.
+The native mesh and solve tests exercise this cleanup under AddressSanitizer.
+
 ## Contact
 
 `CAD_FEM_ENABLE_CONTACT` is off by default. Contact may only be enabled in an

@@ -33,6 +33,8 @@ The previously recorded raw-file catalogue checksum failure is removed. The test
 
 CI packaging correction: the native diagnostic job now loads a slim test image containing installed runtime libraries, CTest metadata and test executables rather than the complete upstream source/build trees. Upstream build directories are removed in their own image layers after installation, cache export remains useful without transferring those trees, and branch concurrency cancels superseded runs.
 
+Native benchmark diagnosis: CI run `29618078259` built the pinned image and passed STEP generation plus both OCAF geometry stages. Netgen then produced and saved a valid 203-node/426-tetrahedron mesh, but AddressSanitizer found a double free inside upstream `Ng_DeleteMesh`: `Mesh::DeleteMesh()` deleted boundary-name pointers without clearing the pointer array, and the immediately following `Mesh` destructor deleted them again. The image now applies and distributes a one-line pinned-source patch that clears the array after the first deletion. Mesh and solve CTests remain the acceptance gate; this diagnosis alone is not a verified-solver claim.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.

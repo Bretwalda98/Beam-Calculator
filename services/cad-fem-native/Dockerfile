@@ -54,9 +54,12 @@ RUN git clone --filter=blob:none https://github.com/Open-Cascade-SAS/OCCT.git oc
   && install -D /src/occt/OCCT_LGPL_EXCEPTION.txt /opt/cad-fem/share/licenses/occt/OCCT_LGPL_EXCEPTION.txt \
   && rm -rf /src/occt /build/occt
 
+COPY patches/netgen-ng-delete-mesh-double-free.patch /tmp/netgen-ng-delete-mesh-double-free.patch
 RUN git clone --filter=blob:none --recurse-submodules https://github.com/NGSolve/netgen.git netgen \
   && git -C netgen checkout "${NETGEN_REVISION}" \
   && git -C netgen submodule update --init --recursive \
+  && git -C netgen apply --check /tmp/netgen-ng-delete-mesh-double-free.patch \
+  && git -C netgen apply /tmp/netgen-ng-delete-mesh-double-free.patch \
   && cmake -S netgen -B /build/netgen -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/opt/cad-fem \
@@ -73,7 +76,7 @@ RUN git clone --filter=blob:none --recurse-submodules https://github.com/NGSolve
   && cmake --build /build/netgen --parallel \
   && cmake --install /build/netgen \
   && install -D /src/netgen/LICENSE /opt/cad-fem/share/licenses/netgen/LICENSE \
-  && rm -rf /src/netgen /build/netgen
+  && rm -rf /src/netgen /build/netgen /tmp/netgen-ng-delete-mesh-double-free.patch
 
 RUN git clone --filter=blob:none https://github.com/mfem/mfem.git mfem \
   && git -C mfem checkout "${MFEM_REVISION}" \
