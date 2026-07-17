@@ -2,7 +2,7 @@ diff --git a/libsrc/meshing/meshclass.cpp b/libsrc/meshing/meshclass.cpp
 --- a/libsrc/meshing/meshclass.cpp
 +++ b/libsrc/meshing/meshclass.cpp
 @@ -379,3 +379,4 @@ namespace netgen
-       for ( int i = 0; i < bcnames.Size(); i++ )
-         if ( bcnames[i] ) delete bcnames[i];
-+      bcnames.SetSize(0);
-       edgedecoding.SetSize(0);
+     for ( int i = 0; i < bcnames.Size(); i++ )
+       if ( bcnames[i] ) delete bcnames[i];
++    bcnames.SetSize(0);
+     edgedecoding.SetSize(0);
