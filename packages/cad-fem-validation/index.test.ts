@@ -49,3 +49,49 @@ test('frictionless contact cannot run as a linear static study', () => {
   const report = validateCadFEMProject(project);
   assert.ok(report.errors.some(({ code }) => code === 'contact_requires_nonlinear_study'));
 });
+
+test('catalogue extrusion validates its immutable EC3 geometry snapshot', () => {
+  const project = createCadFEMProject('2026-07-16T00:00:00.000Z', 'project-4');
+  const document = project.partDocuments[0];
+  document.geometryRevision = 1;
+  project.studies[0].geometryRevision = 1;
+  document.features.push({
+    id: 'feature-1',
+    name: 'UB extrusion',
+    type: 'catalogueExtrusion',
+    length: 3000,
+    operation: 'newBody',
+    suppressed: false,
+    section: {
+      schemaVersion: '1.0.0',
+      catalogue: 'beam-ec3',
+      catalogueRevision: 'a'.repeat(64),
+      sectionId: 'UB|UB 254x146x31',
+      designation: 'UB 254x146x31',
+      family: 'UB',
+      kind: 'i',
+      units: 'mm',
+      dimensions: {
+        height: 251.4,
+        width: 146.1,
+        webThickness: 6,
+        flangeThickness: 8.6,
+        wallThickness: null,
+        rootRadius: 7.6,
+        toeRadius: null,
+        flangeSlopePercent: 0,
+        innerRadius: null
+      },
+      properties: { area: 3970, iy: 44130000, iz: 4480000, torsionConstant: 121000, massPerLength: 31.1 },
+      source: { title: 'Test fixture', detail: 'Test fixture', url: 'https://example.test' },
+      geometryVerified: true,
+      geometryStatus: 'verified',
+      warnings: []
+    }
+  });
+  let report = validateCadFEMProject(project);
+  assert.ok(!report.errors.some(({ code }) => code.startsWith('catalogue_')));
+  (document.features[0] as Extract<typeof document.features[number], { type: 'catalogueExtrusion' }>).section.catalogueRevision = 'stale';
+  report = validateCadFEMProject(project);
+  assert.ok(report.errors.some(({ code }) => code === 'catalogue_snapshot_invalid'));
+});

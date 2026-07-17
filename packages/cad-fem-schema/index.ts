@@ -111,9 +111,45 @@ export interface FeatureBase {
   suppressed: boolean;
 }
 
+export interface CatalogueProfileDimensions {
+  height: number;
+  width: number;
+  webThickness: number | null;
+  flangeThickness: number | null;
+  wallThickness: number | null;
+  rootRadius: number;
+  toeRadius: number | null;
+  flangeSlopePercent: number;
+  innerRadius: number | null;
+}
+
+export interface CatalogueSectionSnapshot {
+  schemaVersion: '1.0.0';
+  catalogue: 'beam-ec3';
+  catalogueRevision: string;
+  sectionId: string;
+  designation: string;
+  family: string;
+  kind: 'i' | 'channel' | 'rhs';
+  units: 'mm';
+  dimensions: CatalogueProfileDimensions;
+  properties: {
+    area: number;
+    iy: number;
+    iz: number;
+    torsionConstant: number;
+    massPerLength: number | null;
+  };
+  source: { title: string; detail: string; url: string };
+  geometryVerified: boolean;
+  geometryStatus: string;
+  warnings: string[];
+}
+
 export type PartFeature =
   | (FeatureBase & { type: 'sketch'; sketchId: UUID })
   | (FeatureBase & { type: 'extrude'; sketchId: UUID; distance: number; direction: 'normal' | 'reverse' | 'symmetric'; operation: 'newBody' | 'add' | 'cut' | 'intersect'; targetBodyIds: UUID[] })
+  | (FeatureBase & { type: 'catalogueExtrusion'; section: CatalogueSectionSnapshot; length: number; operation: 'newBody' })
   | (FeatureBase & { type: 'revolve'; sketchId: UUID; axisEntityId: UUID; angleRad: number; operation: 'newBody' | 'add' | 'cut' | 'intersect'; targetBodyIds: UUID[] })
   | (FeatureBase & { type: 'boolean'; operation: 'fuse' | 'cut' | 'common'; targetBodyId: UUID; toolBodyIds: UUID[] })
   | (FeatureBase & { type: 'fillet' | 'chamfer'; edges: TopologyRef[]; size: number })
@@ -256,6 +292,7 @@ export interface CadFEMProject {
 
 export type CadCommand =
   | { type: 'renameProject'; name: string }
+  | { type: 'appendCatalogueExtrusion'; documentId: UUID; featureId: UUID; bodyId: UUID; componentId: UUID; sectionId: string; length: number; name?: string }
   | { type: 'upsertSketch'; documentId: UUID; sketch: Sketch }
   | { type: 'appendFeature'; documentId: UUID; feature: PartFeature }
   | { type: 'updateFeature'; documentId: UUID; feature: PartFeature }

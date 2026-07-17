@@ -70,6 +70,23 @@ export interface SectionSnapshot {
   iy: number;
   iz: number;
   torsionConstant: number;
+  catalogueRevision?: string;
+  profile?: {
+    schemaVersion: '1.0.0';
+    catalogue: 'beam-ec3';
+    catalogueRevision: string;
+    sectionId: string;
+    designation: string;
+    family: string;
+    kind: 'i' | 'channel' | 'rhs';
+    units: 'mm';
+    dimensions: Record<string, number | null>;
+    properties: Record<string, number | null>;
+    source: { title: string; detail: string; url: string };
+    geometryVerified: boolean;
+    geometryStatus: string;
+    warnings: string[];
+  };
   sourceRevision?: string;
 }
 

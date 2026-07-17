@@ -125,6 +125,36 @@ export function validateCadFEMProject(project: CadFEMProject): CadFEMValidationR
       if (feature.type === 'extrude' && (!finite(feature.distance) || feature.distance <= 0)) {
         errors.push(diagnostic('error', 'extrude_distance_invalid', `${feature.name} requires a positive extrusion distance.`, [feature.id]));
       }
+      if (feature.type === 'catalogueExtrusion') {
+        const { section } = feature;
+        if (!finite(feature.length) || feature.length <= 0) {
+          errors.push(diagnostic('error', 'catalogue_extrusion_length_invalid', `${feature.name} requires a positive member length.`, [feature.id]));
+        }
+        if (section.catalogue !== 'beam-ec3' || !/^[a-f0-9]{64}$/.test(section.catalogueRevision)) {
+          errors.push(diagnostic('error', 'catalogue_snapshot_invalid', `${feature.name} does not contain a valid Beam EC3 catalogue snapshot.`, [feature.id]));
+        }
+        const dimensions = section.dimensions;
+        if (!finite(dimensions.height) || !finite(dimensions.width) || dimensions.height <= 0 || dimensions.width <= 0 ||
+            !finite(dimensions.rootRadius) || dimensions.rootRadius <= 0) {
+          errors.push(diagnostic('error', 'catalogue_profile_dimensions_invalid', `${feature.name} has invalid profile dimensions.`, [feature.id]));
+        }
+        if (section.kind === 'rhs') {
+          const thickness = dimensions.wallThickness;
+          if (thickness === null || !finite(thickness) || thickness <= 0 || 2 * thickness >= Math.min(dimensions.height, dimensions.width)) {
+            errors.push(diagnostic('error', 'catalogue_rhs_thickness_invalid', `${feature.name} has an invalid hollow-section wall thickness.`, [feature.id]));
+          }
+        } else {
+          const web = dimensions.webThickness;
+          const flange = dimensions.flangeThickness;
+          if (web === null || flange === null || !finite(web) || !finite(flange) || web <= 0 || flange <= 0 ||
+              web >= dimensions.width || 2 * flange >= dimensions.height) {
+            errors.push(diagnostic('error', 'catalogue_open_profile_invalid', `${feature.name} has invalid web or flange dimensions.`, [feature.id]));
+          }
+        }
+        if (!section.geometryVerified) {
+          warnings.push(diagnostic('warning', 'catalogue_geometry_unverified', `${feature.name} uses catalogue geometry that is not marked as verified source data.`, [feature.id]));
+        }
+      }
       if (feature.type === 'hole' && (!finite(feature.diameter) || feature.diameter <= 0)) {
         errors.push(diagnostic('error', 'hole_diameter_invalid', `${feature.name} requires a positive diameter.`, [feature.id]));
       }

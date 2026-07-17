@@ -25,9 +25,19 @@ import { renderResults } from './ui/results';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const colourScheme = matchMedia('(prefers-color-scheme: dark)');
-const FRAME3D_API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? ''
-  : 'https://beam-calculator-api.harrynixon98.workers.dev';
+function frame3dApiBase(): string {
+  const configured = import.meta.env.VITE_API_BASE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, '');
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return '';
+  const pagesSuffix = '.beam-calculator.pages.dev';
+  if (location.hostname.endsWith(pagesSuffix) && location.hostname !== 'beam-calculator.pages.dev') {
+    const branch = location.hostname.slice(0, -pagesSuffix.length);
+    return `https://${branch}-beam-calculator-api.harrynixon98.workers.dev`;
+  }
+  return 'https://beam-calculator-api.harrynixon98.workers.dev';
+}
+
+const FRAME3D_API_BASE = frame3dApiBase();
 
 function apiUrl(path: `/api/${string}`): string {
   return `${FRAME3D_API_BASE}${path}`;
@@ -88,7 +98,7 @@ app.innerHTML = `
         </section>
         <section class="section-card"><div class="section-heading"><div><span class="eyebrow">Properties</span><h2>Section snapshots</h2></div><button data-add="sections" type="button">Add custom section</button></div>
           <p class="section-help">The saved model stores these analysis properties. Missing catalogue values are never inferred.</p>
-          <div class="library-controls"><button id="load-section-library" type="button">Load existing section library</button><select id="section-library-select" aria-label="Available Frame3D sections"><option value="">Load the library first</option></select><button id="add-library-section" type="button" disabled>Add property snapshot</button></div>
+          <div class="library-controls"><input id="section-library-search" type="search" placeholder="Search designation" aria-label="Search section library"><select id="section-library-family" aria-label="Filter section family"><option value="All">All families</option></select><select id="section-library-select" aria-label="Available Frame3D sections"><option value="">Loading the EC3 section library…</option></select><button id="add-library-section" type="button" disabled>Add property snapshot</button><button id="load-section-library" type="button">Refresh library</button></div>
           <p id="section-library-status" class="section-help"></p>
           <div class="table-scroll"><table id="sections-table"><thead><tr><th>ID</th><th>Designation</th><th>A [mm²]</th><th>Iy [mm⁴]</th><th>Iz [mm⁴]</th><th>J [mm⁴]</th><th>Source/revision</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </section>
@@ -127,6 +137,27 @@ app.innerHTML = `
 
 type EditableCollection = Parameters<EditorActions['duplicate']>[0];
 let sectionLibrary: Frame3DSectionLibraryItem[] = [];
+
+function renderSectionLibraryOptions(): void {
+  const select = byId<HTMLSelectElement>('section-library-select');
+  const search = byId<HTMLInputElement>('section-library-search').value.trim().toLocaleLowerCase('en-GB');
+  const family = byId<HTMLSelectElement>('section-library-family').value;
+  clear(select);
+  sectionLibrary.forEach((section, index) => {
+    if (family !== 'All' && section.family !== family) return;
+    if (search && !`${section.family} ${section.designation}`.toLocaleLowerCase('en-GB').includes(search)) return;
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.disabled = !section.available;
+    option.textContent = section.available
+      ? `${section.family} ${section.designation}`
+      : `${section.family} ${section.designation} — unavailable: ${section.missingProperties.join(', ')}`;
+    select.append(option);
+  });
+  const firstAvailable = Array.from(select.options).find(({ disabled }) => !disabled);
+  if (firstAvailable) select.value = firstAvailable.value;
+  byId<HTMLButtonElement>('add-library-section').disabled = !firstAvailable;
+}
 
 function markChanged(): void {
   state.modelRevision += 1;
@@ -310,17 +341,15 @@ async function loadSectionLibrary(): Promise<void> {
     if (!response.ok) throw new Error(`Section service returned ${response.status}.`);
     const body = await response.json() as { sections?: Frame3DSectionLibraryItem[] };
     sectionLibrary = body.sections ?? [];
-    const select = byId<HTMLSelectElement>('section-library-select');
-    clear(select);
-    sectionLibrary.forEach((section, index) => {
+    const familySelect = byId<HTMLSelectElement>('section-library-family');
+    clear(familySelect);
+    for (const value of ['All', ...new Set(sectionLibrary.map(({ family }) => family))]) {
       const option = document.createElement('option');
-      option.value = String(index);
-      option.disabled = !section.available;
-      option.textContent = section.available
-        ? `${section.family} ${section.designation}`
-        : `${section.family} ${section.designation} — unavailable: ${section.missingProperties.join(', ')}`;
-      select.append(option);
-    });
+      option.value = value;
+      option.textContent = value === 'All' ? 'All families' : value;
+      familySelect.append(option);
+    }
+    renderSectionLibraryOptions();
     const available = sectionLibrary.filter(({ available }) => available).length;
     status.textContent = `${available} of ${sectionLibrary.length} catalogue sections have A, Iy, Iz and J/It. Unavailable rows identify missing properties.`;
     byId<HTMLButtonElement>('add-library-section').disabled = available === 0;
@@ -391,7 +420,10 @@ byId('validate-model').addEventListener('click', () => {
 byId('run-analysis').addEventListener('click', runAnalysis);
 byId('cancel-analysis').addEventListener('click', cancelAnalysis);
 byId('load-section-library').addEventListener('click', () => { void loadSectionLibrary(); });
+byId<HTMLInputElement>('section-library-search').addEventListener('input', renderSectionLibraryOptions);
+byId<HTMLSelectElement>('section-library-family').addEventListener('change', renderSectionLibraryOptions);
 byId('add-library-section').addEventListener('click', addLibrarySection);
 document.addEventListener('frame3d-sort-results', () => renderResults(byId('results'), state.result, state.model.displayUnits));
 
 renderAll();
+void loadSectionLibrary();

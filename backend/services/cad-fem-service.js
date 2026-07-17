@@ -4,6 +4,7 @@ const { createHash, randomUUID } = require('crypto');
 const { config } = require('../config');
 const postgresRepository = require('./cad-fem-postgres-repository');
 const awsJobs = require('./cad-fem-aws-jobs');
+const { getSectionById, buildSectionProfileSnapshot } = require('./sections-service');
 
 const CAD_FEM_SCHEMA_VERSION = '1.0.0';
 const CAD_FEM_API_VERSION = '1.0.0';
@@ -142,11 +143,73 @@ function findDocument(project, documentId) {
 }
 
 function applyCommandToProject(project, command) {
+  const warnings = [];
   switch (command?.type) {
     case 'renameProject':
       project.metadata.name = String(command.name || '').trim().slice(0, 180);
       if (!project.metadata.name) throw httpError(422, 'project_name_required', 'Project name is required.');
       break;
+    case 'appendCatalogueExtrusion': {
+      const document = findDocument(project, command.documentId);
+      assertUuid(command.featureId, 'Feature ID');
+      assertUuid(command.bodyId, 'Body ID');
+      assertUuid(command.componentId, 'Component ID');
+      const length = Number(command.length);
+      if (!Number.isFinite(length) || length <= 0 || length > 1_000_000) {
+        throw httpError(422, 'catalogue_extrusion_length_invalid', 'Catalogue extrusion length must be greater than 0 and no more than 1,000,000 mm.');
+      }
+      if (document.features.some(({ id }) => id === command.featureId) ||
+          document.bodies.some(({ id }) => id === command.bodyId) ||
+          project.assembly.components.some(({ id }) => id === command.componentId)) {
+        throw httpError(409, 'catalogue_entity_exists', 'A catalogue extrusion entity ID already exists.');
+      }
+      const section = getSectionById(command.sectionId);
+      const snapshot = buildSectionProfileSnapshot(section);
+      if (!section || !snapshot) {
+        throw httpError(422, 'catalogue_profile_unavailable', 'The selected Beam EC3 section does not have complete solid-profile geometry.');
+      }
+      if (!snapshot.geometryVerified) {
+        throw httpError(422, 'catalogue_profile_unverified', 'The selected section geometry is not marked as verified source data.');
+      }
+      const name = String(command.name || snapshot.designation).trim().slice(0, 180) || snapshot.designation;
+      document.features.push({
+        id: command.featureId,
+        name: `${name} extrusion`,
+        type: 'catalogueExtrusion',
+        section: structuredClone(snapshot),
+        length,
+        operation: 'newBody',
+        suppressed: false
+      });
+      const materialId = project.materials[0]?.id || null;
+      document.bodies.push({
+        id: command.bodyId,
+        name,
+        sourceFeatureId: command.featureId,
+        materialId,
+        visible: true,
+        topologyRevision: 1
+      });
+      project.assembly.components.push({
+        id: command.componentId,
+        name,
+        partDocumentId: document.id,
+        transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        grounded: false,
+        visible: true
+      });
+      document.geometryRevision += 1;
+      project.assembly.revision += 1;
+      const geometryRevision = Math.max(0, ...project.partDocuments.map(({ geometryRevision = 0 }) => geometryRevision));
+      for (const study of project.studies) {
+        study.geometryRevision = geometryRevision;
+        if (materialId && !study.materialAssignments.some(({ componentId, bodyId }) => componentId === command.componentId && bodyId === command.bodyId)) {
+          study.materialAssignments.push({ componentId: command.componentId, bodyId: command.bodyId, materialId });
+        }
+      }
+      warnings.push(...snapshot.warnings);
+      break;
+    }
     case 'upsertSketch': {
       const document = findDocument(project, command.documentId);
       upsertById(document.sketches, command.sketch);
@@ -195,6 +258,7 @@ function applyCommandToProject(project, command) {
     default:
       throw httpError(422, 'command_unsupported', `Unsupported CAD command ${String(command?.type)}.`);
   }
+  return warnings;
 }
 
 async function applyCadFemCommand(ownerId, projectId, request) {
@@ -203,7 +267,7 @@ async function applyCadFemCommand(ownerId, projectId, request) {
     throw httpError(400, 'base_revision_invalid', 'Base revision must be a non-negative integer.');
   }
   const transform = (project) => {
-    applyCommandToProject(project, request.command);
+    const warnings = applyCommandToProject(project, request.command);
     project.revision += 1;
     project.metadata.updatedAt = new Date().toISOString();
     const geometryRevision = Math.max(0, ...project.partDocuments.map(({ geometryRevision = 0 }) => geometryRevision));
@@ -212,7 +276,7 @@ async function applyCadFemCommand(ownerId, projectId, request) {
       projectId,
       revision: project.revision,
       geometryRevision,
-      warnings: []
+      warnings
     };
   };
   if (usesPostgres()) {

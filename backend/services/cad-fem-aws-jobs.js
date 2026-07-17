@@ -169,12 +169,14 @@ async function stageAndSubmit(ownerId, job, stepArtifact, inputManifest) {
   const inputPrefix = `jobs/${job.id}/input`;
   const outputPrefix = `jobs/${job.id}/output`;
   try {
-    await s3().send(new CopyObjectCommand({
-      Bucket: config.cadFemR2Bucket,
-      Key: `${inputPrefix}/model.step`,
-      CopySource: copySource(stepArtifact.bucket, stepArtifact.objectKey),
-      MetadataDirective: 'COPY'
-    }));
+    if (stepArtifact) {
+      await s3().send(new CopyObjectCommand({
+        Bucket: config.cadFemR2Bucket,
+        Key: `${inputPrefix}/model.step`,
+        CopySource: copySource(stepArtifact.bucket, stepArtifact.objectKey),
+        MetadataDirective: 'COPY'
+      }));
+    }
     await s3().send(new PutObjectCommand({
       Bucket: config.cadFemR2Bucket,
       Key: `${inputPrefix}/job-input.json`,
@@ -243,6 +245,26 @@ async function queueImportJob(ownerId, projectId, body) {
   return { job: await stageAndSubmit(ownerId, job, stepArtifact, inputManifest) };
 }
 
+function catalogueExtrusionForMeshing(project) {
+  const features = (project.partDocuments || []).flatMap(({ features = [] }) => features)
+    .filter(({ type, suppressed }) => type === 'catalogueExtrusion' && !suppressed);
+  if (features.length === 0) return null;
+  if (features.length !== 1) {
+    throw httpError(
+      422,
+      'catalogue_assembly_meshing_not_released',
+      'The current catalogue meshing path accepts one unsuppressed EC3 section extrusion. Multi-body assembly meshing is not yet released.'
+    );
+  }
+  const feature = features[0];
+  if (feature.section?.catalogue !== 'beam-ec3' || feature.section?.geometryVerified !== true ||
+      !/^[a-f0-9]{64}$/.test(String(feature.section?.catalogueRevision || '')) ||
+      !(Number(feature.length) > 0)) {
+    throw httpError(422, 'catalogue_extrusion_invalid', 'The project does not contain a valid verified EC3 catalogue extrusion snapshot.');
+  }
+  return structuredClone(feature);
+}
+
 async function queueStudyJob(ownerId, studyId, kind, body) {
   requireAvailable();
   const record = await repository.readStudy(ownerId, studyId);
@@ -253,10 +275,13 @@ async function queueStudyJob(ownerId, studyId, kind, body) {
     throw httpError(409, 'stale_study_input', 'The submitted study does not match the current project geometry revision.');
   }
   const artifactId = Array.isArray(body.artifactIds) ? body.artifactIds[0] : '';
-  if (!artifactId) {
-    throw httpError(422, 'step_artifact_required', 'A verified STEP artifact is required for native meshing and solving.');
+  const stepArtifact = artifactId
+    ? await verifiedStepArtifact(ownerId, record.project_id, artifactId)
+    : null;
+  const catalogueExtrusion = stepArtifact ? null : catalogueExtrusionForMeshing(project);
+  if (!stepArtifact && !catalogueExtrusion) {
+    throw httpError(422, 'geometry_input_required', 'A verified STEP artifact or one saved EC3 catalogue extrusion is required for native meshing.');
   }
-  const stepArtifact = await verifiedStepArtifact(ownerId, record.project_id, artifactId);
   const study = record.study;
   const inputManifest = {
     apiVersion: '1.0.0',
@@ -265,9 +290,17 @@ async function queueStudyJob(ownerId, studyId, kind, body) {
     projectRevision: record.current_revision,
     geometryRevision: record.current_geometry_revision,
     mesh: study.mesh,
-    solver: study.solver
+    solver: study.solver,
+    ...(catalogueExtrusion ? { catalogueExtrusion } : {})
   };
   if (kind === 'solve') {
+    if (!stepArtifact) {
+      throw httpError(
+        422,
+        'native_profile_not_released',
+        'Catalogue sections can enter native regeneration and meshing, but arbitrary solid solves remain disabled until their benchmarks pass.'
+      );
+    }
     if (body.settings?.verificationProfile !== 'axialBarX') {
       throw httpError(
         422,
@@ -476,6 +509,7 @@ async function artifactResponse(ownerId, jobId, artifactId) {
 
 module.exports = {
   available,
+  catalogueExtrusionForMeshing,
   createImportUpload,
   queueImportJob,
   queueStudyJob,

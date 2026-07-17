@@ -17,6 +17,7 @@
 html, body, #root { width: 100%; height: 100%; overflow: hidden; }
 body { margin: 0; font: 13px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--text); background: var(--bg); }
 button, input, select { font: inherit; }
+button:disabled { cursor: not-allowed; opacity: .42; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .workbench { display: grid; grid-template: 54px 72px minmax(0, 1fr) 28px / 260px minmax(340px, 1fr) 292px; width: 100%; height: 100%; background: var(--bg); }
@@ -33,6 +34,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .command-group button { min-width: 65px; height: 36px; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; color: var(--text); background: transparent; }
 .command-group button:hover { border-color: var(--border); background: var(--panel-2); }
 .command-group button.primary { color: #fff; background: var(--accent-2); }
+.command-group.active-command button { border-color: #2e69b3; background: #193b63; }
 .tree-panel, .properties-panel { min-height: 0; overflow: auto; background: var(--panel); }
 .tree-panel { grid-column: 1; border-right: 1px solid var(--border); }
 .tree-tabs { display: grid; grid-template-columns: repeat(3, 1fr); position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); background: var(--panel); }
@@ -44,6 +46,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .tree-row:hover { background: var(--panel-2); }
 .tree-row.selected { background: #1c4773; }
 .empty-tree { padding: 18px; color: var(--muted); }
+.tree-hint { margin: 8px; color: var(--muted); font-size: 11px; }
 .tree-footer { position: sticky; bottom: 0; padding: 9px 10px; border-top: 1px solid var(--border); background: var(--panel); font-size: 11px; }
 .valid { color: var(--good); }
 .invalid { color: var(--bad); }
@@ -61,6 +64,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .properties-panel h3 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; }
 .properties-panel label { display: grid; gap: 4px; margin-top: 9px; color: var(--muted); font-size: 11px; }
 .properties-panel input, .properties-panel select { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: #11151a; }
+.wide-action { width: 100%; margin-top: 11px; padding: 8px; border: 1px solid #3d83d6; border-radius: 4px; color: #fff; background: var(--accent-2); }
+.catalogue-status { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+.catalogue-source { margin: 9px 0 0; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.catalogue-source a { color: #8fc2ff; }
+.section-dimensions { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 10px 0 0; background: var(--border); }
+.section-dimensions div { padding: 6px 7px; background: #14181e; }
+.section-dimensions dt { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.section-dimensions dd { margin: 2px 0 0; color: var(--text); font-size: 11px; }
 .diagnostics p { margin: 6px 0 0; padding: 7px 8px; border-left: 3px solid var(--muted); color: var(--muted); background: #14181e; font-size: 11px; }
 .diagnostics p.warning { border-left-color: var(--warn); color: #f2d59d; }
 .diagnostics p.error { border-left-color: var(--bad); color: #ffb1b1; }

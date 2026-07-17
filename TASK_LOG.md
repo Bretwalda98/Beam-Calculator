@@ -18,6 +18,19 @@
 5. Add AWS ECS/Batch/RDS staging infrastructure and Cloudflare gateway/R2 configuration without changing production DNS, secrets or routes.
 6. Run existing Beam/Frame regressions plus CAD schema, routing, native build and benchmark gates. Never label solid/contact results verified until those gates pass.
 
+### EC3 section integration action — 17 July 2026
+
+1. Expose immutable, provenance-bearing profile snapshots from the existing 368-row Beam EC3 catalogue without changing Beam calculations or API routes.
+2. Make the Frame section picker load automatically and add designation/family filtering while preserving property snapshots used by the frame solver.
+3. Replace the Solid workbench's hard-coded box with a real I-section/channel/RHS extrusion preview driven by the selected EC3 dimensions.
+4. Store the selected section, dimensions, properties, source and catalogue fingerprint in a separate `CadFEMProject` feature; never retain only a mutable catalogue ID.
+5. Generate native STEP input from a single saved catalogue extrusion for OCCT regeneration and Netgen meshing. Keep arbitrary solid solves disabled until benchmark gates pass.
+6. Re-run all Beam, Frame, CAD/FEM, route and catalogue tests; use CI for the native container tests unavailable on this workstation.
+
+Implemented locally: all 368 profiles have complete verified source snapshots; Frame search/filter and Solid selection/preview are wired; immutable save/idempotency tests pass; and the Batch input path can generate nominal sharp-corner STEP geometry from the saved snapshot. Root/toe radii and tapered flanges remain recorded but intentionally unapplied by this first native generator, with explicit artefact warnings. Native CTest remains a required CI gate and no solid-result verification claim is made.
+
+The previously recorded raw-file catalogue checksum failure is removed. The test now pins a canonical data fingerprint and separately verifies row count, profile availability, provenance and flange-slope coverage. `npm run smoke` now passes without altering the Beam engineering engine.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.

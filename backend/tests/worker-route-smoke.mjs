@@ -17,6 +17,24 @@ assert.ok(available?.snapshot?.area > 0);
 assert.ok(available?.snapshot?.iy > 0);
 assert.ok(available?.snapshot?.iz > 0);
 assert.ok(available?.snapshot?.torsionConstant > 0);
+assert.match(available?.snapshot?.catalogueRevision, /^[a-f0-9]{64}$/);
+assert.equal(available?.snapshot?.profile?.catalogue, 'beam-ec3');
+assert.equal(available?.snapshot?.profile?.units, 'mm');
+
+const catalogue = await worker.fetch(new Request('https://beam-calculator.pages.dev/api/sections'));
+assert.equal(catalogue.status, 200);
+const catalogueBody = await catalogue.json();
+assert.equal(catalogueBody.sections.length, 368);
+const solidSection = catalogueBody.sections.find((section) => section.solidProfileAvailable);
+assert.ok(solidSection?.backendId);
+assert.match(solidSection?.catalogueRevision, /^[a-f0-9]{64}$/);
+const preview = await worker.fetch(new Request(
+  `https://beam-calculator.pages.dev/api/sections/${encodeURIComponent(solidSection.backendId)}/preview`
+));
+assert.equal(preview.status, 200);
+const previewBody = await preview.json();
+assert.equal(previewBody.section.solidProfile.sectionId, solidSection.backendId);
+assert.equal(previewBody.section.solidProfile.geometryVerified, true);
 
 const unauthenticatedCad = await worker.fetch(
   new Request('https://beam-calculator.pages.dev/api/cad/projects')

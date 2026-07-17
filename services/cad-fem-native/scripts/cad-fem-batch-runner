@@ -101,6 +101,23 @@ if [[ ! -f "$manifest" ]]; then
   exit 65
 fi
 
+prepare_step_file() {
+  local step_file="${input_dir}/model.step"
+  if [[ -f "$step_file" ]]; then
+    return
+  fi
+  if ! jq -e '.catalogueExtrusion' "$manifest" >/dev/null; then
+    printf 'Missing model.step or catalogueExtrusion input artifact.\n' >&2
+    exit 66
+  fi
+  local profile_file="${input_dir}/catalogue-profile.json"
+  jq -e '.catalogueExtrusion | {section:.section,length:.length}' "$manifest" > "$profile_file"
+  cad-fem-section-step \
+    --input "$profile_file" \
+    --output "$step_file" \
+    --metadata "${output_dir}/section-generation.json"
+}
+
 case "$CAD_FEM_JOB_KIND" in
   stepImport|regenerate)
     step_file="${input_dir}/model.step"
@@ -114,11 +131,8 @@ case "$CAD_FEM_JOB_KIND" in
       --stage geometry
     ;;
   mesh)
+    prepare_step_file
     step_file="${input_dir}/model.step"
-    if [[ ! -f "$step_file" ]]; then
-      printf 'Missing model.step input artifact.\n' >&2
-      exit 66
-    fi
     cad-fem-pipeline \
       --step "$step_file" \
       --output "$output_dir" \
@@ -127,11 +141,8 @@ case "$CAD_FEM_JOB_KIND" in
       --mesh-min-size "$(jq -er '.mesh.minimumSize' "$manifest")"
     ;;
   solve|linearStatic)
+    prepare_step_file
     step_file="${input_dir}/model.step"
-    if [[ ! -f "$step_file" ]]; then
-      printf 'Missing model.step input artifact.\n' >&2
-      exit 66
-    fi
     if [[ "$(jq -er '.verificationProfile' "$manifest")" != "axialBarX" ]]; then
       printf 'The native spike only permits the axialBarX verification profile.\n' >&2
       exit 68

@@ -35,9 +35,9 @@ OAuth endpoints return setup errors until the required secrets and redirect doma
 - `GET /api/sections/sources`
 - `GET /api/frame3d/sections`
 
-The API exposes families plus lightweight section selection metadata. It does not expose full section property rows to the browser. The preview endpoint returns only selected-section display geometry and visible properties required by the UI.
+The API exposes families plus constrained section selection metadata rather than raw database rows. The preview endpoint returns selected-section display geometry, visible properties and a versioned Solid-mode profile snapshot with source provenance and a canonical catalogue fingerprint.
 
-The Frame3D section endpoint returns only `A`, `Iy`, `Iz`, `J/It` and source metadata required to create a saved analysis-property snapshot. Rows with missing required properties are marked unavailable and list the missing fields.
+The Frame3D section endpoint returns `A`, `Iy`, `Iz`, `J/It`, source metadata, the catalogue fingerprint and the same constrained profile snapshot required to create an immutable saved section. Rows with missing required properties are marked unavailable and list the missing fields.
 
 ## Calculations
 

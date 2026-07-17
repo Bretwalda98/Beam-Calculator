@@ -25,6 +25,7 @@ const {
   applyCadFemCommand,
   queueCadFemJob
 } = require('../services/cad-fem-service');
+const { catalogueExtrusionForMeshing } = require('../services/cad-fem-aws-jobs');
 
 function project(id) {
   const now = new Date().toISOString();
@@ -68,6 +69,39 @@ function project(id) {
     }),
     (error) => error.statusCode === 409 && error.code === 'stale_project_revision'
   );
+
+  const catalogueCommandId = randomUUID();
+  const storedBeforeCatalogue = await readCadFemProject(ownerId, id);
+  const catalogueResult = await applyCadFemCommand(ownerId, id, {
+    commandId: catalogueCommandId,
+    baseRevision: storedBeforeCatalogue.revision,
+    command: {
+      type: 'appendCatalogueExtrusion',
+      documentId: storedBeforeCatalogue.partDocuments[0].id,
+      featureId: randomUUID(),
+      bodyId: randomUUID(),
+      componentId: randomUUID(),
+      sectionId: 'UB|UB 914x419x388',
+      length: 3000
+    }
+  });
+  assert.equal(catalogueResult.revision, 2);
+  const withCatalogue = await readCadFemProject(ownerId, id);
+  const catalogueFeature = withCatalogue.partDocuments[0].features[0];
+  assert.equal(catalogueFeature.type, 'catalogueExtrusion');
+  assert.equal(catalogueFeature.section.catalogue, 'beam-ec3');
+  assert.match(catalogueFeature.section.catalogueRevision, /^[a-f0-9]{64}$/);
+  assert.equal(catalogueFeature.section.properties.area, 49400);
+  assert.equal(withCatalogue.assembly.components.length, 1);
+  const meshingFeature = catalogueExtrusionForMeshing(withCatalogue);
+  assert.equal(meshingFeature.section.sectionId, 'UB|UB 914x419x388');
+  assert.equal(meshingFeature.length, 3000);
+  const duplicateCatalogue = await applyCadFemCommand(ownerId, id, {
+    commandId: catalogueCommandId,
+    baseRevision: 1,
+    command: { type: 'renameProject', name: 'Duplicate command must not execute' }
+  });
+  assert.deepEqual(duplicateCatalogue, catalogueResult);
   await assert.rejects(
     () => queueCadFemJob(ownerId, randomUUID(), 'mesh', { idempotencyKey: randomUUID() }),
     (error) => error.statusCode === 503 && error.code === 'native_compute_unavailable'

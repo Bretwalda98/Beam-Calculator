@@ -1,0 +1,25 @@
+{
+  "length": 1000,
+  "section": {
+    "schemaVersion": "1.0.0",
+    "catalogue": "beam-ec3",
+    "catalogueRevision": "73360d0357bb6d7c9173c11aa630ab8bb81c48bae84cb2bbe87c33294df93678",
+    "sectionId": "PFC|PFC 200x75x23",
+    "designation": "PFC 200x75x23",
+    "family": "PFC",
+    "kind": "channel",
+    "units": "mm",
+    "dimensions": {
+      "height": 200,
+      "width": 75,
+      "webThickness": 6,
+      "flangeThickness": 12.5,
+      "wallThickness": null,
+      "rootRadius": 12,
+      "toeRadius": null,
+      "flangeSlopePercent": 0,
+      "innerRadius": null
+    },
+    "properties": { "area": 2990, "iy": 19630000, "iz": 1700000, "torsionConstant": 111000, "massPerLength": 23.4 }
+  }
+}

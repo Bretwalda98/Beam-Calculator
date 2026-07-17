@@ -28,6 +28,14 @@ PostgreSQL stores project ownership, revisions, commands, studies, jobs, artifac
 
 The native CTest pipeline generates an axial-bar STEP input, meshes it and requires displacement error at or below 1% plus normalised equilibrium residual at or below `1e-8`.
 
+## Beam EC3 catalogue bridge
+
+The existing server-side Beam EC3 catalogue now exposes a constrained Solid-mode profile snapshot for all 368 production rows. Each snapshot includes the designation, family, source dimensions, analysis properties, source citation and a canonical SHA-256 catalogue revision. Saving an `appendCatalogueExtrusion` command copies that immutable snapshot into `CadFEMProject`; subsequent catalogue changes cannot silently alter saved geometry.
+
+The browser uses the profile only for a nominal Three.js preview. A native `cad-fem-section-step` executable creates OCCT STEP geometry for one saved I-section, channel or RHS extrusion, after which the normal OCAF and Netgen stages run. This first generator uses nominal sharp-corner geometry. Root/toe radii and flange slopes remain in the snapshot and are reported as unapplied warnings in `section-generation.json`; the generated geometry is not represented as an exact catalogue shape or a verified solid solution.
+
+AWS Batch mesh jobs may use either an uploaded, verified STEP artefact or one saved catalogue extrusion. Arbitrary catalogue-section solves remain rejected. The approved axial-bar fixture and exact hash/settings gate remain the only native solve path until the wider benchmark suite passes.
+
 ## Compute and gateway
 
 Cloudflare Pages remains the static host. Cloudflare Access and the Worker form the public CAD/FEM gateway. A private ECS Fargate API service is reached through Cloudflare Tunnel; RDS PostgreSQL stores metadata and AWS Batch on Fargate executes native jobs in `eu-west-2`.

@@ -9,6 +9,7 @@
 | Axom | `4839900850b7b43bcc2accf7041e3479cea59515` | BSD-3-Clause | Retain copyright and licence. |
 | Ceres Solver | `2.2.0` | BSD-3-Clause | Retain copyright and licence. |
 | AWS CLI | `2.35.24` | Apache-2.0 | Runtime artifact transport only; retain the installed distribution notices. |
+| RapidJSON | Ubuntu 24.04 `rapidjson-dev` package | MIT | Header-only JSON transport parser; retain copyright and licence. |
 
 The image build copies the complete upstream licence files into
 `/usr/share/licenses/beam-calculator-cad-fem/upstream/`. Pinned upstream source

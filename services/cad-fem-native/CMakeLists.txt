@@ -14,6 +14,7 @@ option(CAD_FEM_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviour
 find_package(OpenCASCADE CONFIG REQUIRED)
 find_package(Netgen CONFIG REQUIRED)
 find_package(MFEM CONFIG REQUIRED)
+find_path(RAPIDJSON_INCLUDE_DIR rapidjson/document.h REQUIRED)
 
 if(TARGET netgen::nglib)
   set(CAD_FEM_NETGEN_TARGET netgen::nglib)
@@ -34,11 +35,13 @@ endif()
 add_library(cad_fem_pipeline
   src/cad_pipeline.cpp
   src/linear_elasticity.cpp
+  src/section_profile.cpp
 )
 target_include_directories(cad_fem_pipeline
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${OpenCASCADE_INCLUDE_DIR}
+    ${RAPIDJSON_INCLUDE_DIR}
 )
 target_link_libraries(cad_fem_pipeline
   PUBLIC
@@ -63,6 +66,9 @@ endif()
 
 add_executable(cad-fem-pipeline src/main.cpp)
 target_link_libraries(cad-fem-pipeline PRIVATE cad_fem_pipeline)
+
+add_executable(cad-fem-section-step src/section_step_main.cpp)
+target_link_libraries(cad-fem-section-step PRIVATE cad_fem_pipeline)
 
 if(CAD_FEM_ENABLE_CONTACT)
   find_package(MPI REQUIRED)
@@ -92,7 +98,7 @@ if(CAD_FEM_ENABLE_CONTACT)
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS cad-fem-pipeline RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS cad-fem-pipeline cad-fem-section-step RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cad-fem-batch-runner
   DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -111,6 +117,7 @@ if(CAD_FEM_BUILD_TESTS)
 
   set(CAD_FEM_TEST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/verification)
   set(CAD_FEM_TEST_STEP ${CAD_FEM_TEST_ROOT}/fixture/axial-bar.step)
+  set(CAD_FEM_TEST_SECTION_STEP ${CAD_FEM_TEST_ROOT}/fixture/catalogue-ub.step)
   add_test(
     NAME cad_fem_generate_axial_bar_step
     COMMAND cad-fem-generate-box
@@ -120,6 +127,44 @@ if(CAD_FEM_BUILD_TESTS)
       --height 100
   )
   set_tests_properties(cad_fem_generate_axial_bar_step PROPERTIES FIXTURES_SETUP axial_bar_step)
+
+  add_test(
+    NAME cad_fem_generate_catalogue_ub_step
+    COMMAND cad-fem-section-step
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/profiles/ub-254x146x31.json
+      --output ${CAD_FEM_TEST_SECTION_STEP}
+      --metadata ${CAD_FEM_TEST_ROOT}/fixture/catalogue-ub-generation.json
+  )
+  set_tests_properties(cad_fem_generate_catalogue_ub_step PROPERTIES FIXTURES_SETUP catalogue_ub_step)
+
+  add_test(
+    NAME cad_fem_generate_catalogue_channel_step
+    COMMAND cad-fem-section-step
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/profiles/pfc-200x75x23.json
+      --output ${CAD_FEM_TEST_ROOT}/fixture/catalogue-pfc.step
+      --metadata ${CAD_FEM_TEST_ROOT}/fixture/catalogue-pfc-generation.json
+  )
+
+  add_test(
+    NAME cad_fem_generate_catalogue_rhs_step
+    COMMAND cad-fem-section-step
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/profiles/rhs-100x100x5.json
+      --output ${CAD_FEM_TEST_ROOT}/fixture/catalogue-rhs.step
+      --metadata ${CAD_FEM_TEST_ROOT}/fixture/catalogue-rhs-generation.json
+  )
+
+  add_test(
+    NAME cad_fem_catalogue_ub_ocaf_geometry
+    COMMAND cad-fem-pipeline
+      --step ${CAD_FEM_TEST_SECTION_STEP}
+      --output ${CAD_FEM_TEST_ROOT}/catalogue-ub-geometry
+      --stage geometry
+      --mesh-min-size 2
+  )
+  set_tests_properties(
+    cad_fem_catalogue_ub_ocaf_geometry
+    PROPERTIES FIXTURES_REQUIRED catalogue_ub_step TIMEOUT 600 RUN_SERIAL TRUE
+  )
 
   add_test(
     NAME cad_fem_step_ocaf_geometry

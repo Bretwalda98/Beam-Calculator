@@ -34,6 +34,12 @@ Set `BEAM_API_BASE_URL` when building a static package for GitHub Pages or anoth
 BEAM_API_BASE_URL=https://your-backend.example.com npm run build:frontend
 ```
 
+For a static Frame/Solid preview, set `VITE_API_BASE_URL` to the matching preview Worker as well. This keeps both the stable branch alias and the unique Pages deployment URL on the same isolated API:
+
+```bash
+BEAM_API_BASE_URL=https://preview-api.example.com VITE_API_BASE_URL=https://preview-api.example.com npm run build:frontend
+```
+
 Production source maps are not generated. `npm run security:bundle-check` fails if protected solver names, report generators, `PROFILE_DB`, or `sections_database.js` appear in the public static files.
 
 Cloudflare Pages publishes `dist/`. The `_redirects` file canonicalises `/beam`, `/frame3d`, `/frame3d/frame`, `/frame3d/solid` and `/privacy` to their directory routes. The generated `_headers` file grants WebAssembly compilation only below `/frame3d/`. The API Worker remains separate; all existing `/api/...` routes are preserved and the read-only `/api/frame3d/sections` plus authenticated `/api/cad/...`, `/api/fea/...` and `/api/jobs/...` routes are additive.

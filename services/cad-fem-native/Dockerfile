@@ -87,7 +87,8 @@ RUN git clone --filter=blob:none https://github.com/mfem/mfem.git mfem \
 RUN install -D /src/occt/LICENSE_LGPL_21.txt /opt/cad-fem/share/licenses/occt/LICENSE_LGPL_21.txt \
   && install -D /src/occt/OCCT_LGPL_EXCEPTION.txt /opt/cad-fem/share/licenses/occt/OCCT_LGPL_EXCEPTION.txt \
   && install -D /src/netgen/LICENSE /opt/cad-fem/share/licenses/netgen/LICENSE \
-  && install -D /src/mfem/LICENSE /opt/cad-fem/share/licenses/mfem/LICENSE
+  && install -D /src/mfem/LICENSE /opt/cad-fem/share/licenses/mfem/LICENSE \
+  && install -D /usr/share/doc/rapidjson-dev/copyright /opt/cad-fem/share/licenses/rapidjson/copyright
 
 COPY . /src/cad-fem-native
 RUN cmake -S /src/cad-fem-native -B /build/cad-fem-native -G Ninja \
