@@ -23,7 +23,10 @@
 - Added native Ceres sketch-solve transport with revision checks and no JavaScript fallback. Added line, arc and circle residuals, geometric/dimensional constraints, Jacobian-rank degrees of freedom and under/full/over CTest fixtures to the pinned image.
 - Added deterministic topology naming/resolution contracts, broken/ambiguous-reference validation and richer OCCT imported-face signatures.
 - Replaced the disabled Solid controls with drafting, constraints, feature creation, EC3 catalogue insertion, STEP upload, feature timeline, revision history, undo/redo and non-authoritative Three.js sketch/extrusion previews.
-- Local gates pass: `npm run check`, `npm test`, `npm run smoke` and `npm run build:frontend`. Native Ceres compilation remains pending the Linux container CI because Docker is unavailable on this workstation.
+- Local gates pass: `npm run check`, `npm test`, `npm run smoke` and `npm run build:frontend`.
+- GitHub Actions run `29632943436` compiled the pinned Ceres 2.2, OCCT, Netgen and MFEM image with sanitizers and passed all 11 native CTests. The three Ceres fixtures returned: under-constrained (4 DOF, rank 0), fully constrained (0 DOF, rank 8) and deliberately inconsistent over-constrained (rank 3 of 4 equations, maximum residual `5.00000003`). No browser solver was substituted.
+- The same native run retained the named axial-bar proof result: 203 nodes, 426 quadratic tetrahedra, `0.265384%` displacement error and `3.9343003 × 10^-11` normalised equilibrium residual. This is evidence for that named benchmark only, not a broad solid/contact verification claim.
+- Native dependency caches created only on a pull-request merge ref are not reusable by later staged pull requests. The CAD/FEM CI now also runs after relevant reviewed changes merge to `main`, seeding the default-branch cache without deploying any service.
 - Browser screenshot inspection could not run because no in-app or extension browser was available in this Codex session; the isolated branch preview remains the visual acceptance surface.
 
 ## CAD-integrated solid FEM programme — 16 July 2026

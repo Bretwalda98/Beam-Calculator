@@ -1,6 +1,28 @@
 name: CAD FEM platform
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cad-fem-platform.yml"
+      - "Dockerfile.api"
+      - "apps/frame3d-hub/**"
+      - "apps/solid-fem/**"
+      - "backend/config.js"
+      - "backend/db/**"
+      - "backend/middleware/http.js"
+      - "backend/services/cad-fem-*.js"
+      - "backend/tests/cad-fem-service.js"
+      - "backend/tests/worker-route-smoke.mjs"
+      - "infra/aws/staging/**"
+      - "packages/cad-fem-*/**"
+      - "scripts/migrate-database.js"
+      - "services/cad-fem-native/**"
+      - "src/worker.mjs"
+      - "server.js"
+      - "package.json"
+      - "package-lock.json"
   pull_request:
     paths:
       - ".github/workflows/cad-fem-platform.yml"
