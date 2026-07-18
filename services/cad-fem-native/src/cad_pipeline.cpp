@@ -1,6 +1,7 @@
 #include "cad_pipeline.hpp"
 
 #include <BRepBndLib.hxx>
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepGProp.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
@@ -13,6 +14,7 @@
 #include <PCDM_StoreStatus.hxx>
 #include <Poly_Triangulation.hxx>
 #include <STEPCAFControl_Reader.hxx>
+#include <Standard_Failure.hxx>
 #include <TDF_LabelSequence.hxx>
 #include <TDocStd_Document.hxx>
 #include <TopAbs_Orientation.hxx>
@@ -28,6 +30,7 @@
 #include <XCAFDoc_DocumentTool.hxx>
 #include <XCAFDoc_ShapeTool.hxx>
 #include <gp_Pnt.hxx>
+#include <gp_Vec.hxx>
 
 #include <algorithm>
 #include <cmath>
@@ -35,6 +38,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
@@ -70,6 +74,32 @@ void require_positive(double value, std::string_view label) {
   }
 }
 
+std::optional<std::array<double, 3>> face_normal(const TopoDS_Face& face) {
+  try {
+    Standard_Real u_min = 0.0;
+    Standard_Real u_max = 0.0;
+    Standard_Real v_min = 0.0;
+    Standard_Real v_max = 0.0;
+    BRepTools::UVBounds(face, u_min, u_max, v_min, v_max);
+    if (!std::isfinite(u_min) || !std::isfinite(u_max) ||
+        !std::isfinite(v_min) || !std::isfinite(v_max)) {
+      return std::nullopt;
+    }
+    BRepAdaptor_Surface surface(face, Standard_False);
+    gp_Pnt point;
+    gp_Vec derivative_u;
+    gp_Vec derivative_v;
+    surface.D1((u_min + u_max) * 0.5, (v_min + v_max) * 0.5, point, derivative_u, derivative_v);
+    gp_Vec normal = derivative_u.Crossed(derivative_v);
+    if (normal.SquareMagnitude() <= 1.0e-24) return std::nullopt;
+    normal.Normalize();
+    if (face.Orientation() == TopAbs_REVERSED) normal.Reverse();
+    return std::array<double, 3>{normal.X(), normal.Y(), normal.Z()};
+  } catch (const Standard_Failure&) {
+    return std::nullopt;
+  }
+}
+
 void write_topology_json(
     const std::filesystem::path& path,
     const TopoDS_Shape& shape,
@@ -91,6 +121,7 @@ void write_topology_json(
   stream << "{\n"
          << "  \"schemaVersion\": \"1.0.0\",\n"
          << "  \"units\": \"mm\",\n"
+         << "  \"topologyRevision\": 1,\n"
          << "  \"freeShapeCount\": " << free_shape_count << ",\n"
          << "  \"faceCount\": " << faces.Extent() << ",\n"
          << "  \"edgeCount\": " << edges.Extent() << ",\n"
@@ -104,10 +135,16 @@ void write_topology_json(
     GProp_GProps properties;
     BRepGProp::SurfaceProperties(face, properties);
     const gp_Pnt centroid = properties.CentreOfMass();
-    stream << "    {\"semanticName\":\"import/face/" << index
-           << "\",\"area\":" << properties.Mass()
+    const auto normal = face_normal(face);
+    stream << "    {\"semanticName\":\"Import:1/Face:" << index
+           << "\",\"kind\":\"face\",\"measure\":" << properties.Mass()
+           << ",\"area\":" << properties.Mass()
            << ",\"centroid\":[" << centroid.X() << ',' << centroid.Y() << ',' << centroid.Z()
-           << "],\"adjacentKinds\":[\"edge\"]}";
+           << ']';
+    if (normal) {
+      stream << ",\"normal\":[" << (*normal)[0] << ',' << (*normal)[1] << ',' << (*normal)[2] << ']';
+    }
+    stream << ",\"adjacentKinds\":[\"edge\"]}";
     stream << (index == faces.Extent() ? "\n" : ",\n");
   }
   stream << "  ]\n}\n";

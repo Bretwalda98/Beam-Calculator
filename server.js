@@ -31,7 +31,10 @@ const {
   listCadFemProjects,
   createCadFemProject,
   readCadFemProject,
+  listCadFemProjectRevisions,
+  readCadFemProjectRevision,
   applyCadFemCommand,
+  solveCadFemSketch,
   createCadFemImportUpload,
   queueCadFemImport,
   queueCadFemJob,
@@ -307,6 +310,25 @@ async function routeApi(req, res, url) {
         200,
         await applyCadFemCommand(session.userId, body.projectId, body)
       );
+    }
+    const cadRevisionMatch = pathname.match(/^\/api\/cad\/projects\/([a-f0-9-]{36})\/revisions(?:\/(\d+))?$/i);
+    if (cadRevisionMatch && req.method === 'GET' && cadRevisionMatch[2] === undefined) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, { revisions: await listCadFemProjectRevisions(session.userId, cadRevisionMatch[1]) });
+    }
+    if (cadRevisionMatch && req.method === 'GET' && cadRevisionMatch[2] !== undefined) {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, {
+        project: await readCadFemProjectRevision(session.userId, cadRevisionMatch[1], Number(cadRevisionMatch[2]))
+      });
+    }
+    const cadSketchSolveMatch = pathname.match(/^\/api\/cad\/projects\/([a-f0-9-]{36})\/sketches\/solve$/i);
+    if (cadSketchSolveMatch && req.method === 'POST') {
+      const session = await requireAuth(req, res);
+      if (!session) return;
+      return sendJson(res, 200, await solveCadFemSketch(session.userId, cadSketchSolveMatch[1], await parseJsonBody(req)));
     }
     const cadProjectMatch = pathname.match(/^\/api\/cad\/projects\/([a-f0-9-]{36})(?:\/(commands|imports))?$/i);
     if (cadProjectMatch && req.method === 'GET' && !cadProjectMatch[2]) {

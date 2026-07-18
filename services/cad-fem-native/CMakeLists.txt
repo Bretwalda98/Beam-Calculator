@@ -14,6 +14,8 @@ option(CAD_FEM_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviour
 find_package(OpenCASCADE CONFIG REQUIRED)
 find_package(Netgen CONFIG REQUIRED)
 find_package(MFEM CONFIG REQUIRED)
+find_package(Ceres 2.2 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 find_path(RAPIDJSON_INCLUDE_DIR rapidjson/document.h REQUIRED)
 
 if(TARGET netgen::nglib)
@@ -70,6 +72,25 @@ target_link_libraries(cad-fem-pipeline PRIVATE cad_fem_pipeline)
 add_executable(cad-fem-section-step src/section_step_main.cpp)
 target_link_libraries(cad-fem-section-step PRIVATE cad_fem_pipeline)
 
+add_library(cad_fem_sketch src/sketch_solver.cpp)
+target_include_directories(cad_fem_sketch
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
+  PRIVATE ${RAPIDJSON_INCLUDE_DIR}
+)
+target_link_libraries(cad_fem_sketch PUBLIC Ceres::ceres Eigen3::Eigen)
+if(MSVC)
+  target_compile_options(cad_fem_sketch PRIVATE /W4 /permissive-)
+else()
+  target_compile_options(cad_fem_sketch PRIVATE -Wall -Wextra -Wpedantic)
+  if(CAD_FEM_ENABLE_SANITIZERS)
+    target_compile_options(cad_fem_sketch PUBLIC -fno-omit-frame-pointer -fsanitize=address,undefined)
+    target_link_options(cad_fem_sketch PUBLIC -fno-omit-frame-pointer -fsanitize=address,undefined)
+  endif()
+endif()
+
+add_executable(cad-fem-sketch-solve src/sketch_solve_main.cpp)
+target_link_libraries(cad-fem-sketch-solve PRIVATE cad_fem_sketch)
+
 if(CAD_FEM_ENABLE_CONTACT)
   find_package(MPI REQUIRED)
   find_package(tribol CONFIG REQUIRED)
@@ -98,7 +119,7 @@ if(CAD_FEM_ENABLE_CONTACT)
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS cad-fem-pipeline cad-fem-section-step RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS cad-fem-pipeline cad-fem-section-step cad-fem-sketch-solve RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cad-fem-batch-runner
   DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -118,6 +139,27 @@ if(CAD_FEM_BUILD_TESTS)
   set(CAD_FEM_TEST_ROOT ${CMAKE_CURRENT_BINARY_DIR}/verification)
   set(CAD_FEM_TEST_STEP ${CAD_FEM_TEST_ROOT}/fixture/axial-bar.step)
   set(CAD_FEM_TEST_SECTION_STEP ${CAD_FEM_TEST_ROOT}/fixture/catalogue-ub.step)
+  add_test(
+    NAME cad_fem_ceres_sketch_under_constrained
+    COMMAND cad-fem-sketch-solve
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/sketch-under-constrained.json
+      --output ${CAD_FEM_TEST_ROOT}/sketch-under-constrained-result.json
+      --expect-state underConstrained
+  )
+  add_test(
+    NAME cad_fem_ceres_sketch_fully_constrained
+    COMMAND cad-fem-sketch-solve
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/sketch-fully-constrained.json
+      --output ${CAD_FEM_TEST_ROOT}/sketch-fully-constrained-result.json
+      --expect-state fullyConstrained
+  )
+  add_test(
+    NAME cad_fem_ceres_sketch_over_constrained
+    COMMAND cad-fem-sketch-solve
+      --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/sketch-over-constrained.json
+      --output ${CAD_FEM_TEST_ROOT}/sketch-over-constrained-result.json
+      --expect-state overConstrained
+  )
   add_test(
     NAME cad_fem_generate_axial_bar_step
     COMMAND cad-fem-generate-box

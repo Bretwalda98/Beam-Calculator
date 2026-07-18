@@ -43,6 +43,8 @@ export interface TopologyRef {
   semanticName: string;
   topologyRevision: number;
   fallbackSignature: TopologySignature;
+  resolution?: 'resolved' | 'ambiguous' | 'broken';
+  candidateSemanticNames?: string[];
 }
 
 export type SketchPlane =
@@ -94,6 +96,27 @@ export type SketchConstraint =
   | { id: UUID; type: 'angle'; entityA: UUID; entityB: UUID; valueRad: number }
   | { id: UUID; type: 'fixed'; pointId: UUID };
 
+export interface SketchDiagnostic {
+  severity: 'info' | 'warning' | 'error';
+  code: string;
+  message: string;
+  entityIds: UUID[];
+  constraintIds: UUID[];
+}
+
+export interface SketchSolveEvidence {
+  kernel: 'ceres';
+  kernelVersion: string;
+  solvedAt: string;
+  iterations: number;
+  residualNorm: number;
+  maximumResidual: number;
+  jacobianRank: number;
+  variableCount: number;
+  constraintEquationCount: number;
+  diagnostics: SketchDiagnostic[];
+}
+
 export interface Sketch {
   id: UUID;
   name: string;
@@ -103,12 +126,15 @@ export interface Sketch {
   constraints: SketchConstraint[];
   solverState: 'notSolved' | 'underConstrained' | 'fullyConstrained' | 'overConstrained' | 'failed';
   degreesOfFreedom: number | null;
+  solveEvidence?: SketchSolveEvidence;
 }
 
 export interface FeatureBase {
   id: UUID;
   name: string;
   suppressed: boolean;
+  regenerationState?: 'pending' | 'valid' | 'failed' | 'blocked';
+  diagnostics?: Array<{ code: string; message: string; entityIds: UUID[] }>;
 }
 
 export interface CatalogueProfileDimensions {
@@ -174,6 +200,15 @@ export interface PartDocument {
   features: PartFeature[];
   bodies: PartBody[];
   importedStepArtifactId?: UUID;
+  regeneration?: {
+    state: 'notGenerated' | 'queued' | 'valid' | 'failed';
+    nativeGeometryRevision: number | null;
+    topologyRevision: number;
+    brepArtifactId?: UUID;
+    stepArtifactId?: UUID;
+    tessellationArtifactId?: UUID;
+    diagnostics: Array<{ code: string; message: string; entityIds: UUID[] }>;
+  };
 }
 
 export interface AssemblyComponent {
@@ -293,14 +328,17 @@ export interface CadFEMProject {
 export type CadCommand =
   | { type: 'renameProject'; name: string }
   | { type: 'appendCatalogueExtrusion'; documentId: UUID; featureId: UUID; bodyId: UUID; componentId: UUID; sectionId: string; length: number; name?: string }
-  | { type: 'upsertSketch'; documentId: UUID; sketch: Sketch }
+  | { type: 'upsertSketch'; documentId: UUID; sketch: Sketch; featureId?: UUID }
+  | { type: 'deleteSketch'; documentId: UUID; sketchId: UUID }
   | { type: 'appendFeature'; documentId: UUID; feature: PartFeature }
   | { type: 'updateFeature'; documentId: UUID; feature: PartFeature }
+  | { type: 'deleteFeature'; documentId: UUID; featureId: UUID }
   | { type: 'suppressFeature'; documentId: UUID; featureId: UUID; suppressed: boolean }
   | { type: 'upsertComponent'; component: AssemblyComponent }
   | { type: 'upsertMate'; mate: AssemblyMate }
   | { type: 'upsertMaterial'; material: SolidMaterial }
-  | { type: 'upsertStudy'; study: SolidStudy };
+  | { type: 'upsertStudy'; study: SolidStudy }
+  | { type: 'restoreRevision'; targetRevision: number };
 
 export interface CadCommandRequest {
   commandId: UUID;
@@ -315,6 +353,22 @@ export interface CadCommandResult {
   geometryRevision: number;
   tessellationArtifactId?: UUID;
   warnings: string[];
+}
+
+export interface CadRevisionSummary {
+  revision: number;
+  geometryRevision: number;
+  commandId: UUID | null;
+  commandType: CadCommand['type'] | null;
+  targetRevision?: number;
+  createdAt: string;
+}
+
+export interface SketchSolveResult {
+  apiVersion: typeof CAD_FEM_API_VERSION;
+  projectId: UUID;
+  baseRevision: number;
+  sketch: Sketch;
 }
 
 export type JobKind = 'stepImport' | 'stepExport' | 'regenerate' | 'mesh' | 'solve' | 'postprocess';
@@ -421,7 +475,13 @@ export function createCadFEMProject(now = new Date().toISOString(), id: string =
       geometryRevision: 0,
       sketches: [],
       features: [],
-      bodies: []
+      bodies: [],
+      regeneration: {
+        state: 'notGenerated',
+        nativeGeometryRevision: null,
+        topologyRevision: 0,
+        diagnostics: []
+      }
     }],
     assembly: {
       id: assemblyId,

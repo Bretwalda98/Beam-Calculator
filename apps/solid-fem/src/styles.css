@@ -56,7 +56,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .viewport-tools button { padding: 6px 8px; border: 0; border-radius: 3px; color: var(--muted); background: transparent; }
 .viewport-tools button.active { color: var(--text); background: var(--panel-3); }
 .viewport-tools span { padding: 0 7px; color: var(--muted); font-size: 10px; }
-.view-notice { position: absolute; right: 12px; bottom: 12px; max-width: 440px; padding: 8px 10px; border: 1px solid #4b5360; border-radius: 5px; color: #c8ced8; background: rgba(15, 18, 23, .82); font-size: 10px; }
+.view-notice { position: absolute; right: 12px; bottom: 122px; max-width: 440px; padding: 8px 10px; border: 1px solid #4b5360; border-radius: 5px; color: #c8ced8; background: rgba(15, 18, 23, .82); font-size: 10px; }
 .properties-panel { grid-column: 3; border-left: 1px solid var(--border); }
 .panel-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 11px 13px; border-bottom: 1px solid var(--border); }
 .panel-heading span { color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; }
@@ -64,6 +64,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .properties-panel h3 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; }
 .properties-panel label { display: grid; gap: 4px; margin-top: 9px; color: var(--muted); font-size: 11px; }
 .properties-panel input, .properties-panel select { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: #11151a; }
+.properties-panel section > button:not(.wide-action) { margin: 9px 5px 0 0; padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--panel-2); }
+.feature-properties dl { display: grid; gap: 5px; margin: 0; }
+.feature-properties dl div { display: flex; justify-content: space-between; gap: 10px; }
+.feature-properties dt { color: var(--muted); }
+.feature-properties dd { margin: 0; }
 .wide-action { width: 100%; margin-top: 11px; padding: 8px; border: 1px solid #3d83d6; border-radius: 4px; color: #fff; background: var(--accent-2); }
 .catalogue-status { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
 .catalogue-source { margin: 9px 0 0; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
@@ -77,6 +82,66 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .diagnostics p.error { border-left-color: var(--bad); color: #ffb1b1; }
 .statusbar { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 22px; padding: 0 10px; border-top: 1px solid var(--border); color: var(--muted); background: #15191f; font-size: 10px; }
 .statusbar strong { color: var(--warn); font-weight: 650; }
+.file-button { display: grid; place-items: center; min-width: 76px; height: 36px; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; color: var(--text); cursor: pointer; }
+.file-button:hover { border-color: var(--border); background: var(--panel-2); }
+.file-button input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.timeline-panel { position: absolute; z-index: 4; right: 0; bottom: 0; left: 0; min-height: 104px; padding: 7px 10px; border-top: 1px solid var(--border); background: rgba(18, 22, 28, .95); backdrop-filter: blur(9px); }
+.timeline-heading { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; text-transform: uppercase; }
+.feature-strip { display: flex; gap: 5px; min-height: 52px; padding: 6px 0; overflow-x: auto; }
+.feature-strip > button { display: grid; grid-template-columns: 20px auto; grid-template-rows: auto auto; min-width: 130px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--panel-2); text-align: left; }
+.feature-strip > button > span { grid-row: 1 / 3; display: grid; place-items: center; margin-right: 6px; border-radius: 3px; color: #cfe5ff; background: #284d78; }
+.feature-strip > button small { color: var(--muted); font-size: 9px; }
+.feature-strip > button.suppressed { opacity: .55; text-decoration: line-through; }
+.feature-strip p { margin: 8px 0; color: var(--muted); }
+.timeline-panel details { position: absolute; right: 10px; bottom: 7px; }
+.timeline-panel summary { color: var(--muted); cursor: pointer; font-size: 10px; }
+.revision-list { position: absolute; right: 0; bottom: 24px; width: 280px; max-height: 260px; overflow: auto; padding: 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); box-shadow: 0 12px 30px #0008; }
+.revision-list > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px; border-bottom: 1px solid var(--border); }
+.revision-list span { display: grid; color: var(--muted); font-size: 10px; }
+.revision-list button { padding: 4px 6px; border: 1px solid var(--border); border-radius: 3px; color: var(--text); background: var(--panel-2); }
+.sketch-overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 18px; background: #05070bb8; backdrop-filter: blur(5px); }
+.sketch-dialog { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; width: min(1180px, 100%); height: min(760px, 100%); overflow: hidden; border: 1px solid #445061; border-radius: 9px; background: var(--panel); box-shadow: 0 22px 70px #000b; }
+.sketch-dialog > header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.sketch-dialog > header div { display: grid; }
+.sketch-dialog > header span { color: var(--muted); font-size: 10px; }
+.sketch-dialog > header button { width: 32px; height: 32px; border: 0; border-radius: 4px; color: var(--text); background: var(--panel-3); font-size: 21px; }
+.sketch-toolbar { display: flex; align-items: center; gap: 5px; padding: 7px 10px; overflow-x: auto; border-bottom: 1px solid var(--border); background: var(--panel-2); }
+.sketch-toolbar button { flex: 0 0 auto; padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--panel); text-transform: capitalize; }
+.sketch-toolbar button.active { border-color: var(--accent); background: #193b63; }
+.sketch-toolbar button.danger { color: #ffb1b1; }
+.sketch-toolbar label { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--muted); font-size: 10px; }
+.sketch-toolbar input { width: 78px; padding: 6px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--bg); }
+.toolbar-divider { width: 1px; height: 28px; margin: 0 3px; background: var(--border); }
+.sketch-body { display: grid; grid-template-columns: minmax(0, 1fr) 250px; min-height: 0; }
+.sketch-canvas-wrap { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; background: #10151c; }
+.sketch-canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+.sketch-grid { fill: url(#minor-grid); stroke: #3d4654; stroke-width: .35; }
+#minor-grid path { fill: none; stroke: #26303d; stroke-width: .3; }
+.sketch-axis { stroke: #66778c; stroke-width: .55; }
+.sketch-entity { fill: none; stroke: #74aef2; stroke-width: 1.2; vector-effect: non-scaling-stroke; cursor: pointer; }
+.sketch-entity:hover, .sketch-entity.selected { stroke: #ffd166; stroke-width: 2; }
+.sketch-point { fill: #dceaff; pointer-events: none; }
+.sketch-pending { fill: #ffd166; stroke: #fff; stroke-width: .5; pointer-events: none; }
+.sketch-message { min-height: 34px; padding: 8px 11px; border-top: 1px solid var(--border); color: var(--muted); }
+.sketch-inspector { min-height: 0; overflow: auto; padding: 12px; border-left: 1px solid var(--border); background: var(--panel); }
+.sketch-inspector > label { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+.sketch-inspector input { width: 100%; padding: 7px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--bg); }
+.sketch-inspector dl { display: grid; gap: 5px; margin: 12px 0; }
+.sketch-inspector dl div { display: flex; justify-content: space-between; gap: 10px; }
+.sketch-inspector dt { color: var(--muted); }
+.sketch-inspector dd { margin: 0; }
+.sketch-inspector h3 { margin: 14px 0 7px; font-size: 10px; text-transform: uppercase; }
+.constraint-list { display: grid; gap: 4px; }
+.constraint-list > div { display: flex; justify-content: space-between; gap: 6px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 3px; background: var(--panel-2); }
+.constraint-list button { border: 0; color: var(--muted); background: transparent; }
+.constraint-list p { color: var(--muted); }
+.solve-evidence { display: grid; gap: 3px; margin-top: 12px; padding: 9px; border-left: 3px solid var(--warn); background: var(--panel-2); font-size: 10px; }
+.solve-evidence.fullyConstrained { border-left-color: var(--good); }
+.solve-evidence.overConstrained, .solve-evidence.failed { border-left-color: var(--bad); }
+.sketch-dialog > footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 9px 12px; border-top: 1px solid var(--border); }
+.sketch-dialog > footer span { margin-right: auto; color: var(--muted); font-size: 10px; }
+.sketch-dialog > footer button { padding: 8px 11px; border: 1px solid var(--border); border-radius: 4px; color: var(--text); background: var(--panel-2); }
+.sketch-dialog > footer button.primary { border-color: var(--accent); color: #fff; background: var(--accent-2); }
 @media (max-width: 900px) {
   .workbench { grid-template: 50px 65px minmax(0, 1fr) 210px 28px / 190px minmax(280px, 1fr); }
   .properties-panel { grid-row: 4; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); border-left: 0; }
@@ -99,4 +164,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .properties-panel .diagnostics { display: none; }
   .statusbar { grid-row: 6; grid-template-columns: 1fr auto; }
   .statusbar span:nth-child(2) { display: none; }
+  .sketch-overlay { padding: 0; }
+  .sketch-dialog { width: 100%; height: 100%; border: 0; border-radius: 0; }
+  .sketch-body { grid-template: minmax(280px, 1fr) 190px / 1fr; }
+  .sketch-inspector { border-top: 1px solid var(--border); border-left: 0; }
+  .sketch-dialog > footer span { display: none; }
+  .timeline-panel { min-height: 88px; }
+  .view-notice { bottom: 100px; max-width: calc(100% - 24px); }
 }

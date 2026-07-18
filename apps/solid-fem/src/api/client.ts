@@ -1,9 +1,12 @@
 import type {
   CadCommandRequest,
   CadCommandResult,
+  CadRevisionSummary,
   CatalogueSectionSnapshot,
   CadFEMProject,
   JobManifest,
+  Sketch,
+  SketchSolveResult,
   SolidStudy
 } from '../../../../packages/cad-fem-schema';
 
@@ -30,6 +33,11 @@ export interface CatalogueSectionListItem {
   sourceEdition: string;
   solidProfileAvailable: boolean;
   catalogueRevision: string;
+}
+
+export interface StepUploadGrant {
+  artifact: { id: string; sha256: string; byteLength: number; contentType: string };
+  upload: { method: 'PUT'; url: string; headers: Record<string, string>; expiresAt: string };
 }
 
 async function api<T>(path: `/api/${string}`, init?: RequestInit): Promise<T> {
@@ -73,6 +81,55 @@ export async function getCatalogueSectionProfile(sectionId: string): Promise<Cat
 
 export function applyCommand(projectId: string, request: CadCommandRequest): Promise<CadCommandResult> {
   return api(`/api/cad/projects/${projectId}/commands`, { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function listProjectRevisions(projectId: string): Promise<{ revisions: CadRevisionSummary[] }> {
+  return api(`/api/cad/projects/${projectId}/revisions`);
+}
+
+export function getProjectRevision(projectId: string, revision: number): Promise<{ project: CadFEMProject }> {
+  return api(`/api/cad/projects/${projectId}/revisions/${revision}`);
+}
+
+export function solveSketch(
+  projectId: string,
+  baseRevision: number,
+  documentId: string,
+  sketch: Sketch
+): Promise<SketchSolveResult> {
+  return api(`/api/cad/projects/${projectId}/sketches/solve`, {
+    method: 'POST',
+    body: JSON.stringify({ baseRevision, documentId, sketch })
+  });
+}
+
+export function createStepImportUpload(
+  projectId: string,
+  input: { fileName: string; contentType: string; byteLength: number; sha256: string }
+): Promise<StepUploadGrant> {
+  return api(`/api/cad/projects/${projectId}/imports`, {
+    method: 'POST',
+    body: JSON.stringify(input)
+  });
+}
+
+export function queueStepImport(
+  projectId: string,
+  input: { stepArtifactId: string; baseRevision: number; idempotencyKey: string }
+): Promise<{ job: JobManifest }> {
+  return api(`/api/cad/projects/${projectId}/imports`, {
+    method: 'POST',
+    body: JSON.stringify(input)
+  });
+}
+
+export async function uploadStepArtifact(grant: StepUploadGrant, file: File): Promise<void> {
+  const response = await fetch(grant.upload.url, {
+    method: grant.upload.method,
+    headers: grant.upload.headers,
+    body: file
+  });
+  if (!response.ok) throw new Error(`STEP upload failed with status ${response.status}.`);
 }
 
 function jobRequest(project: CadFEMProject, study: SolidStudy, idempotencyKey: string) {

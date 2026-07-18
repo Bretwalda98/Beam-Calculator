@@ -1,0 +1,15 @@
+{
+  "id": "00000000-0000-4000-8000-000000000101",
+  "name": "Free line",
+  "plane": { "type": "principal", "plane": "XY", "offset": 0 },
+  "points": [
+    { "id": "p1", "x": 0, "y": 0 },
+    { "id": "p2", "x": 20, "y": 5 }
+  ],
+  "entities": [
+    { "id": "line-1", "type": "line", "startPointId": "p1", "endPointId": "p2", "construction": false }
+  ],
+  "constraints": [],
+  "solverState": "notSolved",
+  "degreesOfFreedom": null
+}

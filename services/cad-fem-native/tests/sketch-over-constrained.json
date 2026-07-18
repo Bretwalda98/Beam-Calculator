@@ -1,0 +1,19 @@
+{
+  "id": "00000000-0000-4000-8000-000000000103",
+  "name": "Conflicting dimensions",
+  "plane": { "type": "principal", "plane": "XY", "offset": 0 },
+  "points": [
+    { "id": "p1", "x": 0, "y": 0 },
+    { "id": "p2", "x": 12, "y": 0 }
+  ],
+  "entities": [
+    { "id": "line-1", "type": "line", "startPointId": "p1", "endPointId": "p2", "construction": false }
+  ],
+  "constraints": [
+    { "id": "c-fixed", "type": "fixed", "pointId": "p1" },
+    { "id": "c-length-a", "type": "horizontalDistance", "pointA": "p1", "pointB": "p2", "value": 10 },
+    { "id": "c-length-b", "type": "horizontalDistance", "pointA": "p1", "pointB": "p2", "value": 20 }
+  ],
+  "solverState": "notSolved",
+  "degreesOfFreedom": null
+}

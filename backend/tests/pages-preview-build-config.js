@@ -14,6 +14,13 @@ assert.deepStrictEqual(
   'The FEA platform branch must use its isolated preview Worker for both applications.'
 );
 
+const cadWorkbenchApi = PREVIEW_API_BY_BRANCH['codex/cad-workbench-v1'];
+assert.deepStrictEqual(
+  resolveFrontendApiBases({ CF_PAGES_BRANCH: 'codex/cad-workbench-v1' }),
+  { beamApiBase: cadWorkbenchApi, frameApiBase: cadWorkbenchApi },
+  'The CAD workbench branch must use its isolated preview Worker for all applications.'
+);
+
 assert.deepStrictEqual(
   resolveFrontendApiBases({ CF_PAGES_BRANCH: 'main' }),
   { beamApiBase: '', frameApiBase: '' },

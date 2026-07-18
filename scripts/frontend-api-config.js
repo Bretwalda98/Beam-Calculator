@@ -1,7 +1,8 @@
 'use strict';
 
 const PREVIEW_API_BY_BRANCH = Object.freeze({
-  'codex/fea-platform-spike': 'https://codex-fea-platform-spike-beam-calculator-api.harrynixon98.workers.dev'
+  'codex/fea-platform-spike': 'https://codex-fea-platform-spike-beam-calculator-api.harrynixon98.workers.dev',
+  'codex/cad-workbench-v1': 'https://codex-cad-workbench-v1-beam-calculator-api.harrynixon98.workers.dev'
 });
 
 function resolveFrontendApiBases(env = process.env) {

@@ -23,7 +23,8 @@ const SOLVER_VERSIONS = {
   occt: 'a016080bf6738d6aeae020badee4e888ad1540a5',
   netgen: 'a3e08f0ec196b442f7de3b9b717ab86c6993f1ab',
   mfem: 'd9d6526cc1749980a2ba1da16e2c1ca1e07d82ec',
-  tribol: 'ab6ac57daf1a9dd8a8ffd3b4250b883ecbecec47'
+  tribol: 'ab6ac57daf1a9dd8a8ffd3b4250b883ecbecec47',
+  ceres: '2.2.0'
 };
 
 let batchClient;
@@ -223,6 +224,9 @@ async function stageAndSubmit(ownerId, job, stepArtifact, inputManifest) {
 async function queueImportJob(ownerId, projectId, body) {
   requireAvailable();
   const project = await repository.readProject(ownerId, projectId);
+  if (!Number.isInteger(body?.baseRevision) || body.baseRevision !== project.revision) {
+    throw httpError(409, 'stale_project_revision', `Project is at revision ${project.revision}; import was based on ${String(body?.baseRevision)}.`);
+  }
   const stepArtifact = await verifiedStepArtifact(ownerId, projectId, body.stepArtifactId);
   const inputManifest = {
     apiVersion: '1.0.0',

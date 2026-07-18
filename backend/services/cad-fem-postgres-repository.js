@@ -178,6 +178,58 @@ async function readProject(ownerId, projectId, client = getPool()) {
   return result.rows[0].project;
 }
 
+async function listProjectRevisions(ownerId, projectId) {
+  const result = await getPool().query(
+    `SELECT revision.revision_number AS revision,
+            revision.geometry_revision AS "geometryRevision",
+            revision.command_id AS "commandId",
+            command.command_json->>'type' AS "commandType",
+            CASE WHEN command.command_json->>'type' = 'restoreRevision'
+                 THEN (command.command_json->>'targetRevision')::integer
+                 ELSE NULL END AS "targetRevision",
+            revision.created_at AS "createdAt"
+       FROM cad_fem_projects project
+       JOIN cad_fem_project_revisions revision ON revision.project_id = project.id
+       LEFT JOIN cad_fem_commands command
+         ON command.id = revision.command_id
+        AND command.project_id = revision.project_id
+        AND command.owner_user_id = project.owner_user_id
+      WHERE project.id = $1
+        AND project.owner_user_id = $2
+        AND project.archived_at IS NULL
+      ORDER BY revision.revision_number ASC`,
+    [projectId, ownerId]
+  );
+  if (!result.rowCount) {
+    const project = await getPool().query(
+      'SELECT 1 FROM cad_fem_projects WHERE id = $1 AND owner_user_id = $2 AND archived_at IS NULL',
+      [projectId, ownerId]
+    );
+    if (!project.rowCount) throw httpError(404, 'cad_fem_project_not_found', 'CAD/FEM project not found.');
+  }
+  return result.rows.map((row) => ({
+    ...row,
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt
+  }));
+}
+
+async function readProjectRevision(ownerId, projectId, revisionNumber) {
+  const result = await getPool().query(
+    `SELECT revision.project_json AS project
+       FROM cad_fem_projects project
+       JOIN cad_fem_project_revisions revision ON revision.project_id = project.id
+      WHERE project.id = $1
+        AND project.owner_user_id = $2
+        AND project.archived_at IS NULL
+        AND revision.revision_number = $3`,
+    [projectId, ownerId, revisionNumber]
+  );
+  if (!result.rowCount) {
+    throw httpError(404, 'cad_fem_revision_not_found', `CAD/FEM project revision ${revisionNumber} was not found.`);
+  }
+  return result.rows[0].project;
+}
+
 async function persistStudies(client, ownerId, project) {
   const studyIds = [];
   for (const study of project.studies) {
@@ -521,6 +573,8 @@ module.exports = {
   listProjects,
   createProject,
   readProject,
+  listProjectRevisions,
+  readProjectRevision,
   applyCommand,
   readStudy,
   createJob,

@@ -54,6 +54,12 @@ function validateTopologyRef(
   if (!ref.semanticName.trim()) {
     errors.push(diagnostic('error', 'topology_name_missing', 'A topology reference is missing its semantic name.', [ref.featureId]));
   }
+  if (ref.resolution === 'broken') {
+    errors.push(diagnostic('error', 'topology_reference_broken', `Topology reference ${ref.semanticName} is broken and must be reselected.`, [ref.featureId, ref.bodyId]));
+  }
+  if (ref.resolution === 'ambiguous') {
+    errors.push(diagnostic('error', 'topology_reference_ambiguous', `Topology reference ${ref.semanticName} is ambiguous and must be reselected.`, [ref.featureId, ref.bodyId]));
+  }
 }
 
 export function validateCadFEMProject(project: CadFEMProject): CadFEMValidationReport {
@@ -114,8 +120,31 @@ export function validateCadFEMProject(project: CadFEMProject): CadFEMValidationR
       } else if (sketch.solverState === 'underConstrained') {
         warnings.push(diagnostic('warning', 'sketch_under_constrained', `${sketch.name} remains under-constrained.`, [sketch.id]));
       }
+      if (sketch.solverState !== 'notSolved' && !sketch.solveEvidence) {
+        warnings.push(diagnostic('warning', 'sketch_native_evidence_missing', `${sketch.name} has no native Ceres solve evidence and must be solved again before authoritative regeneration.`, [sketch.id]));
+      }
+      if (sketch.solveEvidence) {
+        const evidence = sketch.solveEvidence;
+        if (evidence.kernel !== 'ceres' || !evidence.kernelVersion.trim() ||
+            !Number.isInteger(evidence.iterations) || evidence.iterations < 0 ||
+            !Number.isInteger(evidence.jacobianRank) || evidence.jacobianRank < 0 ||
+            !Number.isInteger(evidence.variableCount) || evidence.variableCount < 0 ||
+            !Number.isInteger(evidence.constraintEquationCount) || evidence.constraintEquationCount < 0 ||
+            !finite(evidence.residualNorm) || evidence.residualNorm < 0 ||
+            !finite(evidence.maximumResidual) || evidence.maximumResidual < 0) {
+          errors.push(diagnostic('error', 'sketch_native_evidence_invalid', `${sketch.name} has invalid native sketch-solve evidence.`, [sketch.id]));
+        }
+        if (sketch.degreesOfFreedom !== null && sketch.degreesOfFreedom !== Math.max(0, evidence.variableCount - evidence.jacobianRank)) {
+          errors.push(diagnostic('error', 'sketch_dof_inconsistent', `${sketch.name} has degrees of freedom inconsistent with its native Jacobian rank.`, [sketch.id]));
+        }
+      }
     }
     for (const feature of document.features) {
+      if (feature.regenerationState === 'failed') {
+        errors.push(diagnostic('error', 'feature_regeneration_failed', `${feature.name} failed native regeneration.`, [feature.id]));
+      } else if (feature.regenerationState === 'blocked') {
+        errors.push(diagnostic('error', 'feature_regeneration_blocked', `${feature.name} is blocked by an earlier feature or topology reference.`, [feature.id]));
+      }
       if (feature.type === 'sketch' && !sketchIds.has(feature.sketchId)) {
         errors.push(diagnostic('error', 'feature_sketch_missing', `${feature.name} uses a missing sketch.`, [feature.id, feature.sketchId]));
       }
@@ -158,6 +187,21 @@ export function validateCadFEMProject(project: CadFEMProject): CadFEMValidationR
       if (feature.type === 'hole' && (!finite(feature.diameter) || feature.diameter <= 0)) {
         errors.push(diagnostic('error', 'hole_diameter_invalid', `${feature.name} requires a positive diameter.`, [feature.id]));
       }
+      if (feature.type === 'revolve' && (!finite(feature.angleRad) || feature.angleRad === 0 || Math.abs(feature.angleRad) > Math.PI * 2)) {
+        errors.push(diagnostic('error', 'revolve_angle_invalid', `${feature.name} requires a non-zero angle no greater than 2π radians.`, [feature.id]));
+      }
+      if (feature.type === 'linearPattern' && (!Number.isInteger(feature.count) || feature.count < 2 || !finite(feature.spacing) || feature.spacing === 0)) {
+        errors.push(diagnostic('error', 'linear_pattern_invalid', `${feature.name} requires at least two occurrences and non-zero spacing.`, [feature.id]));
+      }
+      if (feature.type === 'circularPattern' && (!Number.isInteger(feature.count) || feature.count < 2 || !finite(feature.angleRad) || feature.angleRad === 0)) {
+        errors.push(diagnostic('error', 'circular_pattern_invalid', `${feature.name} requires at least two occurrences and a non-zero angle.`, [feature.id]));
+      }
+      if (feature.type === 'boolean' && (!feature.targetBodyId || feature.toolBodyIds.length === 0)) {
+        errors.push(diagnostic('error', 'boolean_operands_missing', `${feature.name} requires a target body and at least one tool body.`, [feature.id]));
+      }
+    }
+    if (document.regeneration?.state === 'failed') {
+      errors.push(diagnostic('error', 'document_regeneration_failed', `${document.name} failed authoritative native regeneration.`, [document.id]));
     }
   }
 

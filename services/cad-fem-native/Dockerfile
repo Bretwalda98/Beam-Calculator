@@ -5,6 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG OCCT_REVISION=a016080bf6738d6aeae020badee4e888ad1540a5
 ARG NETGEN_REVISION=a3e08f0ec196b442f7de3b9b717ab86c6993f1ab
 ARG MFEM_REVISION=d9d6526cc1749980a2ba1da16e2c1ca1e07d82ec
+ARG CERES_REVISION=2.2.0
 ARG CAD_FEM_BUILD_TYPE=Release
 ARG CAD_FEM_ENABLE_SANITIZERS=OFF
 
@@ -94,6 +95,25 @@ RUN git clone --filter=blob:none https://github.com/mfem/mfem.git mfem \
   && install -D /src/mfem/LICENSE /opt/cad-fem/share/licenses/mfem/LICENSE \
   && rm -rf /src/mfem /build/mfem
 
+RUN git clone --filter=blob:none https://github.com/ceres-solver/ceres-solver.git ceres \
+  && git -C ceres checkout "${CERES_REVISION}" \
+  && cmake -S ceres -B /build/ceres -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/cad-fem \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_EXAMPLES=OFF \
+      -DBUILD_BENCHMARKS=OFF \
+      -DMINIGLOG=ON \
+      -DGFLAGS=OFF \
+      -DSUITESPARSE=OFF \
+      -DLAPACK=OFF \
+      -DUSE_CUDA=OFF \
+  && cmake --build /build/ceres --parallel \
+  && cmake --install /build/ceres \
+  && install -D /src/ceres/LICENSE /opt/cad-fem/share/licenses/ceres/LICENSE \
+  && rm -rf /src/ceres /build/ceres
+
 RUN install -D /usr/share/doc/rapidjson-dev/copyright /opt/cad-fem/share/licenses/rapidjson/copyright
 
 COPY . /src/cad-fem-native
@@ -175,6 +195,7 @@ COPY --from=native-build \
   /build/cad-fem-native/cad-fem-generate-box \
   /build/cad-fem-native/cad-fem-pipeline \
   /build/cad-fem-native/cad-fem-section-step \
+  /build/cad-fem-native/cad-fem-sketch-solve \
   /build/cad-fem-native/
 COPY --from=native-build /src/cad-fem-native/src /src/cad-fem-native/src
 COPY --from=native-build /src/cad-fem-native/tests /src/cad-fem-native/tests

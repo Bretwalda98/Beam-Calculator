@@ -22,7 +22,10 @@ config.env = 'test';
 const {
   createCadFemProject,
   readCadFemProject,
+  listCadFemProjectRevisions,
+  readCadFemProjectRevision,
   applyCadFemCommand,
+  solveCadFemSketch,
   queueCadFemJob
 } = require('../services/cad-fem-service');
 const { catalogueExtrusionForMeshing } = require('../services/cad-fem-aws-jobs');
@@ -102,6 +105,83 @@ function project(id) {
     command: { type: 'renameProject', name: 'Duplicate command must not execute' }
   });
   assert.deepEqual(duplicateCatalogue, catalogueResult);
+
+  const revisionTwo = await readCadFemProjectRevision(ownerId, id, 2);
+  assert.equal(revisionTwo.partDocuments[0].features.length, 1);
+  const restoreResult = await applyCadFemCommand(ownerId, id, {
+    commandId: randomUUID(),
+    baseRevision: 2,
+    command: { type: 'restoreRevision', targetRevision: 0 }
+  });
+  assert.equal(restoreResult.revision, 3);
+  const restored = await readCadFemProject(ownerId, id);
+  assert.equal(restored.metadata.name, 'Solid project');
+  assert.equal(restored.partDocuments[0].features.length, 0);
+  assert.equal(restored.partDocuments[0].regeneration.state, 'notGenerated');
+  assert.ok(restored.partDocuments[0].geometryRevision > revisionTwo.partDocuments[0].geometryRevision);
+  const history = await listCadFemProjectRevisions(ownerId, id);
+  assert.deepEqual(history.map(({ revision }) => revision), [0, 1, 2, 3]);
+  assert.equal(history[3].commandType, 'restoreRevision');
+  assert.equal((await readCadFemProjectRevision(ownerId, id, 2)).partDocuments[0].features.length, 1);
+
+  await assert.rejects(
+    () => applyCadFemCommand(ownerId, id, {
+      commandId: randomUUID(),
+      baseRevision: 3,
+      command: { type: 'restoreRevision', targetRevision: 3 }
+    }),
+    (error) => error.statusCode === 422 && error.code === 'restore_revision_invalid'
+  );
+
+  await assert.rejects(
+    () => solveCadFemSketch(ownerId, id, {
+      baseRevision: 3,
+      documentId: restored.partDocuments[0].id,
+      sketch: {
+        id: randomUUID(),
+        name: 'Rectangle',
+        plane: { type: 'principal', plane: 'XY', offset: 0 },
+        points: [],
+        entities: [],
+        constraints: [],
+        solverState: 'notSolved',
+        degreesOfFreedom: null
+      }
+    }),
+    (error) => error.statusCode === 503 && error.code === 'native_compute_unavailable'
+  );
+
+  const sketchId = randomUUID();
+  const sketchFeatureId = randomUUID();
+  const sketchResult = await applyCadFemCommand(ownerId, id, {
+    commandId: randomUUID(),
+    baseRevision: 3,
+    command: {
+      type: 'upsertSketch',
+      documentId: restored.partDocuments[0].id,
+      featureId: sketchFeatureId,
+      sketch: {
+        id: sketchId,
+        name: 'Rectangle',
+        plane: { type: 'principal', plane: 'XY', offset: 0 },
+        points: [], entities: [], constraints: [],
+        solverState: 'notSolved', degreesOfFreedom: null
+      }
+    }
+  });
+  assert.equal(sketchResult.revision, 4);
+  const withSketch = await readCadFemProject(ownerId, id);
+  assert.equal(withSketch.partDocuments[0].sketches.length, 1);
+  assert.equal(withSketch.partDocuments[0].features[0].id, sketchFeatureId);
+  assert.equal(withSketch.partDocuments[0].features[0].type, 'sketch');
+  await applyCadFemCommand(ownerId, id, {
+    commandId: randomUUID(),
+    baseRevision: 4,
+    command: { type: 'deleteSketch', documentId: restored.partDocuments[0].id, sketchId }
+  });
+  const withoutSketch = await readCadFemProject(ownerId, id);
+  assert.equal(withoutSketch.partDocuments[0].sketches.length, 0);
+  assert.equal(withoutSketch.partDocuments[0].features.length, 0);
   await assert.rejects(
     () => queueCadFemJob(ownerId, randomUUID(), 'mesh', { idempotencyKey: randomUUID() }),
     (error) => error.statusCode === 503 && error.code === 'native_compute_unavailable'
@@ -109,6 +189,8 @@ function project(id) {
   fs.rmSync(storage, { recursive: true, force: true });
   console.log('cad/fem service contract ok', {
     immutableRevision: first.revision,
+    recoverableHistory: true,
+    nativeSketchSolverRequired: true,
     noSolverFallback: true,
     beamOnlyProductionStartupPreserved: true
   });
