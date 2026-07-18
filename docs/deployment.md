@@ -6,14 +6,24 @@
 npm start
 ```
 
-Open `http://127.0.0.1:4173/`.
+Run `npm run build:frontend`, then open:
 
-The root `index.html` is now a backend API client. It does not load the old public `sections_database.js` file and does not run the protected solver in the browser.
+- `http://127.0.0.1:4173/` for tool selection
+- `http://127.0.0.1:4173/beam/` for Beam EC3
+- `http://127.0.0.1:4173/frame3d/` for 3D Frame Analysis
+
+The Beam EC3 document is a backend API client at `/beam/`. It does not load the old public `sections_database.js` file and does not run the protected Beam solver in the browser.
 
 ## Frontend Build
 
 ```bash
 npm run build:frontend
+```
+
+The repository includes the generated Rust/WebAssembly package used by the Frame3D Vite build, so an existing Node-only Cloudflare Pages build remains supported. To rebuild and verify that package, install Rust, the `wasm32-unknown-unknown` target and `wasm-pack`, then run:
+
+```bash
+npm run build:verified
 ```
 
 Set `BEAM_API_BASE_URL` when building a static package for GitHub Pages or another static host:
@@ -23,6 +33,8 @@ BEAM_API_BASE_URL=https://your-backend.example.com npm run build:frontend
 ```
 
 Production source maps are not generated. `npm run security:bundle-check` fails if protected solver names, report generators, `PROFILE_DB`, or `sections_database.js` appear in the public static files.
+
+Cloudflare Pages publishes `dist/`. The `_redirects` file canonicalises `/beam`, `/frame3d` and `/privacy` to their directory routes. The generated `_headers` file grants WebAssembly compilation only below `/frame3d/`. The API Worker remains separate; all existing `/api/...` routes are preserved and the read-only `/api/frame3d/sections` route is additive.
 
 ## Environment
 

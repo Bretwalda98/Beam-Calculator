@@ -2,5 +2,7 @@ artifacts/
 dist/
 storage/
 .wrangler/
+node_modules/
+crates/**/target/
 *.log
 .codex-remote-attachments/

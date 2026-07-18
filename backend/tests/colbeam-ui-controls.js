@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..', '..');
-const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const indexHtml = fs.readFileSync(path.join(root, 'beam', 'index.html'), 'utf8');
 const secureApp = fs.readFileSync(path.join(root, 'public', 'secure-app.js'), 'utf8');
 
 const requiredControlIds = [

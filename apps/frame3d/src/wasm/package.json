@@ -1,0 +1,17 @@
+{
+  "name": "frame3d-solver",
+  "type": "module",
+  "description": "Linear-elastic 3D space-frame solver for Beam Calculator Studio.",
+  "version": "0.1.0",
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "files": [
+    "frame3d_solver_bg.wasm",
+    "frame3d_solver.js",
+    "frame3d_solver.d.ts"
+  ],
+  "main": "frame3d_solver.js",
+  "types": "frame3d_solver.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

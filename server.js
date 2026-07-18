@@ -18,6 +18,7 @@ const {
   listSectionFamilies,
   listPublicSections,
   listSectionNames,
+  listFrame3dSections,
   getSectionById,
   buildSectionPreview,
   buildSectionSourceIndex
@@ -37,27 +38,53 @@ const MIME = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.wasm': 'application/wasm'
 };
 
 function publicPath(urlPath) {
-  const safePath = urlPath === '/' ? 'index.html' : decodeURIComponent(urlPath).replace(/^\/+/, '');
+  const decoded = decodeURIComponent(urlPath);
+  const routeMap = new Map([
+    ['/', path.join(config.publicDir, 'index.html')],
+    ['/beam', path.join(config.publicDir, 'beam', 'index.html')],
+    ['/beam/', path.join(config.publicDir, 'beam', 'index.html')],
+    ['/privacy', path.join(config.publicDir, 'privacy', 'index.html')],
+    ['/privacy/', path.join(config.publicDir, 'privacy', 'index.html')],
+    ['/frame3d', path.join(config.publicDir, 'dist', 'frame3d', 'index.html')],
+    ['/frame3d/', path.join(config.publicDir, 'dist', 'frame3d', 'index.html')]
+  ]);
+  if (routeMap.has(decoded)) return routeMap.get(decoded);
+  const safePath = decoded.replace(/^\/+/, '');
   const candidate = path.normalize(safePath);
   if (candidate.startsWith('..') || path.isAbsolute(candidate)) return null;
   if (candidate.includes('backend') || candidate.includes('storage') || candidate.includes('sections-database')) return null;
-  if (candidate === 'index.html') return path.join(config.publicDir, 'index.html');
   if (candidate.startsWith(`public${path.sep}`) || candidate === 'public') {
     return path.join(config.publicDir, candidate);
   }
-  return path.join(config.publicDir, 'public', candidate);
+  if (candidate.startsWith(`frame3d${path.sep}`)) {
+    return path.join(config.publicDir, 'dist', candidate);
+  }
+  if (['ads.txt', 'robots.txt', 'sitemap.xml'].includes(candidate)) return path.join(config.publicDir, candidate);
+  return null;
 }
 
 async function serveStatic(req, res, pathname) {
   const file = publicPath(pathname);
   if (!file) return sendError(res, 404, 'Not found.', 'not_found');
   const resolved = path.resolve(file);
-  const allowedRoots = [path.resolve(config.publicDir, 'public'), path.resolve(config.publicDir, 'index.html')];
-  const isAllowed = resolved === allowedRoots[1] || resolved.startsWith(`${allowedRoots[0]}${path.sep}`);
+  const allowedFiles = [
+    path.resolve(config.publicDir, 'index.html'),
+    path.resolve(config.publicDir, 'beam', 'index.html'),
+    path.resolve(config.publicDir, 'privacy', 'index.html'),
+    path.resolve(config.publicDir, 'ads.txt'),
+    path.resolve(config.publicDir, 'robots.txt'),
+    path.resolve(config.publicDir, 'sitemap.xml')
+  ];
+  const allowedRoots = [
+    path.resolve(config.publicDir, 'public'),
+    path.resolve(config.publicDir, 'dist', 'frame3d')
+  ];
+  const isAllowed = allowedFiles.includes(resolved) || allowedRoots.some((root) => resolved.startsWith(`${root}${path.sep}`));
   if (!isAllowed) return sendError(res, 404, 'Not found.', 'not_found');
   try {
     const body = await fs.readFile(resolved);
@@ -108,6 +135,9 @@ async function routeApi(req, res, url) {
     }
     if (req.method === 'GET' && pathname === '/api/sections/sources') {
       return sendJson(res, 200, { sources: buildSectionSourceIndex() });
+    }
+    if (req.method === 'GET' && pathname === '/api/frame3d/sections') {
+      return sendJson(res, 200, { sections: listFrame3dSections() });
     }
     if (req.method === 'GET' && pathname === '/api/special-sections') {
       return sendJson(res, 200, listSpecialSectionOptions());
@@ -229,7 +259,12 @@ async function routeApi(req, res, url) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  setSecurityHeaders(res, { legacyFrontend: !url.pathname.startsWith('/api/') });
+  const isApi = url.pathname.startsWith('/api/');
+  const isFrame3d = url.pathname === '/frame3d' || url.pathname.startsWith('/frame3d/');
+  setSecurityHeaders(res, {
+    legacyFrontend: !isApi && !isFrame3d,
+    frame3dFrontend: isFrame3d
+  });
   applyCors(req, res);
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
