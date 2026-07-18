@@ -1,0 +1,28 @@
+{
+  "id": "00000000-0000-4000-8000-000000000102",
+  "name": "Dimensioned rectangle",
+  "plane": { "type": "principal", "plane": "XY", "offset": 0 },
+  "points": [
+    { "id": "p1", "x": 0, "y": 0 },
+    { "id": "p2", "x": 40, "y": 0 },
+    { "id": "p3", "x": 40, "y": 20 },
+    { "id": "p4", "x": 0, "y": 20 }
+  ],
+  "entities": [
+    { "id": "line-1", "type": "line", "startPointId": "p1", "endPointId": "p2", "construction": false },
+    { "id": "line-2", "type": "line", "startPointId": "p2", "endPointId": "p3", "construction": false },
+    { "id": "line-3", "type": "line", "startPointId": "p3", "endPointId": "p4", "construction": false },
+    { "id": "line-4", "type": "line", "startPointId": "p4", "endPointId": "p1", "construction": false }
+  ],
+  "constraints": [
+    { "id": "c-fixed", "type": "fixed", "pointId": "p1" },
+    { "id": "c-h1", "type": "horizontal", "entityId": "line-1" },
+    { "id": "c-v2", "type": "vertical", "entityId": "line-2" },
+    { "id": "c-h3", "type": "horizontal", "entityId": "line-3" },
+    { "id": "c-v4", "type": "vertical", "entityId": "line-4" },
+    { "id": "c-width", "type": "distance", "pointA": "p1", "pointB": "p2", "value": 40 },
+    { "id": "c-height", "type": "distance", "pointA": "p2", "pointB": "p3", "value": 20 }
+  ],
+  "solverState": "notSolved",
+  "degreesOfFreedom": null
+}

@@ -19,6 +19,12 @@ element types are rejected rather than converted silently.
 No JavaScript solver fallback exists. If the native service, mesher or solver is
 unavailable, the public API returns a failure and does not create a result.
 
+The image also includes the pinned Ceres 2.2 sketch kernel. It solves line, arc
+and circle sketches in millimetres/radians, evaluates the solved Float64
+Jacobian rank, and returns explicit under-, fully- or over-constrained evidence.
+Unsupported or inconsistent constraints fail closed; browser drafting is never
+reported as an authoritative constraint solution.
+
 ## Local native build
 
 The build needs installed CMake packages for OCCT, Netgen and MFEM:
@@ -32,6 +38,9 @@ ctest --test-dir build/cad-fem-native --output-on-failure
 The CTest pipeline generates a STEP axial bar, imports it through OCAF, meshes
 it with Netgen and checks the MFEM end displacement against `tL/E` with a 1%
 gate. It also enforces the `1e-8` normalised equilibrium gate.
+
+Three Ceres fixtures separately gate under-constrained, fully constrained and
+inconsistent/redundant sketch diagnostics.
 
 The release is not described as verified until this test and the broader
 benchmark matrix pass in the pinned Linux OCI image. First-order Netgen

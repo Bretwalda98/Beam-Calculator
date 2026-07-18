@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { CatalogueSectionSnapshot } from '../../../../packages/cad-fem-schema';
+import type { CatalogueSectionSnapshot, Sketch, SketchEntity } from '../../../../packages/cad-fem-schema';
 
 interface ViewportProps {
   profile: CatalogueSectionSnapshot | null;
   length: number;
   wireframe: boolean;
+  sketch: Sketch | null;
+  extrusion: number | null;
 }
 
 function addPolygon(shape: THREE.Shape, points: Array<[number, number]>) {
@@ -74,7 +76,71 @@ function sectionShape(profile: CatalogueSectionSnapshot): THREE.Shape {
   return shape;
 }
 
-export function Viewport({ profile, length, wireframe }: ViewportProps) {
+function sketchPoint(sketch: Sketch, id: string) {
+  return sketch.points.find((point) => point.id === id);
+}
+
+function sampledEntity(sketch: Sketch, entity: SketchEntity): THREE.Vector3[] {
+  if (entity.type === 'line') {
+    const start = sketchPoint(sketch, entity.startPointId);
+    const end = sketchPoint(sketch, entity.endPointId);
+    return start && end ? [new THREE.Vector3(start.x, start.y, 0), new THREE.Vector3(end.x, end.y, 0)] : [];
+  }
+  if (entity.type === 'circle') {
+    const centre = sketchPoint(sketch, entity.centrePointId);
+    return centre ? Array.from({ length: 65 }, (_, index) => {
+      const angle = index / 64 * Math.PI * 2;
+      return new THREE.Vector3(centre.x + Math.cos(angle) * entity.radius, centre.y + Math.sin(angle) * entity.radius, 0);
+    }) : [];
+  }
+  const centre = sketchPoint(sketch, entity.centrePointId);
+  const start = sketchPoint(sketch, entity.startPointId);
+  const end = sketchPoint(sketch, entity.endPointId);
+  if (!centre || !start || !end) return [];
+  const radius = Math.hypot(start.x - centre.x, start.y - centre.y);
+  const startAngle = Math.atan2(start.y - centre.y, start.x - centre.x);
+  let endAngle = Math.atan2(end.y - centre.y, end.x - centre.x);
+  if (entity.clockwise && endAngle > startAngle) endAngle -= Math.PI * 2;
+  if (!entity.clockwise && endAngle < startAngle) endAngle += Math.PI * 2;
+  return Array.from({ length: 33 }, (_, index) => {
+    const angle = startAngle + (endAngle - startAngle) * index / 32;
+    return new THREE.Vector3(centre.x + Math.cos(angle) * radius, centre.y + Math.sin(angle) * radius, 0);
+  });
+}
+
+function sketchShape(sketch: Sketch): THREE.Shape | null {
+  const visible = sketch.entities.filter(({ construction }) => !construction);
+  if (visible.length === 1 && visible[0].type === 'circle') {
+    const circle = visible[0];
+    const centre = sketchPoint(sketch, circle.centrePointId);
+    if (!centre) return null;
+    const shape = new THREE.Shape();
+    shape.absarc(centre.x, centre.y, circle.radius, 0, Math.PI * 2, false);
+    return shape;
+  }
+  const lines = visible.filter((entity): entity is Extract<SketchEntity, { type: 'line' }> => entity.type === 'line');
+  if (!lines.length) return null;
+  const first = sketchPoint(sketch, lines[0].startPointId);
+  if (!first) return null;
+  const shape = new THREE.Shape();
+  shape.moveTo(first.x, first.y);
+  let currentId = lines[0].startPointId;
+  const remaining = [...lines];
+  while (remaining.length) {
+    const index = remaining.findIndex((line) => line.startPointId === currentId || line.endPointId === currentId);
+    if (index < 0) return null;
+    const [line] = remaining.splice(index, 1);
+    currentId = line.startPointId === currentId ? line.endPointId : line.startPointId;
+    const next = sketchPoint(sketch, currentId);
+    if (!next) return null;
+    shape.lineTo(next.x, next.y);
+  }
+  if (currentId !== lines[0].startPointId) return null;
+  shape.closePath();
+  return shape;
+}
+
+export function Viewport({ profile, length, wireframe, sketch, extrusion }: ViewportProps) {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,7 +165,37 @@ export function Viewport({ profile, length, wireframe }: ViewportProps) {
     const resources: Array<{ dispose: () => void }> = [];
     const safeLength = Number.isFinite(length) && length > 0 ? length : 1;
     let scale = 500;
-    if (profile) {
+    if (sketch) {
+      const bounds = new THREE.Box2();
+      for (const point of sketch.points) bounds.expandByPoint(new THREE.Vector2(point.x, point.y));
+      const extent = new THREE.Vector2();
+      bounds.getSize(extent);
+      scale = Math.max(50, extent.x, extent.y, extrusion || 0);
+      const shape = extrusion ? sketchShape(sketch) : null;
+      if (shape && extrusion) {
+        const geometry = new THREE.ExtrudeGeometry(shape, { depth: extrusion, bevelEnabled: false, curveSegments: 32 });
+        geometry.translate(0, 0, -extrusion / 2);
+        geometry.computeVertexNormals();
+        const material = new THREE.MeshStandardMaterial({
+          color: 0x3e75c9, roughness: 0.46, metalness: 0.08, side: THREE.DoubleSide, wireframe
+        });
+        scene.add(new THREE.Mesh(geometry, material));
+        const edgesGeometry = new THREE.EdgesGeometry(geometry, 22);
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x182944, transparent: true, opacity: 0.85 });
+        scene.add(new THREE.LineSegments(edgesGeometry, edgeMaterial));
+        resources.push(geometry, material, edgesGeometry, edgeMaterial);
+      } else {
+        const material = new THREE.LineBasicMaterial({ color: 0x5fa1ff });
+        resources.push(material);
+        for (const entity of sketch.entities) {
+          const points = sampledEntity(sketch, entity);
+          if (points.length < 2) continue;
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          scene.add(new THREE.Line(geometry, material));
+          resources.push(geometry);
+        }
+      }
+    } else if (profile) {
       const geometry = new THREE.ExtrudeGeometry(sectionShape(profile), {
         depth: safeLength,
         bevelEnabled: false,
@@ -136,7 +232,7 @@ export function Viewport({ profile, length, wireframe }: ViewportProps) {
 
     const gridSize = Math.max(500, Math.ceil(scale * 2 / 100) * 100);
     const grid = new THREE.GridHelper(gridSize, 20, 0x42536a, 0x29323f);
-    grid.position.y = profile ? -profile.dimensions.height * 0.65 : -110;
+    grid.position.y = sketch ? -scale * 0.6 : profile ? -profile.dimensions.height * 0.65 : -110;
     scene.add(grid);
     scene.add(new THREE.AxesHelper(Math.min(scale * 0.35, 250)));
 
@@ -164,7 +260,8 @@ export function Viewport({ profile, length, wireframe }: ViewportProps) {
       renderer.dispose();
       host.current?.replaceChildren();
     };
-  }, [length, profile, wireframe]);
+  }, [extrusion, length, profile, sketch, wireframe]);
 
-  return <div ref={host} className="viewport-canvas" aria-label={profile ? `Three-dimensional preview of ${profile.designation}` : 'Empty three-dimensional model viewport'} />;
+  const label = sketch ? `Draft preview of ${sketch.name}` : profile ? `Three-dimensional preview of ${profile.designation}` : 'Empty three-dimensional model viewport';
+  return <div ref={host} className="viewport-canvas" aria-label={label} />;
 }

@@ -66,6 +66,9 @@ All CAD/FEM routes require a validated Cloudflare Access identity at the public 
 - `GET /api/cad/projects/:id`
 - `PATCH /api/cad/projects/:id`
 - `POST /api/cad/projects/:id/commands`
+- `GET /api/cad/projects/:id/revisions`
+- `GET /api/cad/projects/:id/revisions/:revision`
+- `POST /api/cad/projects/:id/sketches/solve`
 - `POST /api/cad/projects/:id/imports`
 - `POST /api/fea/studies/:id/mesh-jobs`
 - `POST /api/fea/studies/:id/solve-jobs`
@@ -75,6 +78,8 @@ All CAD/FEM routes require a validated Cloudflare Access identity at the public 
 - `GET /api/jobs/:id/artifacts/:artifactId`
 
 The separate `CadFEMProject` schema uses immutable integer revisions. Mutating commands include a stable command ID and base revision. A stale revision returns `409`; replaying a command or job ID returns the original record without repeating work.
+
+Revision history contains immutable snapshots. Restoring an earlier snapshot creates a new revision, advances the geometry revision and invalidates native geometry artefacts; it never rewrites or deletes history. Sketch solve requests are also revision-bound and accept results only when the native response includes pinned Ceres evidence. A missing native service returns `503`; there is no JavaScript constraint-solver fallback.
 
 STEP import is a two-step flow. The first request creates short-lived signed R2 upload metadata. After upload, the second request supplies the artifact ID; the service verifies its metadata before queuing native regeneration. Large B-reps, meshes and result fields remain in R2 rather than Worker request bodies.
 

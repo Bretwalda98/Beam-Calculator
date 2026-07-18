@@ -1,5 +1,31 @@
 # Frame3D foundation task log
 
+## CAD workbench v1 — 18 July 2026
+
+- Branch: `codex/cad-workbench-v1`, created from merged `main` at `731af03` after foundation PR #9 and platform-spike PR #10 merged with ancestry preserved.
+- Release controls: Cloudflare Pages production auto-deployment is disabled; the production Worker trigger uploads inactive versions only. Legacy GitHub Pages publishes from the pinned `production` branch at foundation commit `c948b9e` rather than from `main`.
+- Baseline `npm run check`: passed.
+- Baseline `npm test`: passed (26 Rust frame tests, 7 compiled-WASM comparisons and 4 CAD/FEM validation/contract tests).
+- Baseline `npm run smoke`: passed, including the 368-section catalogue boundary and all 13 direct routes.
+
+### CAD workbench implementation plan
+
+1. Extend the separate `CadFEMProject` contract with native sketch-solve evidence, regeneration status, topology-resolution diagnostics and immutable revision summaries while preserving schema `1.0.0` compatibility.
+2. Add the pinned Ceres 2.2 sketch kernel to the native image. Support line, arc and circle geometry plus dimensional/geometric constraints, rank-based degrees of freedom and structured under-, fully- and over-constrained diagnostics. No browser solver fallback is permitted.
+3. Add authoritative OCCT part-regeneration inputs and artefacts for ordered sketches/features, deterministic semantic topology names and explicit broken/ambiguous-reference failures.
+4. Replace disabled Solid-mode controls with a responsive sketch/feature workbench, feature timeline, properties editors, undo/redo over immutable server revisions and clearly labelled non-authoritative browser previews.
+5. Add STEP import/export controls through the existing absolute CAD API, retain large artefacts outside request bodies and fail closed when native staging is unavailable.
+6. Add schema, constraint, command-history, topology and deterministic regeneration tests; rerun all Beam/Frame/CAD checks plus the pinned sanitised native CI before opening a draft PR and isolated preview.
+
+### CAD workbench progress
+
+- Implemented owner-scoped immutable revision listing/reading and restore-as-a-new-revision for local and PostgreSQL repositories. Undo/redo never rewrites history and restored geometry is marked for native regeneration.
+- Added native Ceres sketch-solve transport with revision checks and no JavaScript fallback. Added line, arc and circle residuals, geometric/dimensional constraints, Jacobian-rank degrees of freedom and under/full/over CTest fixtures to the pinned image.
+- Added deterministic topology naming/resolution contracts, broken/ambiguous-reference validation and richer OCCT imported-face signatures.
+- Replaced the disabled Solid controls with drafting, constraints, feature creation, EC3 catalogue insertion, STEP upload, feature timeline, revision history, undo/redo and non-authoritative Three.js sketch/extrusion previews.
+- Local gates pass: `npm run check`, `npm test`, `npm run smoke` and `npm run build:frontend`. Native Ceres compilation remains pending the Linux container CI because Docker is unavailable on this workstation.
+- Browser screenshot inspection could not run because no in-app or extension browser was available in this Codex session; the isolated branch preview remains the visual acceptance surface.
+
 ## CAD-integrated solid FEM programme — 16 July 2026
 
 - Staged branch: `codex/fea-platform-spike`, originally based on the foundation branch at `59c3263`. Foundation PR #9 merged into `main` as `c948b9e` before platform-spike promotion.

@@ -2,13 +2,21 @@
 
 ## Status
 
-This branch is the first staged branch of the CAD-integrated Solid FEM programme. It establishes production-shaped contracts and a reproducible native proof pipeline. It is not the finished CAD product and makes no verified-solver claim.
+The merged platform spike established production-shaped contracts and a reproducible native proof pipeline. The CAD workbench stage adds recoverable parametric modelling and a native sketch-kernel boundary. It is not the finished CAD product and makes no verified-solver claim.
 
 - `/frame3d/` selects Frame or Solid study types.
 - `/frame3d/frame/` preserves the existing Rust/WebAssembly space-frame application.
 - `/frame3d/solid/` is a separate React/Three.js Beta workbench shell.
 - Beam EC3 remains at `/beam/`; its formula engine and public API routes are unchanged.
 - Solid geometry, meshing and solution are server-authoritative. There is no JavaScript solid-solver fallback.
+
+## CAD workbench stage
+
+Solid mode now provides line, arc and circle drafting, dimensional/geometric constraint authoring, sketch and feature trees, extrude/revolve command records, an immutable feature/revision timeline, undo/redo by server-owned snapshot restoration, STEP upload, and the existing Beam EC3 catalogue bridge. Three.js continues to render only a clearly labelled drafting preview.
+
+The separate native `cad-fem-sketch-solve` executable uses pinned Ceres 2.2 Float64 automatic differentiation. It returns solved coordinates, residuals, Jacobian rank, degrees of freedom, kernel version and structured under-, fully- or over-constrained diagnostics. Native CTest fixtures gate all three states. The API refuses a sketch response without Ceres evidence and returns `503` when native compute is unavailable.
+
+`packages/cad-fem-topology` defines deterministic feature-history semantic names and a conservative persistent-reference resolver. Exact semantic matches take priority; geometric/adjacency signatures are a fallback. Zero matches become broken and equal matches become ambiguous, and both states invalidate dependent features, loads, supports or contacts until explicit reselection.
 
 ## Authoritative data
 

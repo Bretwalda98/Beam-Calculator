@@ -23,7 +23,7 @@
     "geometry:import": "node scripts/import-section-geometry.js",
     "smoke": "node backend/tests/smoke-calculate.js && node backend/tests/colbeam-audit-settings.js && node backend/tests/colbeam-ui-controls.js && node backend/tests/colbeam-stage4-engine.js && node backend/tests/colbeam-stage5-load-directions.js && node backend/tests/colbeam-stage6-section-control.js && node backend/tests/end-force-mode.js && node backend/tests/special-section-data-boundary.js && node backend/tests/special-section-geometry.js && node backend/tests/special-section-calculation.js && node backend/tests/calculation-audit-fixtures.js && node backend/tests/routing-smoke.js",
     "test:frame3d": "cargo test --manifest-path crates/frame3d-solver/Cargo.toml && node backend/tests/frame3d-wasm-smoke.mjs",
-    "test:cad-fem": "node --import tsx --test packages/cad-fem-validation/index.test.ts && node backend/tests/cad-fem-service.js",
+    "test:cad-fem": "node --import tsx --test packages/cad-fem-validation/index.test.ts packages/cad-fem-topology/index.test.ts && node backend/tests/cad-fem-service.js",
     "verify:cad-fem": "npm run check:cad-fem && npm run test:cad-fem && npm run build:frontend && node backend/tests/worker-route-smoke.mjs && node backend/tests/routing-smoke.js",
     "verify:frame3d": "npm run check:frame3d && npm run check:rust && npm run test:frame3d && npm run build:verified && node backend/tests/worker-route-smoke.mjs && node backend/tests/routing-smoke.js"
   },

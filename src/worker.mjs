@@ -24,6 +24,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://beamcalculatorstudio.com',
   'https://codex-frame3d-foundation-v1.beam-calculator.pages.dev',
   'https://codex-fea-platform-spike.beam-calculator.pages.dev',
+  'https://codex-cad-workbench-v1.beam-calculator.pages.dev',
   'http://localhost:8787',
   'http://localhost:8765',
   'http://localhost:4173',
