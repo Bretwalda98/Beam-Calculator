@@ -1,16 +1,31 @@
 'use strict';
 
 const assert = require('assert');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
 const { createSpecialSectionAdapter, specialSectionAdapter } = require('../services/external-special-section-adapter');
-const { listPublicSections } = require('../services/sections-service');
+const {
+  listPublicSections,
+  getSectionById,
+  buildSectionProfileSnapshot,
+  catalogueRevision
+} = require('../services/sections-service');
 
-const cataloguePath = path.join(__dirname, '..', 'data', 'sections-database.js');
-const catalogueHash = crypto.createHash('sha256').update(fs.readFileSync(cataloguePath)).digest('hex');
-assert.strictEqual(catalogueHash, 'a9d15c34db320151fcb36730e04b87c41eeaeecd26bd404fff62b688906d9d26', 'Production section catalogue changed unexpectedly.');
-assert.strictEqual(listPublicSections().length, 368, 'Production section count must remain unchanged.');
+assert.strictEqual(catalogueRevision(), '73360d0357bb6d7c9173c11aa630ab8bb81c48bae84cb2bbe87c33294df93678', 'Canonical production section data changed unexpectedly.');
+const catalogueSections = listPublicSections();
+assert.strictEqual(catalogueSections.length, 368, 'Production section count must remain unchanged.');
+const solidProfiles = catalogueSections.map(({ id }) => buildSectionProfileSnapshot(getSectionById(id)));
+assert.strictEqual(solidProfiles.filter(Boolean).length, 368, 'Every production section requires a Solid-mode profile snapshot.');
+assert.strictEqual(solidProfiles.filter(({ geometryVerified }) => geometryVerified).length, 368, 'Every Solid-mode profile must retain verified source geometry provenance.');
+assert.deepStrictEqual([...new Set(solidProfiles.map(({ dimensions }) => dimensions.flangeSlopePercent))].sort((a, b) => a - b), [0, 5, 8, 14]);
+const nominalAreaDifferences = solidProfiles.map((profile) => {
+  const dimensions = profile.dimensions;
+  const nominalArea = profile.kind === 'rhs'
+    ? dimensions.height * dimensions.width -
+      (dimensions.height - 2 * dimensions.wallThickness) * (dimensions.width - 2 * dimensions.wallThickness)
+    : 2 * dimensions.width * dimensions.flangeThickness +
+      dimensions.webThickness * (dimensions.height - 2 * dimensions.flangeThickness);
+  return Math.abs(nominalArea - profile.properties.area) / profile.properties.area;
+});
+assert.ok(Math.max(...nominalAreaDifferences) < 0.1, 'Every nominal native profile must remain within the explicit 10% catalogue-area safety gate.');
 assert.deepStrictEqual(specialSectionAdapter.list(), [], 'Bundled external special-section dataset must be empty.');
 
 const verified = {

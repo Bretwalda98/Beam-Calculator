@@ -1,3 +1,4 @@
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import calculationService from '../backend/services/calculation-service.js';
 import sectionsService from '../backend/services/sections-service.js';
 import validationService from '../backend/services/validation-service.js';
@@ -22,6 +23,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://beam-calculator.pages.dev',
   'https://beamcalculatorstudio.com',
   'https://codex-frame3d-foundation-v1.beam-calculator.pages.dev',
+  'https://codex-fea-platform-spike.beam-calculator.pages.dev',
   'http://localhost:8787',
   'http://localhost:8765',
   'http://localhost:4173',
@@ -37,8 +39,9 @@ function corsHeaders(request) {
   const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://beam-calculator.pages.dev';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Idempotency-Key',
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin'
   };
@@ -93,6 +96,128 @@ async function readJson(request) {
     err.statusCode = 400;
     throw err;
   }
+}
+
+function isCadFemPath(pathname) {
+  return pathname === '/api/cad/projects' ||
+    pathname.startsWith('/api/cad/projects/') ||
+    pathname.startsWith('/api/fea/studies/') ||
+    pathname.startsWith('/api/jobs/');
+}
+
+const jwksCache = new Map();
+
+function accessConfiguration(env) {
+  const teamDomain = String(env?.CF_ACCESS_TEAM_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  const audience = String(env?.CF_ACCESS_AUD || '');
+  if (!teamDomain || !audience) return null;
+  return {
+    teamDomain,
+    audience,
+    issuer: `https://${teamDomain}`
+  };
+}
+
+async function cadFemIdentity(request, env) {
+  const token = request.headers.get('Cf-Access-Jwt-Assertion') || '';
+  const configuration = accessConfiguration(env);
+  if (!token || !configuration) return null;
+  let jwks = jwksCache.get(configuration.teamDomain);
+  if (!jwks) {
+    jwks = createRemoteJWKSet(new URL(`${configuration.issuer}/cdn-cgi/access/certs`));
+    jwksCache.set(configuration.teamDomain, jwks);
+  }
+  const { payload } = await jwtVerify(token, jwks, {
+    issuer: configuration.issuer,
+    audience: configuration.audience
+  });
+  if (!payload.sub || !payload.email) return null;
+  return {
+    subject: String(payload.sub),
+    email: String(payload.email),
+    name: typeof payload.name === 'string' ? payload.name : ''
+  };
+}
+
+export function buildCadFemUpstreamRequest(request, {
+  hasServiceBinding,
+  originUrl,
+  gatewayToken,
+  identity
+}) {
+  const publicUrl = new URL(request.url);
+  const upstreamUrl = hasServiceBinding
+    ? publicUrl
+    : new URL(`${publicUrl.pathname}${publicUrl.search}`, originUrl);
+  const upstreamRequest = new Request(upstreamUrl, request);
+  upstreamRequest.headers.delete('Authorization');
+  upstreamRequest.headers.delete('Cookie');
+  upstreamRequest.headers.delete('Cf-Access-Jwt-Assertion');
+  upstreamRequest.headers.delete('X-Cad-Fem-Gateway-Token');
+  upstreamRequest.headers.delete('X-Beam-User-Subject');
+  upstreamRequest.headers.delete('X-Beam-User-Email');
+  upstreamRequest.headers.delete('X-Beam-User-Name');
+  upstreamRequest.headers.set('X-Cad-Fem-Gateway-Token', gatewayToken);
+  upstreamRequest.headers.set('X-Beam-User-Subject', identity.subject);
+  upstreamRequest.headers.set('X-Beam-User-Email', identity.email);
+  if (identity.name) upstreamRequest.headers.set('X-Beam-User-Name', identity.name);
+  return upstreamRequest;
+}
+
+async function proxyCadFemRequest(request, env) {
+  let identity;
+  try {
+    identity = await cadFemIdentity(request, env);
+  } catch {
+    identity = null;
+  }
+  if (!identity) {
+    return jsonResponse(request, 401, {
+      ok: false,
+      error: {
+        code: 'auth_required',
+        message: 'Authenticated staging access is required for CAD/FEM project and compute routes.'
+      }
+    });
+  }
+  const hasServiceBinding = env?.CAD_FEM_SERVICE && typeof env.CAD_FEM_SERVICE.fetch === 'function';
+  const originUrl = String(env?.CAD_FEM_ORIGIN_URL || '');
+  if (!hasServiceBinding && !originUrl) {
+    return jsonResponse(request, 503, {
+      ok: false,
+      error: {
+        code: 'native_compute_unavailable',
+        message: 'The native CAD/FEM service binding is not configured. No browser solver fallback is available.'
+      }
+    });
+  }
+  if (!env.CAD_FEM_GATEWAY_TOKEN) {
+    return jsonResponse(request, 503, {
+      ok: false,
+      error: {
+        code: 'gateway_unconfigured',
+        message: 'The CAD/FEM origin gateway token is not configured.'
+      }
+    });
+  }
+  const upstreamRequest = buildCadFemUpstreamRequest(request, {
+    hasServiceBinding,
+    originUrl,
+    gatewayToken: env.CAD_FEM_GATEWAY_TOKEN,
+    identity
+  });
+  const upstream = hasServiceBinding
+    ? await env.CAD_FEM_SERVICE.fetch(upstreamRequest)
+    : await fetch(upstreamRequest);
+  const responseHeaders = new Headers(upstream.headers);
+  for (const [name, value] of Object.entries(corsHeaders(request))) {
+    responseHeaders.set(name, value);
+  }
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: responseHeaders
+  });
 }
 
 function publicSectionRow(section) {
@@ -150,7 +275,7 @@ function previewForResponse(section) {
   };
 }
 
-async function route(request) {
+async function route(request, env) {
   const url = new URL(request.url);
   const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
@@ -180,6 +305,10 @@ async function route(request) {
       ok: true,
       sources: buildSectionSourceIndex()
     });
+  }
+
+  if (isCadFemPath(pathname)) {
+    return proxyCadFemRequest(request, env);
   }
 
   if (request.method === 'GET' && pathname === '/api/frame3d/sections') {
@@ -248,9 +377,9 @@ async function route(request) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     try {
-      return await route(request);
+      return await route(request, env);
     } catch (err) {
       const status = err.statusCode || 500;
       return jsonResponse(request, status, {

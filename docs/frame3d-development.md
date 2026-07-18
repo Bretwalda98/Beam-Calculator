@@ -24,6 +24,9 @@ npm run build:wasm      # regenerate wasm-bindgen package
 npm run build:frame3d   # Vite production bundle
 npm run build:verified  # regenerate WASM and build the complete static site
 npm run check           # existing repository checks plus Frame3D TypeScript
+npm run check:cad-fem   # 3D hub and Solid-mode TypeScript
+npm run test:cad-fem    # CadFEM schema/service contract tests
+npm run verify:cad-fem  # Solid web/API contract, build and route checks
 npm run smoke           # existing Beam regression suite and route smoke
 ```
 
@@ -42,7 +45,9 @@ Routes:
 
 - `/` tool selection;
 - `/beam/` Beam EC3;
-- `/frame3d/` Frame3D;
+- `/frame3d/` 3D project/study selection;
+- `/frame3d/frame/` Frame3D frame solver;
+- `/frame3d/solid/` Solid FEM Beta workbench;
 - `/api/...` existing APIs;
 - `/api/frame3d/sections` read-only section snapshots.
 

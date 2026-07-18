@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+required=(
+  CAD_FEM_JOB_ID
+  CAD_FEM_JOB_KIND
+  CAD_FEM_R2_ENDPOINT
+  CAD_FEM_R2_BUCKET
+  CAD_FEM_INPUT_PREFIX
+  CAD_FEM_OUTPUT_PREFIX
+)
+for name in "${required[@]}"; do
+  if [[ -z "${!name:-}" ]]; then
+    printf 'Missing required environment variable: %s\n' "$name" >&2
+    exit 64
+  fi
+done
+
+work_dir="/tmp/cad-fem/${CAD_FEM_JOB_ID}"
+input_dir="${work_dir}/input"
+output_dir="${work_dir}/output"
+mkdir -p "$input_dir" "$output_dir"
+
+s3() {
+  aws s3 --endpoint-url "$CAD_FEM_R2_ENDPOINT" "$@"
+}
+
+write_status() {
+  local stage="$1"
+  local succeeded="$2"
+  local converged="$3"
+  local message="$4"
+  jq -n \
+    --arg jobId "$CAD_FEM_JOB_ID" \
+    --arg stage "$stage" \
+    --arg message "$message" \
+    --argjson succeeded "$succeeded" \
+    --argjson converged "$converged" \
+    '{jobId:$jobId,stage:$stage,succeeded:$succeeded,converged:$converged,message:$message}' \
+    > "${output_dir}/job-status.json"
+}
+
+upload_output() {
+  write_artifacts
+  s3 cp "$output_dir" \
+    "s3://${CAD_FEM_R2_BUCKET}/${CAD_FEM_OUTPUT_PREFIX}" \
+    --recursive \
+    --only-show-errors
+}
+
+write_artifacts() {
+  local records="${work_dir}/artifacts.ndjson"
+  : > "$records"
+  while IFS= read -r -d '' file; do
+    local relative="${file#${output_dir}/}"
+    [[ "$relative" == "artifacts.json" ]] && continue
+    local sha bytes kind content_type
+    sha="$(sha256sum "$file" | awk '{print $1}')"
+    bytes="$(stat -c '%s' "$file")"
+    case "$relative" in
+      geometry.xbf) kind="ocaf"; content_type="application/octet-stream" ;;
+      geometry.brep) kind="brep"; content_type="application/octet-stream" ;;
+      topology.json) kind="topology"; content_type="application/json" ;;
+      tessellation.json) kind="tessellation"; content_type="application/json" ;;
+      mesh.vol) kind="mesh"; content_type="application/octet-stream" ;;
+      mesh.mfem) kind="mesh"; content_type="text/plain" ;;
+      *.vtu) kind="vtu"; content_type="application/vnd.vtk" ;;
+      *.csv) kind="csv"; content_type="text/csv" ;;
+      *.json) kind="resultField"; content_type="application/json" ;;
+      *) kind="resultField"; content_type="application/octet-stream" ;;
+    esac
+    jq -n \
+      --arg path "$relative" \
+      --arg kind "$kind" \
+      --arg contentType "$content_type" \
+      --arg sha256 "$sha" \
+      --argjson byteLength "$bytes" \
+      '{path:$path,kind:$kind,contentType:$contentType,sha256:$sha256,byteLength:$byteLength}' \
+      >> "$records"
+  done < <(find "$output_dir" -type f -print0)
+  jq -s '{artifacts:.}' "$records" > "${output_dir}/artifacts.json"
+}
+
+fail_job() {
+  local exit_code=$?
+  trap - ERR
+  write_status "failed" false false "Native job exited with status ${exit_code}."
+  upload_output || true
+  exit "$exit_code"
+}
+trap fail_job ERR
+
+s3 cp \
+  "s3://${CAD_FEM_R2_BUCKET}/${CAD_FEM_INPUT_PREFIX}" \
+  "$input_dir" \
+  --recursive \
+  --only-show-errors
+
+manifest="${input_dir}/job-input.json"
+if [[ ! -f "$manifest" ]]; then
+  printf 'Missing immutable job-input.json artifact.\n' >&2
+  exit 65
+fi
+
+prepare_step_file() {
+  local step_file="${input_dir}/model.step"
+  if [[ -f "$step_file" ]]; then
+    return
+  fi
+  if ! jq -e '.catalogueExtrusion' "$manifest" >/dev/null; then
+    printf 'Missing model.step or catalogueExtrusion input artifact.\n' >&2
+    exit 66
+  fi
+  local profile_file="${input_dir}/catalogue-profile.json"
+  jq -e '.catalogueExtrusion | {section:.section,length:.length}' "$manifest" > "$profile_file"
+  cad-fem-section-step \
+    --input "$profile_file" \
+    --output "$step_file" \
+    --metadata "${output_dir}/section-generation.json"
+}
+
+case "$CAD_FEM_JOB_KIND" in
+  stepImport|regenerate)
+    step_file="${input_dir}/model.step"
+    if [[ ! -f "$step_file" ]]; then
+      printf 'Missing model.step input artifact.\n' >&2
+      exit 66
+    fi
+    cad-fem-pipeline \
+      --step "$step_file" \
+      --output "$output_dir" \
+      --stage geometry
+    ;;
+  mesh)
+    prepare_step_file
+    step_file="${input_dir}/model.step"
+    cad-fem-pipeline \
+      --step "$step_file" \
+      --output "$output_dir" \
+      --stage mesh \
+      --mesh-size "$(jq -er '.mesh.globalSize' "$manifest")" \
+      --mesh-min-size "$(jq -er '.mesh.minimumSize' "$manifest")"
+    ;;
+  solve|linearStatic)
+    prepare_step_file
+    step_file="${input_dir}/model.step"
+    if [[ "$(jq -er '.verificationProfile' "$manifest")" != "axialBarX" ]]; then
+      printf 'The native spike only permits the axialBarX verification profile.\n' >&2
+      exit 68
+    fi
+    cad-fem-pipeline \
+      --step "$step_file" \
+      --output "$output_dir" \
+      --stage solve \
+      --mesh-size "$(jq -er '.mesh.globalSize' "$manifest")" \
+      --mesh-min-size "$(jq -er '.mesh.minimumSize' "$manifest")" \
+      --element-order "$(jq -er '.mesh.elementOrder' "$manifest")" \
+      --elastic-modulus "$(jq -er '.material.elasticModulus' "$manifest")" \
+      --poisson-ratio "$(jq -er '.material.poissonRatio' "$manifest")" \
+      --traction-x "$(jq -er '.load.traction[0]' "$manifest")" \
+      --traction-y "$(jq -er '.load.traction[1]' "$manifest")" \
+      --traction-z "$(jq -er '.load.traction[2]' "$manifest")" \
+      --relative-tolerance "$(jq -er '.solver.relativeTolerance' "$manifest")" \
+      --absolute-tolerance "$(jq -er '.solver.absoluteTolerance' "$manifest")" \
+      --maximum-iterations "$(jq -er '.solver.maximumIterations' "$manifest")" \
+      --benchmark-component x \
+      --benchmark-value 0.004761904761904762 \
+      --benchmark-relative-tolerance 0.01
+    ;;
+  contactPatch)
+    cad-fem-contact-patch --output "$output_dir"
+    ;;
+  *)
+    printf 'Unsupported native job kind: %s\n' "$CAD_FEM_JOB_KIND" >&2
+    exit 67
+    ;;
+esac
+
+converged="null"
+if [[ "$CAD_FEM_JOB_KIND" == "solve" || "$CAD_FEM_JOB_KIND" == "linearStatic" || "$CAD_FEM_JOB_KIND" == "contactPatch" ]]; then
+  converged="true"
+fi
+write_status "complete" true "$converged" "Native job completed and passed its executable gates."
+upload_output
+trap - ERR

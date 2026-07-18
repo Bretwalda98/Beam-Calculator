@@ -6,13 +6,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "db:migrate": "node scripts/migrate-database.js",
     "build": "npm run build:frontend",
-    "test": "npm run test:frame3d",
-    "check": "node --check server.js && node --check src/worker.mjs && node --check backend/services/calculation-service.js && node --check backend/services/direct-action-service.js && node --check backend/services/section-property-provenance.js && node --check backend/services/external-special-section-adapter.js && node --check backend/services/special-section-geometry.js && node --check backend/services/special-section-service.js && node --check backend/services/report-service.js && node --check backend/services/pdf-service.js && node --check backend/services/validation-service.js && node --check backend/services/colbeam-audit-settings.js && node --check backend/tests/colbeam-audit-settings.js && node --check backend/tests/colbeam-ui-controls.js && node --check backend/tests/colbeam-stage4-engine.js && node --check backend/tests/colbeam-stage5-load-directions.js && node --check backend/tests/colbeam-stage6-section-control.js && node --check backend/tests/end-force-mode.js && node --check backend/tests/special-section-data-boundary.js && node --check backend/tests/special-section-geometry.js && node --check backend/tests/special-section-calculation.js && node --check backend/tests/frame3d-wasm-smoke.mjs && node --check backend/tests/worker-route-smoke.mjs && node --check public/app.js && node --check public/secure-app.js && node --check scripts/import-section-geometry.js && node --check scripts/validate-special-section-data.js && node --check scripts/build-frontend.js && node --check scripts/build-frame3d-wasm.js && node --check backend/tests/routing-smoke.js && node scripts/check-public-bundle.js && npm run check:frame3d",
+    "test": "npm run test:frame3d && npm run test:cad-fem",
+    "check": "node --check server.js && node --check src/worker.mjs && node --check backend/middleware/http.js && node --check backend/services/calculation-service.js && node --check backend/services/cad-fem-service.js && node --check backend/services/cad-fem-aws-jobs.js && node --check backend/services/cad-fem-postgres-repository.js && node --check backend/services/direct-action-service.js && node --check backend/services/section-property-provenance.js && node --check backend/services/external-special-section-adapter.js && node --check backend/services/special-section-geometry.js && node --check backend/services/special-section-service.js && node --check backend/services/report-service.js && node --check backend/services/pdf-service.js && node --check backend/services/validation-service.js && node --check backend/services/colbeam-audit-settings.js && node --check backend/tests/cad-fem-service.js && node --check backend/tests/colbeam-audit-settings.js && node --check backend/tests/colbeam-ui-controls.js && node --check backend/tests/colbeam-stage4-engine.js && node --check backend/tests/colbeam-stage5-load-directions.js && node --check backend/tests/colbeam-stage6-section-control.js && node --check backend/tests/end-force-mode.js && node --check backend/tests/pages-preview-build-config.js && node --check backend/tests/special-section-data-boundary.js && node --check backend/tests/special-section-geometry.js && node --check backend/tests/special-section-calculation.js && node --check backend/tests/frame3d-wasm-smoke.mjs && node --check backend/tests/worker-route-smoke.mjs && node --check public/app.js && node --check public/secure-app.js && node --check scripts/frontend-api-config.js && node --check scripts/import-section-geometry.js && node --check scripts/validate-special-section-data.js && node --check scripts/build-frontend.js && node --check scripts/build-frame3d-wasm.js && node --check scripts/migrate-database.js && node --check backend/tests/routing-smoke.js && node backend/tests/pages-preview-build-config.js && node scripts/check-public-bundle.js && npm run check:frame3d && npm run check:cad-fem",
     "check:frame3d": "tsc -p apps/frame3d/tsconfig.json --noEmit",
+    "check:cad-fem": "tsc -p apps/frame3d-hub/tsconfig.json --noEmit && tsc -p apps/solid-fem/tsconfig.json --noEmit",
     "check:rust": "cargo fmt --manifest-path crates/frame3d-solver/Cargo.toml -- --check && cargo clippy --manifest-path crates/frame3d-solver/Cargo.toml --all-targets -- -D warnings",
     "build:wasm": "node scripts/build-frame3d-wasm.js",
-    "build:frame3d": "vite build --config apps/frame3d/vite.config.ts",
+    "build:frame3d": "vite build --config apps/frame3d-hub/vite.config.ts && vite build --config apps/frame3d/vite.config.ts && vite build --config apps/solid-fem/vite.config.ts",
     "build:verified": "npm run build:wasm && npm run build:frontend",
     "build:frontend": "node scripts/build-frontend.js",
     "security:bundle-check": "node scripts/check-public-bundle.js",
@@ -21,6 +23,8 @@
     "geometry:import": "node scripts/import-section-geometry.js",
     "smoke": "node backend/tests/smoke-calculate.js && node backend/tests/colbeam-audit-settings.js && node backend/tests/colbeam-ui-controls.js && node backend/tests/colbeam-stage4-engine.js && node backend/tests/colbeam-stage5-load-directions.js && node backend/tests/colbeam-stage6-section-control.js && node backend/tests/end-force-mode.js && node backend/tests/special-section-data-boundary.js && node backend/tests/special-section-geometry.js && node backend/tests/special-section-calculation.js && node backend/tests/calculation-audit-fixtures.js && node backend/tests/routing-smoke.js",
     "test:frame3d": "cargo test --manifest-path crates/frame3d-solver/Cargo.toml && node backend/tests/frame3d-wasm-smoke.mjs",
+    "test:cad-fem": "node --import tsx --test packages/cad-fem-validation/index.test.ts && node backend/tests/cad-fem-service.js",
+    "verify:cad-fem": "npm run check:cad-fem && npm run test:cad-fem && npm run build:frontend && node backend/tests/worker-route-smoke.mjs && node backend/tests/routing-smoke.js",
     "verify:frame3d": "npm run check:frame3d && npm run check:rust && npm run test:frame3d && npm run build:verified && node backend/tests/worker-route-smoke.mjs && node backend/tests/routing-smoke.js"
   },
   "engines": {
@@ -28,8 +32,23 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@types/three": "^0.180.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vite": "^7.0.5"
   },
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@aws-sdk/client-batch": "3.1088.0",
+    "@aws-sdk/client-s3": "3.1088.0",
+    "@aws-sdk/s3-request-presigner": "3.1088.0",
+    "jose": "6.1.2",
+    "pg": "8.16.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "three": "^0.180.0"
+  }
 }

@@ -1,0 +1,25 @@
+{
+  "length": 1000,
+  "section": {
+    "schemaVersion": "1.0.0",
+    "catalogue": "beam-ec3",
+    "catalogueRevision": "73360d0357bb6d7c9173c11aa630ab8bb81c48bae84cb2bbe87c33294df93678",
+    "sectionId": "UB|UB 254x146x31",
+    "designation": "UB 254x146x31",
+    "family": "UB",
+    "kind": "i",
+    "units": "mm",
+    "dimensions": {
+      "height": 251.4,
+      "width": 146.1,
+      "webThickness": 6,
+      "flangeThickness": 8.6,
+      "wallThickness": null,
+      "rootRadius": 7.6,
+      "toeRadius": null,
+      "flangeSlopePercent": 0,
+      "innerRadius": null
+    },
+    "properties": { "area": 3970, "iy": 44130000, "iz": 4480000, "torsionConstant": 85500, "massPerLength": 31.1 }
+  }
+}

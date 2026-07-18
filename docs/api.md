@@ -35,9 +35,9 @@ OAuth endpoints return setup errors until the required secrets and redirect doma
 - `GET /api/sections/sources`
 - `GET /api/frame3d/sections`
 
-The API exposes families plus lightweight section selection metadata. It does not expose full section property rows to the browser. The preview endpoint returns only selected-section display geometry and visible properties required by the UI.
+The API exposes families plus constrained section selection metadata rather than raw database rows. The preview endpoint returns selected-section display geometry, visible properties and a versioned Solid-mode profile snapshot with source provenance and a canonical catalogue fingerprint.
 
-The Frame3D section endpoint returns only `A`, `Iy`, `Iz`, `J/It` and source metadata required to create a saved analysis-property snapshot. Rows with missing required properties are marked unavailable and list the missing fields.
+The Frame3D section endpoint returns `A`, `Iy`, `Iz`, `J/It`, source metadata, the catalogue fingerprint and the same constrained profile snapshot required to create an immutable saved section. Rows with missing required properties are marked unavailable and list the missing fields.
 
 ## Calculations
 
@@ -56,6 +56,29 @@ All project endpoints require an authenticated session.
 - `GET /api/projects/:id/pdf`
 
 Each save creates a new project revision in the project record. The development implementation stores JSON under `storage/projects/<userId>`. Production should use PostgreSQL.
+
+## CAD/FEM projects and jobs
+
+All CAD/FEM routes require a validated Cloudflare Access identity at the public gateway and an owner-scoped PostgreSQL record in the native API.
+
+- `GET /api/cad/projects`
+- `POST /api/cad/projects`
+- `GET /api/cad/projects/:id`
+- `PATCH /api/cad/projects/:id`
+- `POST /api/cad/projects/:id/commands`
+- `POST /api/cad/projects/:id/imports`
+- `POST /api/fea/studies/:id/mesh-jobs`
+- `POST /api/fea/studies/:id/solve-jobs`
+- `GET /api/jobs/:id`
+- `DELETE /api/jobs/:id`
+- `GET /api/jobs/:id/events`
+- `GET /api/jobs/:id/artifacts/:artifactId`
+
+The separate `CadFEMProject` schema uses immutable integer revisions. Mutating commands include a stable command ID and base revision. A stale revision returns `409`; replaying a command or job ID returns the original record without repeating work.
+
+STEP import is a two-step flow. The first request creates short-lived signed R2 upload metadata. After upload, the second request supplies the artifact ID; the service verifies its metadata before queuing native regeneration. Large B-reps, meshes and result fields remain in R2 rather than Worker request bodies.
+
+AWS Batch completion alone never marks a solution complete. The API requires a native output status and artifact manifest, and a solve can only complete when the native status records convergence. The platform spike permits only its named verification solve profile; arbitrary Solid-mode solve submission remains disabled until the benchmark gates pass.
 
 ## PDF
 

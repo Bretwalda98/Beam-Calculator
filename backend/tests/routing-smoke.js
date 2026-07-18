@@ -14,8 +14,12 @@ async function run() {
       ['/', 200, 'Choose your analysis workspace'],
       ['/beam/', 200, 'Beam Calculator Studio'],
       ['/beam', 200, 'Beam Calculator Studio'],
-      ['/frame3d/', 200, '3D Frame Analysis'],
-      ['/frame3d', 200, '3D Frame Analysis'],
+      ['/frame3d/', 200, '3D Analysis | Beam Calculator Studio'],
+      ['/frame3d', 200, '3D Analysis | Beam Calculator Studio'],
+      ['/frame3d/frame/', 200, '3D Frame Analysis'],
+      ['/frame3d/frame', 200, '3D Frame Analysis'],
+      ['/frame3d/solid/', 200, 'Solid CAD/FEM'],
+      ['/frame3d/solid', 200, 'Solid CAD/FEM'],
       ['/privacy/', 200, 'Privacy Policy'],
       ['/public/secure-app.js', 200, 'const API_BASE'],
       ['/api/health', 200, '"ok":true'],
@@ -27,9 +31,9 @@ async function run() {
       assert.strictEqual(response.status, expectedStatus, `${pathname} returned ${response.status}`);
       assert.ok(body.includes(expectedText), `${pathname} did not include expected content`);
     }
-    const wasmFile = fs.readdirSync(path.join(__dirname, '..', '..', 'dist', 'frame3d', 'assets')).find((name) => name.endsWith('.wasm'));
+    const wasmFile = fs.readdirSync(path.join(__dirname, '..', '..', 'dist', 'frame3d', 'frame', 'assets')).find((name) => name.endsWith('.wasm'));
     assert.ok(wasmFile, 'Frame3D build should include a WebAssembly asset.');
-    const wasmResponse = await fetch(`${base}/frame3d/assets/${wasmFile}`);
+    const wasmResponse = await fetch(`${base}/frame3d/frame/assets/${wasmFile}`);
     assert.strictEqual(wasmResponse.status, 200);
     assert.strictEqual(wasmResponse.headers.get('content-type'), 'application/wasm');
     assert.match(wasmResponse.headers.get('content-security-policy') || '', /script-src 'self' 'wasm-unsafe-eval'/);

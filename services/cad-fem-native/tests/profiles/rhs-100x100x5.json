@@ -1,0 +1,25 @@
+{
+  "length": 1000,
+  "section": {
+    "schemaVersion": "1.0.0",
+    "catalogue": "beam-ec3",
+    "catalogueRevision": "73360d0357bb6d7c9173c11aa630ab8bb81c48bae84cb2bbe87c33294df93678",
+    "sectionId": "RHS|RHS 100x100x5",
+    "designation": "RHS 100x100x5",
+    "family": "RHS",
+    "kind": "rhs",
+    "units": "mm",
+    "dimensions": {
+      "height": 100,
+      "width": 100,
+      "webThickness": null,
+      "flangeThickness": 5,
+      "wallThickness": 5,
+      "rootRadius": 7.5,
+      "toeRadius": null,
+      "flangeSlopePercent": 0,
+      "innerRadius": 2.5
+    },
+    "properties": { "area": 1870, "iy": 2790000, "iz": 2790000, "torsionConstant": 4390000, "massPerLength": 14.7 }
+  }
+}

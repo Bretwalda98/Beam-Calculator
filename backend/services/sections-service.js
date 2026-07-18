@@ -1,4 +1,5 @@
 const { PROFILE_DB } = require('../data/sections-database');
+const { createHash } = require('crypto');
 let COMPLETE_PROFILE_DB = {};
 try {
   ({ COMPLETE_PROFILE_DB = {} } = require('../../artifacts/section-properties/sections-database-complete.generated.js'));
@@ -7,6 +8,16 @@ try {
 }
 
 const FAMILY_ORDER = ['UB', 'UC', 'UBP', 'J', 'PFC', 'CH', 'RHS', 'HEA', 'HEB', 'HEM', 'HEAA', 'IPE', 'IPN', 'UPE', 'UPN'];
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+const CATALOGUE_REVISION = createHash('sha256').update(canonicalJson(PROFILE_DB)).digest('hex');
 
 function sectionId(family, name) {
   return `${String(family || '').toUpperCase()}|${String(name || '')}`;
@@ -33,15 +44,20 @@ function listSectionFamilies() {
 }
 
 function listPublicSections() {
-  return familyKeys().flatMap((family) => (PROFILE_DB[family] || []).map((row) => ({
-    id: sectionId(family, row.name),
-    family,
-    designation: row.name,
-    mass_kg_m: Number(row.mass_kg_m || 0),
-    sourceName: row.ltb_source_name || row.ltb_data_source || 'Source to be confirmed',
-    sourceEdition: row.ltb_source_edition || '',
-    hasPreviewGeometry: Boolean((row.h_mm || row.d_mm) && (row.b_mm || row.D_mm || row.diameter_mm))
-  })));
+  return familyKeys().flatMap((family) => (PROFILE_DB[family] || []).map((row) => {
+    const profile = buildSectionProfileSnapshot({ ...row, family });
+    return {
+      id: sectionId(family, row.name),
+      family,
+      designation: row.name,
+      mass_kg_m: Number(row.mass_kg_m || 0),
+      sourceName: row.ltb_source_name || row.ltb_data_source || 'Source to be confirmed',
+      sourceEdition: row.ltb_source_edition || '',
+      hasPreviewGeometry: Boolean((row.h_mm || row.d_mm) && (row.b_mm || row.D_mm || row.diameter_mm)),
+      solidProfileAvailable: Boolean(profile),
+      catalogueRevision: CATALOGUE_REVISION
+    };
+  }));
 }
 
 function listSectionNames(family) {
@@ -59,6 +75,7 @@ function listFrame3dSections() {
   return familyKeys().flatMap((family) => (PROFILE_DB[family] || []).map((row) => {
     const section = getSection(family, row.name);
     const preview = buildSectionPreview(section);
+    const profile = preview?.solidProfile || null;
     const properties = preview?.visibleProperties || {};
     const required = {
       area: visibleNumber(properties.A_mm2),
@@ -84,6 +101,8 @@ function listFrame3dSections() {
         iy: required.iy,
         iz: required.iz,
         torsionConstant: required.torsionConstant,
+        catalogueRevision: CATALOGUE_REVISION,
+        profile,
         sourceRevision: [
           preview.source?.title,
           preview.source?.detail
@@ -125,6 +144,55 @@ function areaFromMass(section) {
   return mass ? mass / 7850 * 1_000_000 : null;
 }
 
+function flangeSlopePercent(family, height) {
+  if (family === 'J' || family === 'IPN') return 14;
+  if (family === 'UPN' || family === 'CH') return height <= 300 ? 8 : 5;
+  return 0;
+}
+
+function profileFromPreview(section, preview) {
+  const { geometry, visibleProperties } = preview;
+  const required = geometry.type === 'rhs'
+    ? [geometry.h_mm, geometry.b_mm, geometry.t_mm, geometry.r_mm]
+    : [geometry.h_mm, geometry.b_mm, geometry.tw_mm, geometry.tf_mm, geometry.r_mm];
+  if (required.some((value) => !(Number(value) > 0))) return null;
+  const slope = flangeSlopePercent(geometry.family, geometry.h_mm);
+  return {
+    schemaVersion: '1.0.0',
+    catalogue: 'beam-ec3',
+    catalogueRevision: CATALOGUE_REVISION,
+    sectionId: preview.id,
+    designation: preview.designation,
+    family: preview.family,
+    kind: geometry.type,
+    units: 'mm',
+    dimensions: {
+      height: geometry.h_mm,
+      width: geometry.b_mm,
+      webThickness: geometry.tw_mm,
+      flangeThickness: geometry.tf_mm,
+      wallThickness: geometry.t_mm,
+      rootRadius: geometry.r_mm,
+      toeRadius: geometry.r2_mm,
+      flangeSlopePercent: slope,
+      innerRadius: geometry.type === 'rhs'
+        ? Math.max(0, geometry.r_mm - geometry.t_mm)
+        : null
+    },
+    properties: {
+      area: visibleProperties.A_mm2,
+      iy: visibleProperties.Iy_mm4,
+      iz: visibleProperties.Iz_mm4,
+      torsionConstant: visibleProperties.It_mm4,
+      massPerLength: visibleProperties.mass_kg_m
+    },
+    source: preview.source,
+    geometryVerified: section.geometry_data_verified === true,
+    geometryStatus: section.geometry_data_status || 'source_to_be_confirmed',
+    warnings: [...preview.geometryWarnings]
+  };
+}
+
 function buildSectionPreview(section) {
   if (!section) return null;
   const family = String(section.family || '').toUpperCase();
@@ -144,6 +212,8 @@ function buildSectionPreview(section) {
     t_mm: visibleNumber(section.t_mm || section.thickness_mm),
     r_mm: visibleNumber(section.r_mm || section.r1_mm),
     r2_mm: visibleNumber(section.r2_mm),
+    et_mm: visibleNumber(section.et_mm),
+    es_mm: visibleNumber(section.es_mm),
     centroid: {
       y_mm: visibleNumber(section.cy_mm),
       z_mm: visibleNumber(section.cz_mm)
@@ -155,7 +225,7 @@ function buildSectionPreview(section) {
   if (geometry.type === 'i' && (!geometry.tw_mm || !geometry.tf_mm)) warnings.push('tw/tf missing - true I/H profile cannot be drawn.');
   if (['i', 'channel', 'rhs'].includes(geometry.type) && !geometry.r_mm) warnings.push('Radius not available from source data.');
   const area = firstVisibleNumber([section.A_mm2, section.area_mm2]) || areaFromMass(section);
-  return {
+  const preview = {
     id: sectionId(family, section.name),
     designation: section.name,
     family,
@@ -183,8 +253,19 @@ function buildSectionPreview(section) {
       It_mm4: firstVisibleNumber([section.It_mm4, section.Ix_mm4, section.I_t_mm4, section.Ix]),
       Iw_mm6: firstVisibleNumber([section.Iw_mm6, section.I_w_mm6, section.Iw], true)
     },
-    geometryWarnings: warnings
+    geometryWarnings: warnings,
+    solidProfile: null
   };
+  preview.solidProfile = profileFromPreview(section, preview);
+  return preview;
+}
+
+function buildSectionProfileSnapshot(section) {
+  return buildSectionPreview(section)?.solidProfile || null;
+}
+
+function catalogueRevision() {
+  return CATALOGUE_REVISION;
 }
 
 function getSectionSourceInfo(section) {
@@ -279,6 +360,8 @@ module.exports = {
   getSection,
   getSectionById,
   buildSectionPreview,
+  buildSectionProfileSnapshot,
+  catalogueRevision,
   getSectionSourceInfo,
   buildSectionSourceIndex
 };

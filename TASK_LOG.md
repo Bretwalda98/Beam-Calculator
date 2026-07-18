@@ -1,5 +1,64 @@
 # Frame3D foundation task log
 
+## CAD-integrated solid FEM programme — 16 July 2026
+
+- Staged branch: `codex/fea-platform-spike`, originally based on the foundation branch at `59c3263`. Foundation PR #9 merged into `main` as `c948b9e` before platform-spike promotion.
+- Baseline `npm run check`: passed.
+- Baseline `npm run verify:frame3d`: passed (26 Rust tests, 7 compiled-WASM analytical comparisons, Worker and direct-route smoke tests).
+- Baseline `npm run smoke`: retains the previously recorded section-catalogue SHA-256 mismatch and reaches no new failure before that assertion.
+- Native environment: Rust/Node/Git are available. Docker, WSL, CMake, Ninja, AWS CLI and a system C++ toolchain are not installed. A portable LLVM-MinGW compiler is available outside the repository.
+- Native CAD/FEM code must therefore have a reproducible Linux container/CI build and must fail clearly when OCCT, Netgen, MFEM or Tribol are unavailable. No browser or JavaScript solid-solver substitute is permitted.
+
+### Staged implementation plan
+
+1. Add a separate versioned `CadFEMProject` contract, validation package, PostgreSQL migration, immutable command/job interfaces and authenticated edge/native-service boundaries.
+2. Split `/frame3d/` into a project selector, preserve the existing solver at `/frame3d/frame/`, and add a separate React/Three.js solid workbench at `/frame3d/solid/`.
+3. Add the C++20 native service, pinned dependency/container build, OCCT document and STEP pipeline, Netgen tetrahedral meshing, MFEM linear elasticity and structured result artefacts.
+4. Add assembly mates, bonded interfaces, nonlinear frictionless Tribol contact and convergence diagnostics only after their native benchmarks pass.
+5. Add AWS ECS/Batch/RDS staging infrastructure and Cloudflare gateway/R2 configuration without changing production DNS, secrets or routes.
+6. Run existing Beam/Frame regressions plus CAD schema, routing, native build and benchmark gates. Never label solid/contact results verified until those gates pass.
+
+### EC3 section integration action — 17 July 2026
+
+1. Expose immutable, provenance-bearing profile snapshots from the existing 368-row Beam EC3 catalogue without changing Beam calculations or API routes.
+2. Make the Frame section picker load automatically and add designation/family filtering while preserving property snapshots used by the frame solver.
+3. Replace the Solid workbench's hard-coded box with a real I-section/channel/RHS extrusion preview driven by the selected EC3 dimensions.
+4. Store the selected section, dimensions, properties, source and catalogue fingerprint in a separate `CadFEMProject` feature; never retain only a mutable catalogue ID.
+5. Generate native STEP input from a single saved catalogue extrusion for OCCT regeneration and Netgen meshing. Keep arbitrary solid solves disabled until benchmark gates pass.
+6. Re-run all Beam, Frame, CAD/FEM, route and catalogue tests; use CI for the native container tests unavailable on this workstation.
+
+Implemented locally: all 368 profiles have complete verified source snapshots; Frame search/filter and Solid selection/preview are wired; immutable save/idempotency tests pass; and the Batch input path can generate nominal sharp-corner STEP geometry from the saved snapshot. Root/toe radii and tapered flanges remain recorded but intentionally unapplied by this first native generator, with explicit artefact warnings. Native CTest remains a required CI gate and no solid-result verification claim is made.
+
+The previously recorded raw-file catalogue checksum failure is removed. The test now pins a canonical data fingerprint and separately verifies row count, profile availability, provenance and flange-slope coverage. `npm run smoke` now passes without altering the Beam engineering engine.
+
+CI packaging correction: the native diagnostic job now loads a slim test image containing installed runtime libraries, CTest metadata and test executables rather than the complete upstream source/build trees. Upstream build directories are removed in their own image layers after installation, cache export remains useful without transferring those trees, and branch concurrency cancels superseded runs.
+
+Native benchmark diagnosis: CI run `29618078259` built the pinned image and passed STEP generation plus both OCAF geometry stages. Netgen then produced and saved a valid 203-node/426-tetrahedron mesh, but AddressSanitizer found a double free inside upstream `Ng_DeleteMesh`: `Mesh::DeleteMesh()` deleted boundary-name pointers without clearing the pointer array, and the immediately following `Mesh` destructor deleted them again. The image now applies and distributes a one-line pinned-source patch that clears the array after the first deletion. Mesh and solve CTests remain the acceptance gate; this diagnosis alone is not a verified-solver claim.
+
+Native exchange diagnosis: CI run `29620524855` passed the patched Netgen mesh lifecycle test, including the 203-node/426-tetrahedron mesh under AddressSanitizer. The solve then stopped before assembly because Netgen 6.2's modern `mesh3d` `.vol` header is not one of the formats recognised by the pinned MFEM loader. The pipeline now retains that native audit artefact and separately writes MFEM's documented `NETGEN` neutral stream from the in-memory first-order tetrahedra and boundary triangles, rejecting any unsupported element type. The axial displacement and equilibrium gates remain pending until the replacement CI run passes.
+
+Reaction-recovery diagnosis: CI run `29621105838` loaded the neutral mesh, converged the quadratic MFEM solve and produced `0.004749267 mm` average end displacement against `0.004761905 mm` analytically (0.2654% error, inside the 1% gate). Its equilibrium gate exposed that reaction recovery was multiplying by MFEM's boundary-eliminated matrix and decoding `Ordering::byVDIM` as component-block ordering. Recovery now uses MFEM's full uneliminated operator, the preserved assembled load vector and the documented interleaved component mapping. The equilibrium gate remains pending until CI confirms the correction.
+
+Native benchmark outcome: CI run `29621269146` passed all eight staged CTests in the pinned sanitised image. The final 203-node/426-tetrahedron quadratic-displacement axial bar returned `0.00474927 mm` against `0.00476190 mm` analytically (0.2654% relative error) and a `3.9343 × 10^-11` normalised equilibrium residual, passing the 1% and `1 × 10^-8` gates. This verifies the named proof benchmark only; the broader linear benchmark matrix and nonlinear contact release gates have not run and the Solid workbench remains Beta with arbitrary solves disabled.
+
+Preview deployment isolation: the first automatic Cloudflare Pages branch build used the production API because the Git integration did not supply the two optional API-base variables. The frontend build now recognises only the exact `codex/fea-platform-spike` value from Cloudflare's `CF_PAGES_BRANCH`, resolves Beam and Frame/Solid to the isolated preview Worker, propagates those values into the bundle security check and permits explicit environment overrides. A regression test confirms that `main` and unrelated branches retain their existing same-origin behaviour.
+
+Production release gate: after foundation PR #9 merged, the Cloudflare audit confirmed that pushes to `main` automatically promoted both Pages and the Worker. The foundation merge only republished the already-live foundation content. Before platform-spike promotion, Pages automatic production deployments were disabled while preview deployments remained enabled, and the Worker production trigger was changed from `npm run worker:deploy` to `npx wrangler versions upload`. Future `main` merges create reviewable build evidence without changing the active production versions; explicit production promotion remains prohibited until the stated security, cost, load and independent engineering reviews pass.
+
+### Platform-spike outcome
+
+- `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.
+- Added the separate versioned `CadFEMProject` schema, validation and solve-readiness gates without mixing it with `Frame3DModel`.
+- Added PostgreSQL project/revision/command/study/job/artifact persistence, Cloudflare Access gateway validation, idempotent APIs, short-lived R2 artifact transport and AWS Batch submission/cancellation/reconciliation.
+- Added a pinned C++20 native container pipeline for STEP/OCCT/OCAF regeneration, Netgen tetrahedral meshing and MFEM Float64 linear elasticity, plus an optional MFEM/Tribol frictionless contact patch.
+- Added isolated `eu-west-2` ECS/RDS/Batch staging Terraform and CI jobs. Terraform formatting and validation pass; nothing has been applied or deployed.
+- Local TypeScript, contract, route and existing Frame3D checks pass. The native container and benchmark have not run locally because Docker/CMake/native dependencies are unavailable; CI is the required gate.
+- Final local audit: `npm run check`, `npm test`, `npm run verify:cad-fem`, full `npm audit`, Git Bash syntax checking and Terraform 1.15.8 formatting/validation pass. The 13-route smoke includes `/`, `/beam/`, `/frame3d/`, `/frame3d/frame/` and `/frame3d/solid/`.
+- Final `npm run smoke` reaches the same pre-existing section-catalogue SHA mismatch: actual `ad2022577fb81246c808f7ae213419bd82e31f62eac5d8ee0d274f5251fd181d`, expected `a9d15c34db320151fcb36730e04b87c41eeaeecd26bd404fff62b688906d9d26`.
+- The final source audit corrected the OCCT/Netgen release pins to their resolvable annotated-tag commits, strips browser credentials at the Tunnel boundary, preserves Beam-only production startup and requires an exact reviewed STEP hash plus fixed benchmark settings for native solve submission.
+- Arbitrary solid solves remain disabled. Only the named axial-bar verification profile may be submitted, and no solid/contact result is described as verified.
+- Foundation PR #9 was reviewed, merged with ancestry preserved and followed by retargeting platform-spike PR #10 to `main`. Stages 2–5 have not been started.
+
 ## Baseline — 16 July 2026
 
 - Branch: `codex/frame3d-foundation-v1`, created from `origin/main` at `9b5ee6e`.
