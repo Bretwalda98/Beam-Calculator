@@ -2,7 +2,7 @@
 
 ## CAD-integrated solid FEM programme — 16 July 2026
 
-- Stacked branch: `codex/fea-platform-spike`, based on the open foundation branch at `59c3263`; foundation PR #9 is not yet merged into `main`.
+- Staged branch: `codex/fea-platform-spike`, originally based on the foundation branch at `59c3263`. Foundation PR #9 merged into `main` as `c948b9e` before platform-spike promotion.
 - Baseline `npm run check`: passed.
 - Baseline `npm run verify:frame3d`: passed (26 Rust tests, 7 compiled-WASM analytical comparisons, Worker and direct-route smoke tests).
 - Baseline `npm run smoke`: retains the previously recorded section-catalogue SHA-256 mismatch and reaches no new failure before that assertion.
@@ -43,6 +43,8 @@ Native benchmark outcome: CI run `29621269146` passed all eight staged CTests in
 
 Preview deployment isolation: the first automatic Cloudflare Pages branch build used the production API because the Git integration did not supply the two optional API-base variables. The frontend build now recognises only the exact `codex/fea-platform-spike` value from Cloudflare's `CF_PAGES_BRANCH`, resolves Beam and Frame/Solid to the isolated preview Worker, propagates those values into the bundle security check and permits explicit environment overrides. A regression test confirms that `main` and unrelated branches retain their existing same-origin behaviour.
 
+Production release gate: after foundation PR #9 merged, the Cloudflare audit confirmed that pushes to `main` automatically promoted both Pages and the Worker. The foundation merge only republished the already-live foundation content. Before platform-spike promotion, Pages automatic production deployments were disabled while preview deployments remained enabled, and the Worker production trigger was changed from `npm run worker:deploy` to `npx wrangler versions upload`. Future `main` merges create reviewable build evidence without changing the active production versions; explicit production promotion remains prohibited until the stated security, cost, load and independent engineering reviews pass.
+
 ### Platform-spike outcome
 
 - `/frame3d/` is now a study selector, `/frame3d/frame/` preserves the existing frame-element application and `/frame3d/solid/` hosts an isolated React/Three.js Beta workbench shell.
@@ -55,7 +57,7 @@ Preview deployment isolation: the first automatic Cloudflare Pages branch build 
 - Final `npm run smoke` reaches the same pre-existing section-catalogue SHA mismatch: actual `ad2022577fb81246c808f7ae213419bd82e31f62eac5d8ee0d274f5251fd181d`, expected `a9d15c34db320151fcb36730e04b87c41eeaeecd26bd404fff62b688906d9d26`.
 - The final source audit corrected the OCCT/Netgen release pins to their resolvable annotated-tag commits, strips browser credentials at the Tunnel boundary, preserves Beam-only production startup and requires an exact reviewed STEP hash plus fixed benchmark settings for native solve submission.
 - Arbitrary solid solves remain disabled. Only the named axial-bar verification profile may be submitted, and no solid/contact result is described as verified.
-- This branch is stacked on the unmerged foundation branch because the programme requires later stages to begin only after the preceding stage is reviewed and merged. Stages 2–5 have not been started.
+- Foundation PR #9 was reviewed, merged with ancestry preserved and followed by retargeting platform-spike PR #10 to `main`. Stages 2–5 have not been started.
 
 ## Baseline — 16 July 2026
 

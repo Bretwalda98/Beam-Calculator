@@ -94,6 +94,16 @@ Deploy:
 npm run worker:deploy
 ```
 
+### Production release gate
+
+Cloudflare production promotion is deliberately manual while the CAD/FEM programme is in staged development:
+
+- Pages keeps preview deployments enabled but has automatic production-branch deployments disabled.
+- The production Worker build trigger runs `npx wrangler versions upload`, which creates a reviewable version without changing the active deployment.
+- Merging to `main` must therefore build and preserve evidence without publishing a new production frontend or Worker.
+
+After the required security, cost, load and independent engineering reviews approve a release, an authorised maintainer may explicitly deploy the reviewed commit. Re-enabling automatic production deployment is not required. If automatic deployment is intentionally restored, use Cloudflare Pages **Settings → Builds → Branch control** and set the Worker production trigger deploy command back to `npm run worker:deploy`. Verify the active Pages deployment and Worker version before and after either change.
+
 Required live API URL:
 
 ```text
